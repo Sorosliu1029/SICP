@@ -1,0 +1,43 @@
+### Progress
+
+- [ ] L1: Introduction to Computation
+- [ ] L2: Scheme Basics
+  - [ ] reading: [Section 1.1]
+- [ ] L3: Procedures, Processes, and Recursion
+  - [ ] reading: [Section 1.2]
+- [ ] L4: Orders of Growth and Kinds of Procedures
+  - [ ] reading: [Section 1.2]
+- [ ] L5: Data Abstraction
+  - [ ] reading: [Section 2.1]
+- [ ] L6: Higher Order Procedures
+  - [ ] reading: [Section 1.3]
+- [ ] L7: Good Programming Practices
+- [ ] L8: Using Higher Order Procedures
+  - [ ] reading: [Section 1.3], [Section 2.2.4]
+- [ ] L9: Symbols and Quotation
+  - [ ] reading: [Section 2.3]
+- [ ] L10: Tagged Data
+  - [ ] reading: [Section 2.4]
+- [ ] L11: Advanced Data Types
+- [ ] L12: Data Mutation
+  - [ ] reading: [Section 3.3.1-3.3.3]
+- [ ] L13: Trees, Graphs and Search
+- [ ] L14: Graphs and Search
+- [ ] L15: Environment Model
+  - [ ] reading: [Section 3.1], [Section 3.2]
+- [ ] L16: Object Oriented Programming I
+- [ ] L17: Object Oriented Programming II
+- [ ] L18: Object Oriented Programming III
+- [ ] L19: Interpretation
+- [ ] L20: The Meta-circular Evaluator
+  - [ ] reading: [Section 4.1]
+- [ ] L21: Lazy Evaluation
+  - [ ] reading: [Section 4.2], [Section 3.5]
+- [ ] L22: Asynchronous Computing
+  - [ ] reading: [Section 3.4]
+- [ ] L23: Universal Machines
+- [ ] L24: Geometric Folding Algorithms: Origami, Linkages, and Polyhedra
+- [ ] L25: Peer-To-Peer Computing Research: A Fad?
+- [ ] L26: Computability
+
+### Video Lectures
