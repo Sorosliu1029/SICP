@@ -1,0 +1,576 @@
+% for yTeX
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1987}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1987}
+\rectorightheader={Problem Set 2}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 2}
+
+\vskip 0.25truein
+
+\vpar
+Issued: September 17, 1987
+
+
+\vpar
+Due: in recitation on September 25, 1987 {\it for all sections}
+
+
+\vpar
+Reading assignment: Chapter 1, Sections 1.2 and 1.3
+
+\chapter{1. Homework exercises}
+
+Do the following exercises in the textbook:
+
+
+\beginbullets
+
+\bpar Exercise 1. -- Do exercise 1.12  in the textbook.
+
+
+\bpar Exercise 2. -- Do exercise 1.13  in the textbook.
+      (The answer to exercise 1.11 is given in the appendix to help you
+      in doing this exercise.)
+
+\bpar Exercise 3. -- Using the RSM (revised substitution model), show
+      how the following expressions evolve when being evaluated.
+      Indicate which rule you used to get from one step to another.
+
+\hskip 20pt a. {\tt (define foo (lambda (m) (lambda (z) (m z))))}
+
+\hskip 20pt b. {\tt  ((lambda (x) ((foo x) square)) 3)}
+
+\hskip 20pt c. {\tt (define bar ((lambda (g) (lambda (y) (g y))) foo))}
+
+\hskip 20pt d. {\tt ((bar foo) square)}
+
+\hskip 20pt
+-- assume that square is defined as:
+
+\hskip 20pt      {\tt (define (square x) (* x x))}
+
+
+\bpar Exercise 4. -- Consider the following higher order procedure
+      {\tt repeated}, which takes a function {\tt f} of one argument, and
+      a number {\tt n}, and returns a procedure which, when applied to an argument
+      {\tt a}, computes 
+\math{ \underbrace{\hbox{\tt (f (f (f.....(f}}_{\hbox{\rm n times}}
+\hbox{\tt a))))}}
+      The procedure is given below:
+\beginlisp
+      (define (repeated f n)
+        (if (= n 0)
+            (lambda (z) z)
+            (compose f (repeated f (- n 1)))))
+\pbrk
+      (define (compose f g)
+        (lambda (x) (f (g x))))
+\endlisp
+
+\hskip 20pt
+      Assume that we now define a function called add-5 as follows:
+\beginlisp
+      (define (add-5 y) (+ y 5))
+\endlisp
+      Using your intuition, predict and describe the object returned
+      as a result of evaluating the expression
+\beginlisp
+      (repeated add-5 2)
+\endlisp
+      Put the returned object in RSM notation.  (Note: DO NOT show your
+      work for this one, because it would be quite disasterous for
+      your TA to read.  If you really want to work it out explicitly
+      using RSM, try to skip the details and concentrate on the
+      returned object at each stage of the recursion, putting
+      these returned objects together by carefully using rule C2.)
+
+\endbullets
+
+\chapter{2. Laboratory Assignment: RSA Cryptography System}
+
+Cryptography systems are used to encode and decode information for
+secure transmission and storage.  They are typically based around the
+notion of using keys for encryption and decryption, either transforming
+an English message into a new string of symbols, or vice versa.  Keys
+can be as simple as a table that pairs input characters with output
+characters, although real encryption systems are much more complex.
+
+The RSA Cryptography System is based on using very large prime numbers
+to determine the keys for encryption and decryption of messages.  The
+algorithms for testing and thus finding large prime numbers efficiently
+are based on Section 1.2.6 of the text.  You should read that material before
+beginning work on this assignment.
+
+The RSA scheme belongs to the family of Public Key Cryptography Systems which
+are used by corporations, the government or even individuals to send secret
+messages to each other via public wires.  A cryptography system must ensure
+the privacy of such communication, as well as preventing forgeries.
+The RSA scheme is the first and probably still the best way of realizing such
+communications.  It was invented by Rivest, Shamir and Adleman (all at the
+time at M.I.T., in course 6-3, 18 and 18 respectively.)  It is based on the
+following widely accepted hypothesis:
+
+\beginquote
+If $n=pq$, where $p$ and $q$ are large prime numbers (say 100 digits long), then
+it is in principle and in practice essentially impossible in any reasonable
+length of time, given the number $n$, to find its two prime factors $p$ and
+$q$.
+\endquote
+
+(Note: The above is quoted from Professor Arthur Mattuck's 18.063 notes.)
+
+In the RSA scheme, a user selects two secret 100 digit primes, $p$ and $q$.
+He or she then define
+\math{\eqalign{n& = pq\cr
+        m& = (p - 1)(q - 1).\cr}}
+
+He/she also selects a 100-digit (or larger) encryption number $e$, such that
+$e$ and $m$ are co-primes, i.e., the only common factor of e and m is 1.
+(Remember that any integer number can be represented uniquely by its
+factors, which are those integers that divide the original one without
+remainder.)
+The
+user puts $n$ and $e$ on public file, but keeps $m$ secret.  To encrypt a message,
+$s$, which is represented by a number, we perform the following calculation:
+
+\centerline{encrypted message = $s$ to the power of $e$, modulo $n$}
+
+Remember that modular arithmetic means that we only keep the remainder
+of a number relative to a modular base.  For example, the number 100
+modular 8 is given by 4, since that is the remainder that is left after
+dividing 100 by 8.
+
+Given an encrypted message, the receiver wants to decrypt it to obtain
+the original message.  In order to do this, he/she wants to
+perform the following calculation, with some number $d$:
+
+\centerline{$s^\prime$ = encrypted message to the power of $d$, modulo
+$n$.} 
+
+In order for this to work, the receiver needs to find a number $d$ such
+that $s = s^\prime$.  You will notice that the requirement for the
+number $d$ is that:   
+
+\centerline{$s$ = $s$ to the power of $e$, then to the power of $d$, modulo
+$n$.} 
+
+The equation for finding the number $d$ is:
+
+\centerline{$d = (1 - mr)/e$, where $r$ is a negative integer, and $d$ a positive one.}
+
+(Since this course is not 18.063, we won't ask you to understand all of the
+above - you'll have to do that when you take that course.)
+
+So much for theory - let's see some practical use of RSA.  Before we take
+off, you need to set up a file in which to put in your solutions.  All the
+procedures in the appendix of the problem set are installed on the
+Chipmunks, and can be loaded onto your floppy disk.  To do this,
+follow the instructions given in the Chipmunk manual in the section,
+``Loading Problem Set Files,'' to load the code for problem set 2.
+You can now use this code, modify it and add your solutions to it.
+The {\tt fast-prime?} procedure and all the sub-procedures that it uses
+are 
+taken from Section 1.2.6 of the textbook. You are also provided with a
+public key selection procedure called {\tt select-keys}, which uses
+procedures
+{\tt select-prime, select-e} and {\tt gcd} (greatest common divisor). 
+Take a look at
+these procedures and make sure you understand them before trying them out.
+
+\section{The Story}
+
+Our good friend Louis Reasoner has just joined the CIA upon receiving his
+B.S. degree from W.I.T. (Worthwhile Institute of Technology).  As a result of
+his specialization in cryptography at W.I.T, he was assigned to implement a
+new RSA system for the CIA, who is planning to use it for negotiating a
+highly secret business deal with Great Britain.
+
+\section{Exercise 1}
+
+The first procedure Louis Reasoner wrote for calculating modulo-m
+exponentiation is {\tt expmod-1}.  Smart as he is, he also wrote a
+procedure
+called {\tt timed-exp}, which times how long it takes the computer to run
+a 
+procedure {\tt f} on arguments {\tt b e m}.  Use {\tt expmod-1} to
+calculate 10 to the power
+of 8, modulo 7.  Then use {\tt timed-exp} to time this calculation. 
+Prepare a chart as follows:
+
+\centerline{\begintable ["l|c|c|c"]
+\dtopline
+& &&10e8(mod 7)&&10e16(mod 7)&&10e26(mod 7)&\cr
+\dmidline
+&{\tt expmod-1}&& && && &\cr
+\midline
+&{\tt expmod-2}&& && && &\cr
+\midline
+&{\tt expmod-3}&& && && &\cr
+\dbotline
+\endtable}
+
+Fill in the time it takes for {\tt expmod-1} to calculate the specified
+numbers in the chart.
+
+\section{Exercise 2}
+
+Louis is pleased with the result, but his supervisor Alyssa P.
+Hacker, who has an M.S. degree from M.I.T., critized this procedure, saying,
+``The order of growth of your procedure can be reduced considerably, using the
+idea of successive squaring.''  She then suggested Louis to take a look 
+at Section 1.2.4 in her favorite bed-time reading - {\bf Struggle and
+Intimidation of Computer Programming}.  Louis quickly read the section, and wrote
+{\tt expmod-2}.  Test out the performance of his {\tt expmod-2} and fill
+in the results in the prepared chart.
+
+\section{Exercise 3}
+
+Louis showed his {\tt expmod-2} to Alyssa P. Hacker.
+Alyssa said,"That's not bad, but you are not taking any advantage
+of the fact that we are doing modulo arithmetics!".  She quickly wrote
+{\tt expmod-3} for Louis.  Test out {\tt expmod-3}
+and complete the chart.  Hand the chart in and answer the following
+questions:
+
+(a) What is the order of growth of {\tt expmod-1, expmod-2} and {\tt
+expmod-3}?
+
+(b) Explain why {\tt expmod-3} runs faster than both {\tt expmod-1} and
+{\tt expmod-2}.
+
+\section{Exercise 4}
+
+``Finally my expmod is working!'', said Louis with great relief.  He then
+spent the rest of the day completing the key selection
+procedures.
+When the moonlight came through his office window at 8:59 pm, he was
+already too tired to test out those new procedures, and fell asleep on
+his desk.  Please test out these procedures for Louis.  Simply run the
+{\tt select-key} procedure and generate some $n$ and $e$ numbers.  Notice
+that we
+are not really using 100 digit prime numbers because of the limited
+capacity of the Chipmunks.  Make a list of 4 pairs of $n$ and $e$ numbers
+as follows:
+
+\centerline{\begintable ["l|c|c"]
+\dtopline
+& &&n&&e&\cr
+\dmidline
+&{\tt key-pair-1}&& && &\cr
+\midline
+&{\tt key-pair-2}&& && &\cr
+\midline
+&{\tt key-pair-3}&& && &\cr
+\midline
+&{\tt key-pair-4}&& && &\cr
+\dbotline
+\endtable}
+
+Hand in the list and answer the following question:
+
+(a) Is the {\tt gcd} procedure an iterative or recursive procedure?
+
+(b) Does the {\tt gcd} procedure give rise to an iterative or recursive
+process? 
+
+\section{Exercise 5}
+
+.....Meanwhile, on the other side of the globe at exactly 3:59 in the
+cold morning in Moscow, two KGB agents, Ordr O. Grofiev and Bloch Schtraktur,
+are burning the midnight oil to complete their implementation of the
+code cracker for the CIA's new RSA system (their licensed-to-kill agent 6003
+Sigmund Proceszeng found out about the CIA's recent activity.)  Here's
+what they have so far:
+
+\beginlisp
+(define (crack-rsa n e)
+   (define start-time (runtime))
+   (define (iter guess)   ;;; iterator to find d, given a guessed r
+      (........))
+   (let ((p (prime-component n)))
+      (if (= p 1)
+          (print "Sorry - cannot find prime component")
+          (.................))))
+\pbrk
+(define (prime-component n)
+   (define (iter guess)
+      (...........))
+   (iter ...))
+\pbrk
+(define (improve guess)
+   (- guess 1))
+\endlisp
+
+The dotted parts are not implemented yet.  In other words, these two nitwits
+didn't come up with anything impressive, not to mention useful.  We ask you
+in this exercise to complete these procedures, using the information we gave
+you earlier.  Here is a summary of the highlights:
+
+\math{\eqalign{
+        n& = pq \qquad                         \hbox{\rm ($p$ and $q$ are primes)}\cr
+        m& = (p - 1)(q - 1)\cr
+        d& = (1 - mr)/e \qquad                  \hbox{\rm ($r$ is a negative integer)}\cr}}
+
+{\tt Crack-rsa} takes the two public keys $n$ and $e$ as arguments, and
+returns the decryption key $d$.  It calls {\tt prime-component} to find
+out one of $n$'s prime
+components.  $q$ and $m$ can subsequently be found.  Finding $d$ requires some
+systematic guessing.  Make use of the fact that $d$ must be an integer,
+as the stopping condition of the guessing.
+The internal variable {\tt start-time} is there
+for your convenience in putting timing mechanism into the procedure.  You
+marry about changing the
+{\tt improve} procedure, for you will be asked to do so in the subsequent
+exercises.  The fragmented code of {\tt crack-rsa} and {\tt prime-component}
+are not given with the rest of the code, so you will need to type it in.
+The next exercise will enable you to test out your procedures.  Be aware
+that you can add your own internal defines if you feel appropriate.
+
+Hand in a listing of your procedures.
+
+\section{Exercise 6}
+
+Test out your {\tt crack-rsa} procedure by finding out the $d$ numbers (or
+the
+secret key) of the following pairs of $n$ and $e$ numbers (or the public keys.)
+Before you test out your procedures, make sure that you have install a
+timing mechanism in the
+{\tt crack-rsa} procedure so that the {\tt crack-rsa} would print out the
+elapsed time when it
+has found out the answer.  Record the elapsed times and fill them in
+the chart below in the ``time1'' column.
+
+After you have found the secret keys to the corresponding public
+keys, choose one set of keys to encrypt some random number and then
+decrypt the encrypted number.  Use the {\tt encrypt} and {\tt decrypt}
+procedures
+provided in the code.  You should get back the same number after the
+decryption.
+
+\centerline{\begintable ["l|l|l|l|l|l"]
+\dtopline
+&n&&e&&d&&time1 &&time2&&time3&\cr
+\dmidline
+&19781&&817&& && && && &\cr
+\midline
+&27193&&363&& && && && &\cr
+\midline
+&27257&&169&& && && && &\cr
+\midline
+&61661&&433&& && && && &\cr
+\dbotline
+\endtable}
+
+Hand in a SCHEME transcript (photo session) of an encryption-decryption
+execution.
+
+\section{Exercise 7}
+
+The KGB sent out their 6002 agent Osczellas Gope and stole your solution
+(assuming that if your solution has bugs, they could fix it), and installed
+it onto their system.  Bloch Schtraktur, who specialized in algorithms in
+Moscow University when he was 16 years old, immediately noticed that the
+{\tt improve} procedure is very inefficient, in that it doesn't skip over
+even
+numbers.  Modify it so that it skips over even numbers, and then run
+the same timing tests as you did in exercise 6 and put the results in the
+``time2'' column.   You should find out how much more effective the new
+{\tt improve} procedure is and report it directly to Alyssa P. Hacker.
+
+Hand in a listing of your new {\tt improve} procedure.
+
+\section{Exercise 8}
+
+Ms. Hacker now learned from you what the the KGB has done.  ``Now, for
+something tough to crack....'', said Ms. Hacker, as she increased the bounds of the
+variable $n$ in {\tt select-prime} to 40 and 10 respectively.  ``This way,
+our RSA system will be generating bigger prime numbers, which should take
+anyone considerably longer time to crack the decryption keys'', she
+explained with great confidence.
+
+Modify the {\tt select-prime} procedure in your code according to
+Alyssa,
+and generate a few new keys, then use {\tt crack-rsa} to find the $d$
+number
+of these keys.  You'll realize that Alyssa is right (don't forget
+that she is from M.I.T.)
+
+The KGB is very upset.  6002, 6003 are so ashamed that they are
+both ready to hand in their ``drop-cards'' (resignation letters).  At this
+point of despair, they learned that Louis Reasoner is going to France for
+vacation.  They immediately set up agent 6034 R. T. Fishle to
+seduce
+Louis.  Hopefully, the KGB could get some useful information out of Louis in
+the process.  Ms. Fishle was very successful (and lucky) - Louis had
+just developed a serious case of the sleep-talking syndrome very recently
+due to too many
+all-nighters.  While in a hotel with Ms. Fishle, Louis
+not only gave away the new bounds in the {\tt select-prime} procedure,
+he also gave away the equation $n^2+n+41$, which he uses
+in his prime selection procedure.  Mr. Grofiev exclaimed, ``Let's improve
+our {\tt improve} procedure using this equation.''  You are asked to do
+just that in this exercise.  Rewrite the {\tt improve} procedure such
+that it
+systematically returns guesses which satisfy the formula $n^2+n+41$.
+
+Hand in a listing of your new {\tt improve} procedure, and a SCHEME
+transcript
+of an encryption-decryption execution on large keys generated by the
+{\tt select-keys} procedure, and do the timing test as you did in
+exercise 6,
+putting the results in the ``time3'' column, and hand in the completed
+chart.
+
+\section{Exercise 9}
+
+Ordr O. Grofiev is a man with tremendous foresight.  One evening, when
+he was taking a walk in the woods, he suddenly had the following idea,
+``Suppose the CIA would like to change the bounds of the variable $n$ in
+the select-prime procedure again, and suppose they would also like to
+change the $n^2+n+41$ formula to some other formula for security
+purposes. We would have to modify the body of the procedure {\tt improve}
+very frequently,
+getting frustrated due to bugs caused by forgetting to close a couple
+of parentheses here and there.  If we can develop a generalized
+{\tt improve}  procedure, which takes 3 extra arguments: $u$, $l$, and $f$
+(standing
+for upper-bound, lower-bound and function), we wouldn't have to touch
+the {\tt improve} procedure ever again.  Of course, that requires
+{\tt crack-rsa}
+to also take these 3 extra arguments, so that they can be passed to
+{\tt prime-component}, which can then pass them to {\tt improve}.''
+
+Implement Ordr O. Grofiev's idea, and hand in a listing of your new
+{\tt crack-rsa, prime-component}  and {\tt improve} procedures.  Also
+hand in
+a photo session of how you use your new {\tt crack-rsa} to crack
+the $d$ number of the following keys: $n = 87953, e = 697$.
+
+\section{Exercise 10}
+
+Finally, the CIA is ready to use their system to send their first
+message to
+Great Britain.  They actually manage to sell some warheads to the British.
+The first message consists of 3 numbers, which stand for the month, date and
+year of the transaction.  The CIA encrypted them using the British's
+public keys: $n = 99091, e = 225$.  The encrypted message is as follows:
+
+\math{44287 \qquad   6521\qquad    58399}
+
+Using the new {\tt crack-rsa} procedure you implemented in exercise 9,
+find out the decryption key $d$ of the British.  Then, find out
+the date of this business transaction by decrypting the above message.
+
+Hand in a photo-session of the cracking of keys and the decryption.
+
+\section{Exercise 11}
+
+The KGB tapped the wires and decoded the message also.  They also happen
+to know that the next message will be sent from the British to the CIA,
+informing them about the exact location of the transaction.   Since the 
+encryption keys are public, Ordr and Bloch decided to use the CIA's
+public keys to encode a forgery message, which discloses a location where
+the KGB, instead of Her Majesty's Secret Service,  will be waiting to
+receive the shipment of warheads.
+
+It turns out that the British are not stupid when it comes to such things
+as secret business deals.  The British developed a scheme which prevents
+forgery.  (This is, by the way, plagiarism - Rivest, Shamir and Adelman
+invented it.)
+It works as follows:
+
+\math{\eqalign{B:& msg \Rightarrow_{encrypt} (msg)^{Bd}\Rightarrow_{encrypt}
+(msg)^{Bd\cdot Ae} \Rightarrow_{decrypt}\cr
+& \Rightarrow_{decrypt} (msg)^{Bd\cdot (Ae\cdot Ad)}
+\Rightarrow_{decrypt} (msg)^{Bd\cdot Be} = msg :A\cr}}
+
+Let $B$ stand for the British, and $A$ stand for the CIA.  $B$ first
+encrypts its message by $B$'s secret key $Bd$.  Then it encrypts it
+again using $A$'s public key $Ae$.  When $A$ receives this doubly encrypted
+message, he can first decrypt it using his secret key $Ad$, and then
+decrypt it once
+again using $B$'s public key $Be$, which should yield the original message.
+Since only $B$ knows $Bd$, nobody else could have encrypted a message
+using $Bd$, which is only decodable by $Be$.  Therefore if the message
+can be decrypted by $Be$, it must be encrypted using $Bd$, and thus must
+be genuinely from $B$.
+
+For this exercise, use the following information for keys:
+
+\begintable [lll]
+$Bn$ = 99091  &     $Be$ = 225 &       $Bd$ = what you found out in
+exercise 10\cr
+$An$ = 1189543  &  $Ae$ = 757 &       $Ad$ = (use {\tt crack-rsa} to find
+out) \cr}}
+
+24 hours later, the CIA received two messages:
+
+\centerline{First message: 754786\ \    140376\ \   481610\ \   901930}
+
+\centerline{Second messa out where the British want the transaction to be, and
+where the Russians want the transaction to be - use a real world atlas
+to do this.
+
+The conclusion of the story depends, of course, on whether you get the
+last exercise right or not.  Good Luck and Skill!
+
+
+\end
+

@@ -1,0 +1,10 @@
+There are two separate problem sets in this directory.
+
+1.  ADVENTURE.TEXT, ADVENTURE.SCM, and ADV-WORLD.SCM are the
+"traditional" adventure problem set. Here, message-passing means
+calling an object (represented as a procedure) with a message
+(represented as a symbol).
+
+2. OBJ-ADVENTURE.TXT, OBJ-ADVENTURE.SCM, and OBJ-ADVENTURE.MOD
+form a version which supports ASK, SELF, and a limited kind
+of inheritance.

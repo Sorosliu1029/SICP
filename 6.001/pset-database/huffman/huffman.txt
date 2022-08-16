@@ -1,0 +1,153 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+
+@comment(
+ From fall83:ps4.txt, edited by Julie to update exercise numbers to match book)
+
+
+@make(6001)
+@set(chapter=1)
+@set(page=1)
+
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001")
+
+@PageHeading(odd,
+             Left "Problem Set 4",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+
+Problem Set 4
+@end(center)
+@blankspace(0.25 in)
+
+@begin(format)
+Issued: 4 October 1983@>Due: 19 October 1983
+@end(format)
+
+@begin(flushleft)
+This is a two-week problem set.  There is no problem set due next
+week, because of the quiz.
+@end(flushleft)
+
+@paragraph(Quiz Notice)
+Quiz #1 will be held on on Thursday, 13 October 1983.  The quiz will
+be held in Walker Memorial Gymnasium (50-340) from 5-7PM xor 7-9PM.
+You may take the quiz during either one of these two periods, but
+students taking the quiz during the first period will not be allowed
+to leave the room until the end of the period.  The quiz is open book.
+It will cover material from the beginning of the semester through the
+material in problem set 3, and in the notes through section
+2.2.1. 
+
+@blankspace(0.25 in)
+
+@begin(format)
+Reading Assignment: Chapter 2, Sections 2.2.2 through 2.2.6 and Section 2.3
+
+Write up and turn in the following exercises from the text:
+
+@begin(itemize)
+Exercise 2.25: Deep-reverse
+
+Exercise 2.26: Fringe
+
+Exercise 2.27: Make-mobile
+
+Exercise 2.28: QUOTE practice
+
+Exercise 2.31: Differentiating exponentials
+@end(itemize)
+@end(format)
+
+@blankspace(0.25 in)
+
+@begin(center)
+@b[LABORATORY ASSIGNMENT: Huffman Encoding Trees]
+@end(center)
+
+The purpose of this assignment is to give you practice using list
+structure and data abstraction to manipulate sets and trees. The
+application is to a particular coding scheme known as @a[Huffman
+coding]. The assignment is based on Section 2.2.6 of the text. The
+problems are exercises from the end of that section.
+
+Install the code for Problem Set 4 using the @a[load-problem-set]
+operation. The file to be loaded contains, in addition to all the
+procedures described in Section 2.2.6 of the text, a sample tree and
+a sample message, defined by
+
+@begin(programexample)
+(define sample-tree
+  (make-code-tree (make-leaf 'A 4)
+	          (make-code-tree (make-leaf 'B 2)
+				  (make-code-tree (make-leaf 'D 1)
+						  (make-leaf 'C 1)))))
+
+(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+@end(programexample)
+
+You will not need to modify any of the procedures in this file. An
+empty "modifications file" will be installed on your disk to contain
+new procedures that you will be asked to write.
+
+@paragraph(Problem 1 -- Getting started)
+Do Exercise 2.39.
+
+@paragraph(Problem 2 -- Encoding messages)
+Do Exercise 2.40.
+
+@paragraph(Problem 3 -- Generating Huffman trees)
+Do Exercise 2.41.
+
+@paragraph(Problem 4 -- Using the encoding tree)
+
+Do Exercise 2.42.  Note that the lists @a[rock-pairs] and @a[song] are
+already defined in the problem set file.
+   
+@paragraph(Problem 5 -- Order analysis)
+Do Exercise 2.43.
+   
+@paragraph(Problem 6 -- Order analysis)
+Do Exercise 2.44.
+   

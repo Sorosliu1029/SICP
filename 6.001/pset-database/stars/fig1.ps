@@ -1,0 +1,178 @@
+%!postscript
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+%%Creator: Illustrate Version 13.3
+%%CreationDate: 9/07/89 21:22:06
+%%Pages: 1
+%%BoundingBox: 188.44725 359.46143 423.60944 432.56693
+%%EndComments
+1 setlinecap 1 setlinejoin
+72 2540 div dup scale
+6648 12681 translate
+
+
+%% PostScript Illustrate Graphics Support
+
+/linewidth1 26 def
+
+/fill-box
+  { /cy exch def /cx exch def
+    /halfwidth width 2 div def
+    /halfheight height 2 div def
+    newpath
+     cx halfwidth sub cy halfheight sub moveto
+     0 height rlineto
+     width 0 rlineto
+     0 height neg rlineto
+     closepath
+     fill } def
+
+/point
+  { brushtype circlebrush eq
+     { halfthickness newpath 0 360 arc fill }
+     { brushtype squarebrush eq
+        { /height brushthickness def
+	  /width brushthickness def
+	  fill-box }
+        { brushtype verticalbrush eq
+           { /height brushthickness def
+	     /width linewidth1 def
+	     fill-box }
+           { /height linewidth1 def
+	     /width brushthickness def
+	     fill-box }
+	   ifelse }
+        ifelse }
+     ifelse } def
+
+/circlebrush     1 def
+/squarebrush     2 def
+/verticalbrush   3 def
+/horizontalbrush 4 def
+
+/setbrushtype { /brushtype exch def } def
+
+/setbrushthickness
+  { dup /brushthickness exch def
+    dup 2 div /halfthickness exch def
+    setlinewidth } def
+
+/setbrush { setbrushthickness setbrushtype } def
+
+/simpleline { newpath moveto lineto stroke } def
+
+/complexline
+  { /y2 exch def /x2 exch def
+    /y1 exch def /x1 exch def
+    /halfwidth width 2 div def
+    /halfheight height 2 div def
+
+    % Make line go left to right.
+    x1 x2 gt { /x2 x1 /x1 x2 def def /y2 y1 /y1 y2 def def } if
+
+    y1 y2 gt
+     { % Line does down.
+       newpath
+        x1 halfwidth add y1 halfheight add moveto
+	x2 halfwidth add y2 halfheight add lineto
+	0 height neg rlineto
+        width neg 0 rlineto
+        x1 halfwidth sub y1 halfheight sub lineto
+        0 height rlineto
+        closepath
+	fill }
+     { % Line goes up.
+       newpath
+        x1 halfwidth sub y1 halfheight add moveto
+	x2 halfwidth sub y2 halfheight add lineto
+	width 0 rlineto
+	0 height neg rlineto
+	x1 halfwidth add y1 halfheight sub lineto
+	width neg 0 rlineto
+	closepath
+	fill }
+     ifelse } def
+
+/drawline
+  { brushthickness linewidth1 eq
+    % For thin lines ignore brushtype.
+    { simpleline }
+    { brushtype circlebrush eq
+       { % Draw a line in the circular brush.
+         simpleline }
+       { brushtype squarebrush eq
+          { % Draw a line in the square brush.
+            /width brushthickness def
+	    /height brushthickness def
+	    complexline }
+          { brushtype verticalbrush eq
+             { % Draw a line in the vertical brush.
+	       /width linewidth1 def
+	       /height brushthickness def
+	       complexline }
+             { % Draw a line in the horizontal brush.
+	       /width brushthickness def
+	       /height linewidth1 def
+	       complexline }
+             ifelse }
+          ifelse }
+       ifelse }
+    ifelse } def
+
+/to
+ { /save-y exch def
+   /save-x exch def
+   save-x save-y drawline
+   save-x save-y } def
+
+/triangle
+ { newpath moveto lineto lineto closepath fill } def
+
+circlebrush 26 setbrush
+8282 979 7012 979 to 8282 2566 to 8282 979 drawline
+345 345 345 1615 to 1932 345 to 345 345 drawline
+4155 344 2885 344 to 4155 1931 to 4155 344 drawline
+circlebrush 53 setbrush
+27 345 662 345 drawline
+345 663 345 28 drawline
+3837 345 4472 345 drawline
+4155 663 4155 28 drawline
+circlebrush 26 setbrush
+4155 980 4176 982 to 4197 983 to 4218 983 to 4239 982 to 4260 981 to 4281 979 to 4301 976 to 4322 973 to 4343 969 to 4363 964 to 4383 958 to 4403 951 to 4423 944 to 4442 936 to 4461 928 to 4480 918 to 4499 908 to 4517 898 to 4534 886 to 4552 874 to 4568 862 to 4585 849 to 4601 835 to 4616 821 to 4631 806 to 4645 791 to 4659 775 to 4672 758 to 4684 742 to 4696 724 to 4708 707 to 4718 689 to 4728 670 to 4738 651 to 4746 632 to 4754 613 to 4761 593 to 4768 573 to 4774 553 to 4779 533 to 4783 512 to 4786 491 to 4789 471 to 4791 450 to 4792 429 to 4793 408 to 4793 387 to 4792 366 to 4790 345 drawline
+4391 1029 4335 821 4155 980 triangle
+circlebrush 53 setbrush
+6694 345 7329 345 drawline
+7012 663 7012 28 drawline
+circlebrush 26 setbrush
+7012 345 8282 980 drawline
+8114 686 7946 938 8282 980 triangle
+showpage

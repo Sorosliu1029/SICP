@@ -1,0 +1,871 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+% 6.001 Fall 1989, PS 4
+% Nikhil, Sept 20, 1989; finalized: Sept 28, 1989
+% Note: After \end{document}, there are suggestions for future variations.
+
+\input 6001mac
+
+\begin{document}
+
+\psetheader{Fall Semester, 1989}{Problem Set 4}
+
+\medskip
+
+\begin{flushleft}
+Issued:  October 3, 1989 \\
+\smallskip
+ Due: Friday, October 13, 1989 (all sections).  Note: this is an
+exception to the usual rule of Wednesday due dates because of the
+Columbus day long weekend.
+
+\end{flushleft}
+
+\noindent
+Reading: 
+\begin{tightlist}
+
+\item Text: Sections 2.2, 3.4 and 3.4.1.
+
+Note: Sections 3.4 and 3.4.1 are explained in terms of streams.  For this
+assignment, you can treat ``streams'' as identical to ``lists''.
+
+\item A listing of the code for this problem set is attached.
+You may load it with the usual Edwin commands.
+
+\end{tightlist}
+
+% ----------------------------------------------------------------
+\mbox{}\hrulefill\mbox{}
+
+\begin{center}
+{\bf Quiz I Reminder}
+\end{center}
+
+{\em Logistics\/}:  Quiz I is on Thursday, October 19, in 50-340 (Walker
+Memorial Gymnasium), from 5-7 PM xor 7-9 PM.  You may take the quiz during
+either of the two sessions, but students taking it in the first session must
+stay until 7 PM.  The quiz is open book.
+
+{\em Coverage\/}: The quiz covers everything up to and including
+Friday, October 6 (symbols and quotation).
+
+{\em Late-breaking story\/}:  Intelligence services report that there is
+likely to be a major leak at the lecture on Thursday, October 12.  A
+clandestine handbill having ``sympathetic vibrations'' with the quiz is
+likely to be circulated.  Don't miss it!
+
+\mbox{}\hrulefill\mbox{}
+% ----------------------------------------------------------------
+
+\vspace{1cm}
+
+\section{Part 1: Homework Exercises}
+
+Do the following exercises before you come to the lab.  They provide practice
+with list structure and introduce ideas that you will need in order to work
+on lab programs.
+
+
+\paragraph{Exercise 1:}
+
+Finger exercises.  Suppose we define {\tt a } and {\tt b} as follows:
+ \beginlisp
+(define a (cons 1 2))
+(define b (list 3 4 5))
+ \endlisp
+What is the response of the interpreter to each of the following:
+\beginlisp
+{\it (a)\/}    (cons a b)
+{\it (b)\/}    (append a b)
+{\it (c)\/}    (append b a)
+{\it (d)\/}    (list a b)
+\endlisp
+
+\paragraph{Exercise 2:}
+
+Suppose we define {\tt a b c} and {\tt d} to have the values {\tt 4 3 2} and
+{\tt 1} respectively.  What is the response of the interpreter to each of the
+following?
+ \beginlisp
+{\it (a)\/}    (list a 'b c 'd)
+{\it (b)\/}    (list (list a) (list b))
+{\it (c)\/}    (cons (list d) 'b)
+{\it (d)\/}    (cadr '((a b) (c d) (a d) (b c)))
+{\it (e)\/}    (cdr '(a))
+{\it (f)\/}    (atom? (caddr '(Welcome to MIT)))
+{\it (g)\/}    (memq 'sleep '(where getting enough sleep))
+{\it (h)\/}    (memq 'time '((requires good) (management of time)))
+ \endlisp
+
+
+\paragraph{Exercise 3:}
+
+Do exercise 2.29 on page 103 of the text.
+
+\paragraph{Exercise 4:}
+
+The procedure {\tt member} is similar to {\tt memq} (see the text, page 102),
+except that it uses {\tt equal?} rather than {\tt eq?} to compare the item
+against each element of the list.  What is the result of evaluating each of
+the following expressions?
+ \beginlisp
+{\it (a)\/}    (member '(great fun) '(spelunking is great fun))
+{\it (b)\/}    (member '(great fun) '((spelunking is) (great fun) (so they say)))
+{\it (c)\/}    (member '(great fun) '((spelunking is) ((great fun) (so they say))))
+ \endlisp
+
+\paragraph{Exercise 5:}
+
+The procedure {\tt flatten2} takes a list of lists (also called a 2-level list)
+and flattens out the top-level.  For example,
+ \beginlisp
+(flatten2 '((1 2) (3) (4 (5) 6))) $\Rightarrow$ (1 2 3 4 (5) 6)
+ \endlisp
+ Give a definition for {\tt flatten2}.
+
+\paragraph{Exercise 6:}
+
+The function {\tt accumulate} is a higher-order function that takes a binary
+combining operator {\tt f}, an ``initial'' element {\tt z} and a list
+\mbox{\tt ($x_1$ ... $x_n$)}, and produces a result equivalent to:
+ \beginlisp
+(f $x_1$ (f $x_2$ (f ... (f $x_n$ z))))
+ \endlisp
+This is how it does it:
+ \beginlisp
+(define accumulate
+  (lambda (f z l)
+    (if (null? l)
+        z
+        (f (car l) (accumulate f z (cdr l))))))
+ \endlisp
+ Now, consider:
+ \beginlisp
+(define flatten2
+  (lambda (lst)
+     (accumulate $f?$ $z?$ $l?$)))
+ \endlisp
+ What should the arguments $f?$, $z?$ and $l?$ be?
+
+% ----------------------------------------------------------------
+
+\section{Part 2: Background for programming assignment: The All-Nighter
+Sweepstakes}
+
+(Just read this part in preparation for Part 3; there is nothing to be handed
+in.)
+
+It is barely three weeks into the season and already it is becoming extremely
+difficult to keep track of the relative standings of the contestants in the
+Fall 1989 PANA\footnote{
+ Professional All-Nighters Association.
+ }
+ Tour.  We decide that before things get completely out of control, we're
+going to build a database system to organize all the results.  A popular way
+to structure databases these days is to use the {\em Relational Model\/},
+where a database is represented as a collection of relations, or {\em
+tables\/}.
+
+The Tour consists of a series of events.  For each event, the contestant who
+spent the most consecutive hours in last-minute work is declared
+Zombie.\footnote{
+ We hasten to add that this is a dubious distinction.   Zombie-hood is not to
+be confused with quality performance in an event.
+ }
+ We also record the runners-up and the number of consecutive last-minute
+hours they spent on it. All this is shown in the {\tt EVENTS} table:
+ \beginlisp
+EVENT                            ZOMBIE     HOURS  RUNNER-UP  RU-HOURS
+-----                            ------     -----  ---------  --------
+6.001-PS2-Pro-Am                 Ben        9      Alyssa     6
+6.004-Lab-6-Invitational         Lem-E      10     Alyssa     9
+French-IV-Open                   Cy-D       8      Alonzo     6
+18.06-HW3-All-Stars              Alonzo     11     Eva-Lu     8
+6.035-Masters                    Louis      19     Cy-D       15
+Tour-de-6.170                    Alyssa     25     Lem-E      22
+German-III-Weltmeisterschaft     Eva-Lu     12     Lem-E      10
+6.003-Coupe-le-Monde             Alyssa     14     Ben        11
+End-of-Term-Grand-Slam           Alyssa     30     Louis      25
+ \endlisp
+ Here is the {\tt ATHLETES} table:
+ \beginlisp
+NAME       SPONSOR                    LAST-YEAR-PANA-RANKING
+----       -------                    ----------------------
+Ben        Mocha-Java-of-Mexico       2
+Alyssa     Juan-Valdez-of-Colombia    3
+Lem-E      Santos-of-Guatemala        7
+Louis      Yrgacheffe-of-Ethiopia     6
+Alonzo     Celibe-de-Haiti            4
+Eva-Lu     11-7                       1
+Cy-D       Juan-Valdez-of-Colombia    5
+ \endlisp
+
+To query the database, we use operations of the {\em Relational Algebra\/},
+each of which is a function from tables to tables.  There are three main
+operators, {\tt project}, {\tt select} and {\tt join}.
+
+The {\tt project} operator takes ``vertical slices'' of a table.
+
+{\bf Example Query Q1}: ``List all events, their zombies and runners-up''. 
+Formally, we'd say:
+ \beginlisp
+(project '(event zombie runner-up)
+         EVENTS)
+ \endlisp
+ which produces the table:
+ \beginlisp
+EVENT                              ZOMBIE    RUNNER-UP
+-----                              ------    ---------
+6.001-PS4-Pro-Am                   Ben       Alyssa
+6.002-Lab-6-Invitational           Lem-E     Alyssa
+French-IV-Open                     Cy-D      Alonzo
+18.06-HW3-All-Stars                Alonzo    Eva-Lu
+6.035-Masters                      Louis     Cy-D
+Tour-de-6.170                      Alyssa    Lem-E
+German-III-Weltmeisterschaft       Eva-Lu    Lem-E
+6.003-Coupe-le-Monde               Alyssa    Ben
+End-of-term-Grand-Slam             Alyssa    Louis
+ \endlisp
+ In general, the {\tt project} operator takes a list of column names and a
+table T, and produces a new table with just those columns from T.
+
+The {\tt select} operator takes ``horizontal slices'' of a table.
+
+{\bf Example Q2}: ``List all athletes sponsored by Juan Valdez''.  Formally,
+we'd say:
+ \beginlisp
+(select '(eq? sponsor 'Juan-Valdez-of-Colombia)
+        ATHLETES)
+ \endlisp
+ which produces the table:
+ \beginlisp
+NAME       SPONSOR                    LAST-YEAR-PANA-RANKING
+----       -------                    ----------------------
+Alyssa     Juan-Valdez-of-Colombia    3
+Cy-D       Juan-Valdez-of-Colombia    5
+ \endlisp
+ In general, the {\tt select} operator takes a predicate and a table T, and
+produces a new table with the same columns, but with only those rows of T
+that satisfy the predicate.
+
+Of course, since the result of a relational operator is itself a table, we
+can compose relational expressions.
+
+{\bf Example Q3}: ``List events and zombies who won by 3 hours exactly''.
+ \beginlisp
+(project '(event zombie)
+    (select '(= hours (+ ru-hours 3))
+        EVENTS))
+ \endlisp
+producing the table:
+ \beginlisp
+EVENT                            ZOMBIE
+-----                            ------
+6.001-ps2-Pro-Am                 Ben
+18.06-HW3-All-Stars              Alonzo
+Tour-de-6.170                    Alyssa
+6.003-Coupe-le-Monde             Alyssa
+ \endlisp
+
+Both {\tt select} and {\tt project} operate only on a single table.  The {\tt
+join} operator, on the other hand, takes two tables T1 and T2 and produces a
+new table each of whose rows is a concatenation of a row from T1 and a row
+from T2.  We illustrate it with a very small example.  Let T1 be
+ \beginlisp
+PERSON  WATCHES
+------  -------
+Louis   Gong-Show
+Lem-E   This-Old-House
+ \endlisp
+and let T2 be:
+ \beginlisp
+SHOW            CHANNEL
+----            -------
+Gong-Show       4
+This-Old-House  2
+ \endlisp
+ Then, {\tt (join T1 T2)} will produce this table:
+ \beginlisp
+PERSON  WATCHES            SHOW            CHANNEL
+------  -------            ----            -------
+Louis   Gong-Show          Gong-Show       4
+Louis   Gong-Show          This-Old-House  2
+Lem-E   This-Old-House     Gong-Show       4
+Lem-E   This-Old-House     This-Old-House  2
+ \endlisp
+ Now we can see why we didn't attempt to show the result of joining the {\tt
+EVENTS} and {\tt ATHLETES} tables--- the total number of rows would be quite
+large (Question to ponder: how many rows would there be?).
+
+Using the three relational operators {\tt project}, {\tt select} and {\tt
+join}, we can express quite complex and interesting queries on the database.
+
+{\bf Example Q4}: ``List the events where the zombies were sponsored by
+Juan Valdez'':
+ \beginlisp
+(project '(event)
+         (select '(eq? sponsor 'Juan-Valdez-of-Colombia)   ;;; (1)
+                 (select '(eq? zombie name)                ;;; (2)
+                         (join EVENTS ATHLETES))))
+ \endlisp
+ The {\tt join} operator pairs every event with every athlete.  The {\tt
+select} operator (2) retains only those rows where the event zombie is the
+same as the concatenated athlete.  The {\tt select} operator (1) retains only
+those rows where the sponsor is Juan Valdez.  Finally, the {\tt project}
+operator gets rid of all the extra columns, keeping only the event names.
+Thus, the result is the (1-column) table:
+ \beginlisp
+EVENT
+-----
+French-IV-Open
+Tour-de-6.170
+6.003-Coupe-le-mond
+End-of-term-Grand-Slam
+ \endlisp
+
+Most algebras have {\em laws\/} expressing equivalences between expressions.
+For example, in ordinary algebra, we are familar with the following law
+(called {\em distributivity\/}): 
+ \beginlisp
+$a \cdot b + a \cdot c = a \cdot (b + c)$
+ \endlisp
+Similarly, relational algebra also has laws.  One such law is:
+ \beginlisp
+(select $p_1$ (select $p_2$ $R$))  $=$  (select (and $p_1$ $p_2$) $R$)
+ \endlisp
+ Using this law, we can re-express Q4 as follows:
+
+{\bf Example Q5}:
+ \beginlisp
+(project '(event)
+         (select '(and (eq? sponsor 'Juan-Valdez-of-Colombia)
+                       (eq? zombie name))
+                 (join EVENTS ATHLETES)))
+ \endlisp
+
+Another law is:
+ \beginlisp
+(select $p$ (join $R_1$ $R_2$))  $=$  (join $R_1$ (select $p$ $R_2$))
+ \endlisp
+ whenever $p$ refers only to columns in $R2$.  Using this law, we can again
+re-express Q4 as follows:
+
+{\bf Example Q6}:
+ \beginlisp
+(project '(event)
+         (select '(eq? zombie name)
+                 (join EVENTS
+                       (select '(eq? sponsor 'Juan-Valdez-of-Colombia)
+                                ATHLETES))))
+ \endlisp
+ This is a significant optimization, because the number of rows going
+into the {\cf join} operator has been drastically reduced.
+
+{\bf Example Q7}: ``Which zombies with PANA ranking less than 3 spent more
+than 10 hours non-stop, and for which events?'': 
+ \beginlisp
+(project '(zombie event)
+         (select '(> hours 10)
+                 (select '(eq? zombie name)
+                         (select '(< last-year-pana-ranking 3)
+                                 (join EVENTS
+                                       ATHLETES)))))
+ \endlisp
+
+% ----------------------------------------------------------------
+
+\section{Part 3: To do in lab}
+
+We are now going to develop implementations of the relational operators
+presented in Part 2.  Load the problem set into your editor buffer, and
+peruse it.  It contains:
+
+\begin{tightlist}
+
+\item Some definitions to be evaluated immediately, including the {\tt
+EVENTS} and {\tt ATHLETES} tables;
+
+\item Some incomplete definitions corresponding to the problems below, and
+
+\item The example queries Q1 through Q7 for testing.
+
+\end{tightlist}
+
+The following problems involve filling in the missing parts of the
+definitions, and testing your code.  As always, you should include printed
+transcripts of your Scheme interactions which test the code.
+
+\paragraph{Problem 1}
+
+The constructor for tables is defined as:
+\beginlisp
+(define (make-table col-names rows)
+  (cons col-names rows))
+\endlisp
+ where {\tt col-names} is a list of symbols representing column names, and
+{\tt rows} is a list of rows, where each row is itself a list of data.  For
+example, this is how we construct the {\tt EVENTS} table:
+ \beginlisp
+(define EVENTS
+  (make-table
+    '(EVENT                            ZOMBIE     HOURS  RUNNER-UP  RU-HOURS)
+    '((6.001-PS2-Pro-Am                 Ben        9      Alyssa     6)
+      ...
+      (End-of-Term-Grand-Slam           Alyssa     30     Louis      25))))
+\endlisp
+ Define the corresponding selectors {\tt col-names-of} and {\tt rows-of}.
+Apply it to {\tt ATHLETES} to see that it works.
+
+\paragraph{Problem 2}
+
+The following function:
+\beginlisp
+(define lookup
+  (lambda (col col-names row)
+    ...))
+\endlisp
+ takes a symbol ({\tt col}), a list of column-names ({\tt col-names}) and a list
+of corresponding data ({\tt row}), and returns the datum from row
+corresponding to {\tt col}.  For example:
+\beginlisp
+(lookup 'zombie
+        '(event             zombie  hours  runner-up  ru-hours)
+        '(6.001-PS4-Pro-Am  Ben     26     Alyssa     22      ))
+\endlisp
+will return the symbol {\tt Ben}.  The pair of lists {\tt col-names} and {\tt
+rows} is also called an {\em environment\/}, i.e.,  an association of names
+and values.
+
+Complete the definition of {\tt lookup}, and run it on a few examples to
+show that it works.
+
+\paragraph{Problem 3}
+
+The function {\tt map} (also called {\tt mapcar}), which applies a procedure
+to every member of a list and returns all the results in a new list, was
+introduced in class:
+ \beginlisp
+(define map
+  (lambda (proc lst)
+    (if (null? lst)                    ; if lst is empty
+        '()                            ; then return an empty list
+        (cons (proc (car lst))         ; otherwise apply proc to first element 
+              (map proc (cdr lst)))))) ; and attach it to front of list
+                                       ; obtained by processing rest of list
+\endlisp
+ Use it, along with the {\tt lookup} function, to complete the definition of:
+ \beginlisp
+(define project-row
+  (lambda (cols col-names row)
+    ... ))
+ \endlisp
+ Here, {\tt cols} is a list of symbols, and {\tt col-names} and {\tt row}
+form an environment, as in Problem 2.  It returns a list of data
+corresponding to the columns named by {\tt cols}. For example:
+ \beginlisp
+(project-row '(event zombie)
+             '(event             zombie  hours  runner-up  ru-hours)
+             '(6.001-PS4-Pro-Am  Ben     26     Alyssa     22      ))
+
+ \endlisp
+ should produce the list:
+ \beginlisp
+(6.001-PS4-Pro-Am Ben)
+ \endlisp
+
+\paragraph{Problem 4}
+
+Use {\tt map} and {\tt project-row} to complete the definition of:
+ \beginlisp
+(define project
+  (lambda (cols table)
+    ... ))
+ \endlisp
+ Run query Q1, and another query of your own invention to demonstrate that it
+works correctly.
+Be sure also to explain your query in English, as we did in the examples.
+
+\paragraph{Problem 5}
+
+In order to implement the {\tt select} operator, we need to be able to
+evaluate a predicate on each row of a table.  Let us start with a function
+that evaluates a predicate on a single row, i.e., we will use it as follows:
+ \beginlisp
+(evaluate '(< hours 10)
+          col-names
+          row)
+ \endlisp
+ i.e., we will evaluate the predicate \mbox{\tt (< hours 10)} in the
+environment specified by {\tt col-names} and {\tt row}.
+
+A predicate is an expression that is either atomic or not.  If not atomic,
+it is the application of an operator to one or more other expressions.  If it
+is atomic, then it is either a symbol (in which case it represents a datum in
+{\tt row}) or it is a number (in which case it represents itself).  Here
+are some examples of expressions:
+ \beginlisp
+23
+(+ ru-hours 10)
+(< hours (+ ru-hours 10))
+(quote Alyssa)
+(eq? zombie (quote Alyssa))
+ \endlisp
+ Here are some useful abstractions to extract the operator and arguments of an expression:
+ \beginlisp
+(define op-of   (lambda (e) (car e)))
+(define arg1-of (lambda (e) (cadr e)))
+(define arg2-of (lambda (e) (caddr e)))
+ \endlisp
+ We assume that no operator takes more than two arguments, i.e., for our
+relational language, unlike Scheme, operators like {\tt +}, {\tt and}, etc.,
+take exactly two arguments.
+
+ Here is the skeleton of the {\tt evaluate} function:
+ \beginlisp
+(define evaluate
+  (lambda (expr col-names row)
+    (cond
+      ((symbol? expr)      (lookup expr col-names row))
+      ((number? expr)      expr)
+      ((eq? (op-of expr) '=) (= (evaluate (arg1-of expr) col-names row )
+                                (evaluate (arg2-of expr) col-names row)))
+      ((eq? (op-of expr) '<) (< (evaluate (arg1-of expr) col-names row )
+                                (evaluate (arg2-of expr) col-names row)))
+\null
+      ... {\it and so on for other operators\/} ...
+\null
+      (else (error "EVALUATE: expression not well-formed" expr))
+    )))
+ \endlisp
+ Fill in the clauses of the conditional for the operators {\tt quote}, {\tt
+>}, {\tt eq?}, {\tt +}, {\tt and}, {\tt or}, and {\tt not}.
+Feel free to include more operators if you wish.
+
+Test your function {\tt evaluate} using the column names and first row of the
+{\tt events} table, and several possible predicate expressions.
+
+\paragraph{Problem 6}
+
+The function {\tt filter}, which applies a predicate to every element of a
+list, returning a new list containing only those elements that satisfy the
+predicate, was introduced in class:
+ \beginlisp
+(define filter
+  (lambda (pred lst)
+    (cond
+      ((null? lst)      '())                  ; if lst empty, return empty list
+      ((pred (car lst))                       ; if car satisfies pred,
+           (cons (car lst)                    ;    include it
+                 (filter pred (cdr lst))))    ;            with  remainder
+      (else                                   ; otherwise
+           (filter pred (cdr lst))))))        ;    discard car, do remainder
+ \endlisp
+
+Using {\tt filter} and {\tt evaluate}, complete the following definition:
+ \beginlisp
+(define select
+  (lambda (pred table)
+    ...))
+ \endlisp
+ Run queries Q2 and Q3 and two more queries of your own invention to
+demonstrate that it works correctly.
+Be sure also to explain your query in English, as we did in the examples.
+
+\paragraph{Problem 7}
+
+Here is a function that computes the cross-product of two lists:
+ \beginlisp
+(define cross-product
+    (lambda (x-list y-list)
+        (flatten2 (map (lambda (x)
+                           (map (lambda (y) (list x y))
+                                y-list))
+                       x-list))))
+ \endlisp
+{\it (a)\/} What is the result of the following application?
+ \beginlisp
+(cross-product '(1 2) '(A B C))
+ \endlisp
+{\it (b)\/} If the input lists for {\tt cross-product} have $m$ and $n$ elements in
+them, respectively, how long is the output list?
+
+{\it (c)\/} Using {\tt map}, {\tt flatten2} and {\tt cross-product}, complete the
+definition for the {\tt join} relational operator:
+ \beginlisp
+(define join
+  (lambda (table-1 table-2)
+    (let  ((N1 (col-names-of table-1))
+           (N2 (col-names-of table-2))
+           (R1 (rows-of table-1))
+           (R2 (rows-of table-2)))
+      (make-table
+        ...
+        ... ))))
+ \endlisp
+{\it (d)\/} Run queries Q4, Q5, Q6, Q7 and one more query of your own invention to
+demonstrate that it works.  Be sure also to explain your query in English, as
+we did in the examples.
+
+\paragraph{Problem 8}
+
+Q6 was a significant optimization of Q4.  Perform the same optimization on Q7
+and run it again.
+
+\paragraph{Problem 9}
+
+Since a {\tt join} produces all pairings of the rows of its input tables,
+most rows in the output are meaningless.  Thus, every time we do a {\tt
+join}, we immediately use {\tt select} to keep only those rows where some
+pair of fields are equal.  Let us define a new relational operator {\tt
+equi-join} that makes this more convenient.  For example,
+ \beginlisp
+(equi-join 'zombie 'name EVENTS ATHLETES)
+ \endlisp
+should produce the same result as:
+ \beginlisp
+(select '(eq? zombie name)
+    (join EVENTS ATHLETES))
+ \endlisp
+ Give a definition for {\tt equi-join} (Note: there are many ways of doing
+this, with varying levels of efficiency.  Any solution will do, but you are
+welcome to try to make it efficient.)  Re-express Q4 using {\tt equi-join},
+and run it again.
+
+\newpage
+
+\section{Listing of file to be loaded}
+
+ \beginlisp
+;;; Code for 6.001 Fall 1989, PS 4
+;;; Evaluate immediately everything up to the line of asterisks.
+;;; Below that line are
+;;;   - incomplete fragments to be filled out as part of the PS, and
+;;;   - example queries for testing.
+\null
+(define make-table
+    (lambda (col-names rows)
+      (cons col-names rows)))
+\null
+(define EVENTS
+  (make-table
+    '(EVENT                            ZOMBIE     HOURS  RUNNER-UP  RU-HOURS)
+    '((6.001-PS2-Pro-Am                 Ben        9      Alyssa     6)
+      (6.004-Lab-6-Invitational         Lem-E      10     Alyssa     9)
+      (French-IV-Open                   Cy-D       8      Alonzo     6)
+      (18.06-HW3-All-Stars              Alonzo     11     Eva-Lu     8)
+      (6.035-Masters                    Louis      19     Cy-D       15)
+      (Tour-de-6.170                    Alyssa     25     Lem-E      22)
+      (German-III-Weltmeisterschaft     Eva-Lu     12     Lem-E      10)
+      (6.003-Coupe-le-Monde             Alyssa     14     Ben        11)
+      (End-of-Term-Grand-Slam           Alyssa     30     Louis      25))))
+\null
+(define ATHLETES
+  (make-table
+    '(NAME       SPONSOR                    LAST-YEAR-PANA-RANKING)
+    '((Ben        Mocha-Java-of-Mexico       2)
+      (Alyssa     Juan-Valdez-of-Colombia    3)
+      (Lem-E      Santos-of-Guatemala        7)
+      (Louis      Yrgacheffe-of-Ethiopia     6)
+      (Alonzo     Celibe-de-Haiti            4)
+      (Eva-Lu     11-7                       1)
+      (Cy-D       Juan-Valdez-of-Colombia    5))))
+\null
+(define map
+  (lambda (proc lst)
+    (if (null? lst)                    ; if lst is empty
+        '()                            ; then return an empty list
+        (cons (proc (car lst))         ; otherwise apply proc to first element 
+              (map proc (cdr lst)))))) ; and attach it to front of list
+                                       ; obtained by processing rest of list
+\null
+(define filter
+  (lambda (pred lst)
+    (cond
+      ((null? lst)      '())                  ; if lst empty, return empty list
+      ((pred (car lst))                       ; if car satisfies pred,
+           (cons (car lst)                    ;    include it
+                 (filter pred (cdr lst))))    ;            with  remainder
+      (else                                   ; otherwise
+           (filter pred (cdr lst))))))        ;    discard car, do remainder
+\null
+(define cross-product
+    (lambda (x-list y-list)
+        (flatten2 (map (lambda (x)
+                           (map (lambda (y) (list x y))
+                                y-list))
+                       x-list))))
+\null
+(define op-of   (lambda (e) (car e)))
+(define arg1-of (lambda (e) (cadr e)))
+(define arg2-of (lambda (e) (caddr e)))
+\null
+;;; ****************************************************************
+;;; Incomplete fragments to be filled out as part of the PS.
+\null
+(define lookup
+  (lambda (col col-names row)
+    'TO-BE-COMPLETED    ))
+\null
+(define project-row
+  (lambda (cols col-names row)
+    'TO-BE-COMPLETED    ))
+\null
+(define project
+  (lambda (cols table)
+    'TO-BE-COMPLETED    ))
+\null
+(define evaluate
+  (lambda (expr col-names row)
+    (cond
+      ((symbol? expr)      (lookup expr col-names row))
+      ((number? expr)      expr)
+      ((eq? (op-of expr) '=) (= (evaluate (arg1-of expr) col-names row )
+                                (evaluate (arg2-of expr) col-names row)))
+      ((eq? (op-of expr) '<) (< (evaluate (arg1-of expr) col-names row )
+                                (evaluate (arg2-of expr) col-names row)))
+\null
+;;;   ...  and so on for other operators ...
+;;;        TO BE COMPLETED
+\null
+      (else (error "EVALUATE: expression not well-formed" expr))
+    )))
+\null
+(define select
+  (lambda (pred table)
+    'TO-BE-COMPLETED   ))
+\null
+(define join
+  (lambda (table-1 table-2)
+    (let  ((N1 (col-names-of table-1))
+           (N2 (col-names-of table-2))
+           (R1 (rows-of table-1))
+           (R2 (rows-of table-2)))
+      (make-table
+        'TO-BE-COMPLETED   
+        'TO-BE-COMPLETED    ))))
+\null
+;;; ----------------------------------------------------------------
+;;; Example queries for testing.
+;;;
+(define Q1 (lambda ()
+    (project '(event zombie runner-up)
+             EVENTS)))
+\null
+(define Q2 (lambda ()
+    (select '(eq? sponsor 'Juan-Valdez-of-Colombia)
+             ATHLETES)))
+\null
+(define Q3 (lambda ()
+    (project '(event zombie)
+        (select '(= hours (+ ru-hours 3))
+            EVENTS))))
+\null
+(define Q4 (lambda ()
+    (project '(event)
+             (select '(eq? sponsor 'Juan-Valdez-of-Colombia)   ;;; (1)
+                     (select '(eq? zombie name)                ;;; (2)
+                             (join EVENTS ATHLETES))))))
+\null
+(define Q5 (lambda ()
+    (project '(event)
+             (select '(and (eq? sponsor 'Juan-Valdez-of-Colombia)
+                           (eq? zombie name))
+                     (join EVENTS ATHLETES)))))
+\null
+(define Q6 (lambda ()
+    (project '(event)
+             (select '(eq? zombie name)
+                     (join EVENTS
+                           (select '(eq? sponsor 'Juan-Valdez-of-Colombia)
+                                    ATHLETES))))))
+\null
+(define Q7 (lambda ()
+    (project '(zombie event)
+             (select '(> hours 10)
+                     (select '(eq? zombie name)
+                             (select '(< last-year-pana-ranking 3)
+                                     (join EVENTS
+                                           ATHLETES)))))))
+\null
+;;; ----------------------------------------------------------------
+ \endlisp
+
+\end{document}
+
+% ----------------------------------------------------------------
+
+Ideas for future variations on this problem set:
+Nikhil, September 19, 1989.
+
+*** Optimization of Join for fewer conses.  First, prove the following facts:
+
+    (flatten2 (map f xs)) = (accumulate g nil xs)
+    where (g x L) = (append (f x) L)
+and
+    (append (map g ys) M) = (accumulate h M ys)
+    where (h y L) = (cons (g y) L)
+
+Using these two laws, derive a version of cross-product that is optimal,
+i.e., it does exactly one cons for each pair in the output.
+
+*** Generalization of {\tt evaluate} so that it accepts the entire relational
+algebra, \ie\ include PROJECT, JOIN and SELECT as operators just like +.
+
+*** Optimization of queries using relational algebra (assuming previous
+generalization done).  Instead of directly evaluating a given expression,
+first optimize it.  Main theme: reduce the size of tables entering a JOIN.
+Therefore, push SELECTs and PROJECTs across JOINS, as far as possible.
+
+*** Optimization of EQUI-JOIN.  Sort the input tables according to the
+columns of the EQUI-JOIN, then do a merge.
+
+*** Accumulations over tables.  Find sums, averages, counts of columns of
+a table.
+
+*** A table can be joined with itself.  E.g. ``list all events whose zombies
+were runners up in other events''. Here, we join EVENTS with EVENTS, and
+select rows such that the zombie of one = runner up of the other.  But there
+is a naming problem here, since the column names get duplicated and there is
+no way to access the columns that came from the second table.  So, we need
+to first RENAME one of the instances of the tables.
+
+    (define rename (lambda (new-names table) 'TO-BE-COMPLETED    )
+
+*** Transitive closure.  A table such as:
+        PERSON ... other columns ... CHILD-OF
+
+can be joined with itself to find grand-parents, great-grandparents, etc.
+and, in general, the transitive closure. Needs the RENAME function suggested
+earlier.
+
+% ----------------------------------------------------------------

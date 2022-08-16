@@ -1,0 +1,730 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+% for yTeX
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1987}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1987}
+\rectorightheader={Problem Set 1}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 1}
+
+\vskip 0.25truein
+
+\vpar
+Issued:  September 10, 1987
+
+
+\vpar
+Due: in recitation on September 18, 1987 {\it for all sections}
+
+\vpar
+Reading: From text, Chapter 1, section 1.1.
+
+Problem sets should always be handed in at recitation.  Late work will
+not be accepted.
+%  As explained in the Course Organization handout, we
+%are staggering the due-dates for problem sets, so as to
+%minimize crowding in the lab.  The Wednesday/Friday due dates will be
+%reversed during the second half of the semester to assure equitable
+%treatment of students in both morning and afternoon recitations.
+Specific due dates will be announced as each problem set is handed
+out.
+
+Before you can begin work on this assignment, you will need to buy
+a copy of the textbook and to pick up
+the manual package.  To obtain the manual package, take the coupon
+attached to the ``Red Tape'' handout, and follow the instructions
+given in the handout marked ``6.001: Course Organization.''
+
+\chapter{1. Homework exercises}
+
+Write up and turn in the following exercises:
+
+\beginbullets
+
+\bpar Exercise 1.  Evaluation of expressions.
+
+\ftpar{\hskip \parindent}
+Below is a sequence of expressions.  What is the result printed by the 
+interpreter in response to each expression?  Assume that the sequence is to be
+evaluated in the order in which it is presented.  You should be able to do this
+without the help of a Chipmunk.
+
+\beginlisp
+
+==> 7
+\pbrk
+==> (+ 4 2 5)
+\pbrk
+==> (/ 10 2)
+\pbrk
+==> (define foo 6)
+\pbrk
+==> foo
+\pbrk
+==> (define bar (+ 12 foo))
+\pbrk
+==> (+ foo (* bar foo))
+\pbrk
+==> (< bar foo)
+\pbrk
+==> (if (= (/ bar 3) foo)
+        (- bar foo)
+        0)
+\pbrk
+==> (cond ((>= foo 7) bar)
+          ((= bar (+ foo 10)) 0)
+          (else (abs (- foo bar))))
+\endlisp
+
+\bpar Exercise 2.
+
+\ftpar{\hskip \parindent}
+In exercise 1.3 in the textbook, Ben Bitdiddle devised a way of
+testing whether an interpreter uses applicative or normal order of evaluation.
+In fact, when Ben evaluates the expression (test 0 (p)), an applicative 
+evaluation would put the interpreter into an infinite loop, whereas a normal
+evaluation would let the interpreter return 0.  (If you agree with us, then you
+have understood the difference between these 2 kinds of evaluations.)  In this
+exercise, we would like you to design another method for such kind of test -- 
+namely, write a little procedure which, when run with certain arguments, would
+behave differently on applicative and normal order of evaluation.  Your answer
+must include the procedure, the expression you typed in to run the procedure,
+and a brief explanation of how it works.
+
+\bpar
+Exercise 3 -- do exercise 1.2 in the textbook
+
+\bpar
+Exercise 4 -- do exercise 1.8 in the textbook
+
+\chapter{2. Programming Assignment: Graphing Cardioids and Nephroids}
+
+A substantial part of each problem set consists of a laboratory assignment that
+should be done with the aid of the 6.001 computing facility.  Performance on 
+problem sets, and laboratories in particular, is a major factor in determing
+grades for 6.001.  Remember that the laboratory room tends to get very crowded
+on the night before assignments are due, so it will be to your advantage to
+complete your computer work early.
+
+The laboratory assignments have been planned 
+on the assumption that the required reading has been done before you
+come to the laboratory.   You should also read over and think about the
+laboratory assignment  before you sit down in front of a Chipmunk.   It
+is generally much more efficient to use a Chipmunk to test, debug, and
+run a program you have planned before coming into lab than to try to do
+the planning ``online''.  Students who have taken the subject in
+previous  terms report that failing to prepare ahead for laboratory
+assignments generally ensures the assignments take much longer than
+necessary.   
+
+Before coming to the laboratory room for the first time, you should read
+the "Chipmunk Manual" and you should bring it with you to use for
+reference.  You should also glance  through the "Scheme Manual," but
+almost all the information you will need about the Scheme language
+itself has been included in the text. 
+
+Each time you begin using one of the Chipmunk computers, you must insert a 
+floppy disk in the drive.  Each disk is identified by a name, which is chosen
+by you at the time you initialize the disk.  If you place an uninitialized disk
+in the drive, the system will offer to initialize it for you.  Before beginning
+work on the first assignment, you should use the system to initialize your
+disk.  More information is given in the Chipmunk Manual, in the section called
+"starting and leaving the system."  Additional help is available from the
+laboratory teaching assistants at popular hours.
+
+The first laboratory assignment has been designed to be very simple, so that
+you will have a chance to become familiar with the Chipmunk system.
+
+
+\vskip .5in
+
+In this assignment, you are to experiment with simple procedures that plot
+curves called cardioids and nephroids.  These are defined formally as follows.
+
+Consider a circle whose center is at the origin of some coordinate system, and
+whose radius is $r$ (call this the base-circle.)  We select a fixed
+point $A$ at coordinate $(-r, 0)$.  With center at any point $Q$ on the
+circle, and radius $QA$, we draw another circle.  
+We repeat this for a large number of positions of $Q$, spread evenly
+round the  base-circle.  The heart-shaped curve which all these circles touch is the
+{\bf cardioid}.  The pointed part at $A$ is called the {\bf cusp}. (See
+Figure 1) 
+
+\beginfigure
+\vskip 5truein
+\begincaption
+Figure \figdef{1}.  The Cardioid.
+\endcaption
+\endfigure
+
+
+For a nephroid, we take the same base-circle, with any point $Q$ on the base-
+circle as center, and draw a circle tangent to the y-axis.  We repeat
+this for many positions of $Q$, spreading evenly round the base-circle.
+The kidney-shaped
+curve which all these circles touch is the {\bf nephroid}.  (See Figure
+2) 
+
+\beginfigure
+\vskip 5truein
+\begincaption
+Figure \figdef{2}.  The Nephroid.
+\endcaption
+\endfigure
+
+You are given the following procedure which draws cardioids:
+
+\beginlisp
+(define (cardioid r dx)
+  (define fixed-x (- r))			;set up constant
+  (define (new-y x)				;compute new y coordinate
+    (sqrt (- (square r) (square x))))
+  (define (new-r x)				;compute new radius
+    (sqrt (abs (+ (square (new-y x)) (square (- x fixed-x))))))
+  (define (iter x1)				;iteration procedure
+    (circle x1 (new-y x1) (new-r x1))
+    (circle x1 (- (new-y x1)) (new-r x1))
+    (iter (+ x1 dx)))
+  (clear-graphics)				;initialize graphics screen
+  (iter fixed-x))
+\endlisp
+
+The arguments to the procedure are the radius $r$ of the base-circle and
+an amount to increment the $x$ coordinate, which we call $dx$. 
+The procedure contains internally defined
+procedures {\tt fixed-x, new-y, new-r} and {\tt iter}.  The first three
+compute the $x$ 
+coordinate of the first $Q$ point, the $y$ coordinate of a selected $Q$ point, and
+the radius of $QA$, respectively. The {\tt iter} procedure repeatedly
+draws the 
+circles with radius $QA$, and centers $(x1, y)$ and $(x1, -y)$, and increments the $x$ 
+coordinate to get a new $Q$ point.  When cardioid starts, it clears the graphics
+screen first by using the {\tt clear-graphics} Scheme primitive.
+
+Two procedures which cardioid calls, the {\tt circle} procedure and the
+{\tt square} procedure, are not available in Scheme.  They are given to you as follows.
+
+\beginlisp
+(define (circle x y r)
+  (define da 0.2)				;set up constant
+  (define 2pi (* 2 3.151492))			; ditto
+  (define (iter a)				;iteration procedure
+    (cond ((<= a (+ da 2pi))			;if within bounds, draw and interate
+           (draw-line-to (+ x (* r (cos a))) (+ y (* r (sin a))))
+           (iter (+ a da)))))
+  (position-pen (+ x r) y)			;position pen initially
+  (iter 0))					;start at 0
+\pbrk
+(define (square x) (* x x))
+\endlisp
+
+The {\tt circle} procedure simply draws a circle which has $(x, y)$ as its
+center and $r$ as its radius.  
+The primitive {\it position-pen}
+moves the graphics pen to the point indicated by the given
+coordinates.  The primitive {\it draw-line-to} moves the graphics pen to
+the indicated coordinates, drawing a line from the current point.
+
+{\bf Exercise 1}
+
+Use the NMODE editor to type in the above procedure definitions.  (Subsequent
+laboratory assignments will include large amounts of code, which will be made
+available for you to load when you begin work on the assignment.  This time,
+however, we are asking you to type in the definition yourself, so that you 
+will get used to the editor.)  Notice that the editor automatically ``pretty 
+prints'' your procedure as you type it in, indenting lines to the position
+determined by the number of unclosed left parentheses.  Notice also
+that, when you type a right parenthesis, the matching left parenthesis
+is briefly high-lighted.
+In the code above, words to the right of semicolons are
+comments, and need not be typed.  After you've typed in everything, save the
+procedure on your disk in a file named {\tt ps1.scm}. 
+
+``Zap'' your procedures from the editor into Scheme.\footnote{$^1$}{Use
+the SEND BUFFER command (SHIFT-k$_7$ on the Chipmunk keyboard).
+This transmits the entire buffer to Scheme, and is the easiest thing
+to use when you only have one or two procedures in your buffer.  With
+larger amounts of code, it is better to use other ``zap'' commands,
+which transmit only selected parts of the buffer, such as individual
+procedure definitions.  For a description of these commands, see the
+description of NMODE in the Chipmunk manual, under the heading
+``Commands for use with Scheme.''}
+First, run the {\tt circle}
+procedure by typing in the expression:
+
+\beginlisp
+	(circle 0 0 20)
+\endlisp
+
+(Press EXECUTE after typing in the expression.)  A circle should appear
+on your screen.  To see the drawing, press the key marked GRAPHICS at the
+upper right of the keyboard.  The Chipmunk system enables you to view
+either text or graphics on the screen, or to see both at once.  This
+is controlled by the keys marked GRAPHICS and ALPHA.  Pressing
+GRAPHICS shows the graphics screen superimposed on the text.  Pressing
+GRAPHICS again hides the text screen and shows only graphics.  ALPHA
+works similarly, showing the text screen and hiding the graphics
+screen.
+
+Try different values for $x, y$ and $r$.   To clear the screen between trials you may execute
+the primitive procedure
+
+\beginlisp
+(clear-graphics)
+\endlisp
+
+
+If you typed in your definitions incorrectly, you will need to debug the 
+definitions by returning to the editor and make corrections.
+
+Note that if your computation is taking a long time to complete, you can
+abort
+execution by typing control-G.  (The CONTROL key at the upper left
+of the keyboard is used like a SHIFT key.  To type control-G, hold
+down the CTRL key and press G.)
+
+In doing this problem, you can save typing by taking advantage of the
+``line edit'' and ``recall'' features of Scheme.  Pressing the
+RECALL key will redisplay the last Scheme expression evaluated.
+This can then be edited using many of the NMODE edit commands.\footnote{$^2$}{In
+general, you can use all the edit commands that keep the cursor within
+a single line.  An exception: Do not use CTRL-B if you want to
+move the cursor to the left.  Use the left-arrow key.} For instance,
+suppose you have just evaluated {\it (circle 0 0 100)} 
+and you now want to evaluate {\it (circle 0 0 20)}.   You can press RECALL,
+use the arrow keys to move the cursor to the character to be changed,
+make the edit, and finally press EXECUTE to evaluate the modified
+expression.  RECALL always redisplays the previous expression.
+Once you have pressed RECALL, you can repeatedly press
+CTRL-RECALL to e
+procedure {\tt new-y} is called many times with the same argument in each
+iteration.
+Modify the {\tt cardioid} procedure so that {\tt new-y} is called only
+once in each  iteration.
+
+Hand in a listing of your modified {\tt cardioid} procedure.  How many
+times was {\tt new-y} called before your modification??
+
+{\bf Exercise 4}
+
+We can also graph the cardioid envelope itself without using circles.  The
+following is a pair of parametric equations of its envelope.
+
+\math{\eqalign{
+	x &= 2a (\cos t) + a (\cos 2t)\cr
+	y &= 2a (\sin t) + a (\sin 2t) \qquad 0 \leq t \leq \infty\cr}}
+
+Write a procedure called {\tt envelope}, which takes 2 arguments: {\tt a}
+and {\tt dt}, where {\tt a} determines the size of the envelope, and
+{\tt dt} determines the increment of $t$, and which draw the envelope of
+the corresponding cardioid.
+[Hint: use the Scheme primitives {\tt position-pen}  and {\tt
+draw-line-to}.  Refer to the {\tt circle} procedure for hints on how to use them]. 
+
+Hand in a listing of your procedure, and a cardioid envelope created by it.
+
+{\bf Exercise 5}
+
+If we vary the above parametric equations by
+\math{\eqalign{
+	x &= 3a (\cos t) + a (\cos 3t)\cr
+	y &= 3a (\sin t) + a (\sin 3t) \qquad 0 \leq t \leq \infty\cr}}
+where we have changed all the 2's to 3's, we get an envelope of the
+nephroid.  Modify the {\tt envelope} procedure
+so that the constant 2 becomes a variable, which is identified in the 
+parameter-list of the {\tt envelope} procedure.  Use this new {\tt
+envelope} procedure to graph a nephroid.
+
+Hand in a listing of your new {\tt envelope} procedure, a picture of a
+nephroid
+envelope and the expression you entered in order to graph the
+envelope. 
+
+{\bf Exercise 6}
+
+In this exercise, you are asked to write a procedure which graphs the nephroid
+using the circle method described earlier before exercise 1 (see figure 2).  
+This procedure should take 2 arguments: r and da, where r is the radius of the
+base-circle, and da is the increment of an angle.  Recall the equations of a
+circle:
+\math{\eqalign{
+	x & = r (\cos a)\cr
+	y & = r (\sin a)\qquad 0 \leq a \leq 2\pi\cr}}
+
+By  gradually iterating over {\tt a} from 0 to $2\pi$, we can locate the $x$
+and $y$ coordinates on the base-circle.  The strategy is to use every $(x,y)$ pair thus 
+generated as the $Q$ point of the circles.  [Hint: this procedure should look
+very similar to the {\tt cardioid} procedure.  If you found yourself
+doing something
+much more complicated, you are probably on the wrong track.]  Test out your
+procedure by executing the following expression:
+
+\beginlisp
+	(nephroid 60 0.1)
+\endlisp
+
+Hand in a listing of the {\tt nephroid} procedure and a picture created
+by it. 
+
+{\bf Exercise 7}
+
+What is the relationship between the parameter {\tt a} in the {\tt
+envelope} procedure and
+the parameter {\tt r} in the {\tt cardioid} procedure??  In the {\tt
+nephroid} procedure?? Graph a few pictures to find out.
+
+{\bf Exercise 8 (for fun)}
+
+Sketch what you see when you execute the following:
+
+\beginlisp
+	(envelope 4 20 0.1)
+	(envelope 5 20 0.1)
+	(envelope 6 20 0.1)
+	(envelope 10 20 0.1)
+\endlisp
+
+
+\chapter{3. Adventures in Debugging}
+
+During the semester, you will often need to debug programs that
+you write.  This section contains an exercise that you
+should work through {\it at the terminal} to acquaint you with some
+of the features of Scheme to aid in debugging.  There is
+nothing you need turn in for this part of the problem set, but we
+strongly suggest that you do this exercise.   Learning to use the
+debugging features will save you much grief on later problem
+sets.
+
+The file {\it ps1-debug.scm} is a short file that has been provided for
+you to load into Scheme.  To do this, use the NMODE extended
+command ``load problem set'' and specify that you want to load
+the code for Problem Set 1.  This will make a copy of the file on
+your disk.
+
+The file contains three tiny procedures called {\it p1, p2} and
+{\it p3}.  You can examine them using NMODE, but there is no need to do
+that now -- you will see them later on, during debugging. Zap the
+procedures into Scheme.  Now evaluate the expression {\it (p1 1 2)}.
+This should signal an error, with the message
+
+\beginlisp
+Wrong Number of Arguments 1
+within procedure \#[COMPOUND-PROCEDURE P2]
+There is no environment available;
+using the current read-eval-print environment.
+\pbrk
+2 Error-$>$
+\endlisp
+
+Don't panic.  Beginners have a tendency, when they hit an error,
+to quickly type CTRL-G or press EDIT. Then they stare at
+their code in the editor until they see the what the bug is.
+Indeed, the example here is simple enough so that you probably
+can see the bug just by reading the code.  But don't do
+this.  Let's instead see how Scheme can be coaxed into producing
+some helpful information about the error.
+
+First of all, there is the error message itself.  It tells you
+that the error was caused by a procedure being called with 1
+argument, which is the wrong number of arguments for that
+procedure.  The next line tells you that the error occurred
+within the procedure
+{\it P2}, so the actual error was that {\it P2} was called with 1
+argument, which is the wrong number of arguments for {\it P2}.
+
+The other information about ``current environment,'' and
+``read-eval-print environment'' you can ignore.  We will
+learn about environments later in the semester.  Notice, however,
+that the prompt now reads
+\beginlisp
+2 Error-$>$
+\endlisp
+\vpar
+which is Scheme's way of indicating that you can now
+evaluate expressions within the context of the error, and that
+this context is ``at level 2,'' namely, one level down from the
+``top level,'' which is the initial Scheme command level.
+
+Unfortunately, the error message alone doesn't say where in
+the code the error occurred.  In order to find out more, you need
+to use the debugger.  To do this execute the expression {\it (debug)}.
+
+\section{Using the debugger}
+
+The debugger allows you to grovel around
+examining pieces of the execution in progress, in order to learn
+more about what may have caused the error.
+When you typed {\it (debug)} just above, Scheme should have responded:
+\beginlisp
+Subproblem Level: 0  Reduction Number: 0
+Expression:
+(P2 B)
+within the procedure P3
+applied to (1 2)
+Debugger
+\pbrk
+3 Debug--$>$
+\endlisp
+
+This says that the expression that caused the error was
+{\it (P2 B)}, evaluated within the procedure {\it P3}, which was
+called with arguments 1 and 2.  That's probably enough
+information to let you fix the error, but let's pretend we need
+more information, just to learn more about how the debugger works.
+
+Ignore the stuff about Subproblem and Reduction numbers.  (You can
+read about them in the Chipmunk manual.)  The prompt says that you are
+in the debugger (at level 3, one down from the error level, which was
+level 2).  At this point, you could type CTRL-G to exit the whole
+mess and get back to Scheme's ``top level,'' but let's instead explore
+the debugger.
+
+The debugger differs from an ordinary Scheme command level, in
+that you use single-keystroke commands, rather than typing expressions
+and pressing EXECUTE.
+
+
+One thing you can do is move ``backwards'' in the evaluation
+sequence, to see how we got to the point that signaled the error.
+To do this, type the character {\it b}.  Scheme should respond:
+\beginlisp
+Subproblem level: 1 Reduction number: 0
+Expression:
+(+ (P2 A) (P2 B))
+within the procedure P3
+applied to (1 2)
+\pbrk
+3 Debug--$>$
+\endlisp
+Remember that the expression evaluated to cause the error was {\it (P2
+B)}.  Now that we have moved ``back,'' we learn that this expression
+was being evaluated as a subproblem of evaluating the expression
+\beginlisp(+ (P2 A) (P2 B))\endlisp, still within procedure {\it P3}
+applied to 1 and 2.
+
+Press {\it b} again, and you should see
+\beginlisp
+Subproblem Level: 2  Reduction Number: 0
+Expression:
+(+ (P2 X Y) (P3 X Y))
+within the procedure P1
+applied to (1 2)
+\endlisp
+which tells us that got to the place we just
+saw above as a result of trying to evaluate an expression in
+{\it P1}.
+
+Press {\it b} again and you should see a horrible mess.  What you
+are looking at is some of the guts of the Scheme system -- the part
+shown here is a
+piece of the interpreter's read-ees that in this case
+Scheme was evaluating the arguments to {\it +} in right-to-left
+order, which is something you may not have expected. You should
+never write code that depends for its correct execution on the
+order of evaluation of the arguments in a combination.  The
+``official definition'' of Scheme (whatever that means) does not
+guarantee that that any particular order will be followed, nor
+even that this order will be the same each time a combination is
+evaluated.} You can type CTRL-G to return to the Scheme top level
+interpreter.
+
+\section{The stepper}
+
+Even with such a simple error, debugging was not so simple.
+What do you expect?  After all, an error occurred and you
+have to grovel through the mess.  An alternative debugging
+strategy is to re-evaluate the expression that produced the error, only
+this time to do the evaluation ``step by step,'' and observe the
+precise point where the error happens.  The Scheme program that
+lets you do this is called the {\it stepper}.
+
+Let's try to debug again, this time using the stepper.  Clear the
+screen (by typing CTRL-L) and evaluate the expression
+
+\beginlisp
+(step '(p1 1 2))
+\endlisp
+
+Don't omit the quotation mark after {\it step}.   (You'll learn
+about what quotation is for when we get to Chapter 2.)
+
+If you did this correctly, Scheme should type, halfway down the screen,
+\beginlisp
+
+(DEFINE (P1 X Y) (+ (P2 X Y) (P3 X Y)))
+Stepping: (P1 1 2) Eval Combination
+\endlisp
+
+What you are seeing is the text of the procedure being evaluated,
+namely {\it P1}.  The next line tells you that the expression being
+stepped that called this procedure is {\it (P1 1 2)} and that the
+interpreter is at the point ``Eval combination'' which is the
+point where the interpreter sets up to evaluate a
+combination.  (Later in the semester, we will learn about the
+various elements of the evaluation process.)  The cursor is
+flashing at the beginning of the combination to be evaluated.
+
+Type a space.  This proceeds the evaluation ``one step.''  Notice
+that nothing much happens, except that the cursor moves to the
+beginning of the right-hand inner combination, which is the next
+thing the interpreter is going to work on.\footnote{$^4$}{There's that right-to-left
+evaluation order again.  See previous footnote.}
+
+Type another space and the interpreter starts working on the
+subexpressions of this combination, starting with the symbol {\it Y}.
+Accordingly, the stepper prints
+\beginlisp
+
+Eval Irreducible
+Y has the value
+2
+\endlisp
+telling you that {\it Y} was irreducible (no subexpressions) and
+that it has the value 2.
+
+Type another space and you will see that {\it X} has the value 1.
+Another space shows the interpreter determining that {\it P3} is the
+name of a procedure.
+\beginlisp
+
+P3 has the value
+\#[COMPOUND-PROCEDURE P3]
+\endlisp
+
+When you type another space, the message changes to show that the
+interpreter is about to apply {\it P3} to the arguments 1 and 2.
+
+You now have a choice: you can ask the stepper to do the
+application in one step, or you can go step-by-step through the
+application.
+
+If you press space, the stepper will do the application in one step and
+show the returned value.  Try this.
+
+Ugh!  That signaled the error.  So we know that the error happens
+while evaluating {\it (P3 1 2)}.  We probably should have gone step
+by step through this part of the evaluation.
+
+So go back and try again.  Press CTRL-G, clear the screen,
+execute
+\beginlisp
+
+(step '(p1 1 2))
+\endlisp
+and press space until you get back to the point where the
+interpreter is about to apply {\it P3} to 1 and 2.
+
+This time, instead of pressing the space bar, type {\it s}.
+The stepper should now show the application of the internal procedure:
+\beginlisp
+
+(DEFINE (P3 A B) (+ (P2 A) (P2 B)))
+\endlisp
+
+Another space will get to the application {\it (P2 B)}, which gives
+the error.
+
+Notice that this is the same information we found with the
+debugger above.  Only this time we are working ``forwards'' until
+the error occurs instead of letting the error happen and then
+working backwards.  Both of these techniques should be part of
+your debugging repertoire.
+
+
+\section{For your amusement}
+
+Edit {\it P3} to eliminate the error by calling {\it P2} with two
+arguments each time.  (It doesn't matter what these
+arguments are, so long as the applications don't produce errors.) 
+Now step through the original call to {\it P1}, and get to the point in
+{\it P3} where the addition operator {\it +} is about to be applied
+to 2 arguments.  If you were to type a space at this point, the
+addition would be performed and the result shown.  But, instead
+of typing a space, type an {\it s}, and you will see some incredibly
+obscure stuff.
+
+What you are looking at are the internals of the addition
+operation, implemented as a Scheme procedure.  You see, we lied
+to you in lecture: {\it +} is not a primitive in the Scheme system
+you are using.
+
+The lesson to draw from this is not that we are liars, but that
+the meaning of ``primitive'' must always be taken to be relative
+a given level of detail at which one wants to look.  Since we
+have more than enough material to cover this semester without
+worrying about how the 6.001 Scheme system is implemented in
+detail, it is convenient for us to consider {\it +} to be a primitive.
+
+For fun, you can start stepping through the application of {\it +}.
+Each time you get to an internal application, type {\it s} to go
+inside of it.  Eventually you will get to a ``real primitive.''
+Of course, all that a ``real primitive'' is is something that the
+stepper won't let you look inside of.  In terms of the assembly
+language ``kernel'' of Scheme, a ``real primitive'' might be a
+complex program made up of lots of instructions in assembly
+language.  And any single assembly language instruction might be
+a complex program written in microcode.
+
+This illustrates a major idea that we will see thoughout 6.001: One
+does {\it not} create complex systems by focusing on how to construct
+them out of ultimate primitive elements.  Rather, one proceeds in
+layers, erecting a series of levels, each of which is the
+``primitives'' upon which the next level is constructed.
+
+\end
+

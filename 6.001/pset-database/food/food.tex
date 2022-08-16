@@ -1,0 +1,689 @@
+% -*- Mode: Tex -*-
+% for yTeX
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+\def\gobble#1{}
+
+\def\fbox#1{%
+  \vtop{\vbox{\hrule%
+              \hbox{\vrule\kern3pt%
+                    \vtop{\vbox{\kern3pt#1}\kern3pt}%
+                    \kern3pt\vrule}}%
+        \hrule}}
+
+\def\illustratefile#1#2#3{
+  \hbox to #1{
+     \hfil
+     \vbox to #2{
+       \vfil
+       \special{psfile=#3 hoffset=-306 voffset=-396}
+       \vfil}
+     \hfil}}
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1988}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1988}
+\rectorightheader={Problem Set 4}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 4}
+
+\vskip 0.25truein
+
+\vpar
+Issued: October 6, 1988
+
+
+\vpar
+Due: in recitation on October 14, 1988 {\it for all sections}
+
+\vpar
+Reading: From text, Chapter 2, Sections 2.1 and 2.2, also sections
+3.4--3.4.1. 
+
+\vskip 20pt
+
+{\bf Quiz Reminder:}  Quiz 1 is on Wednesday, October 19.  The quiz will
+be held in Walker Memorial Gymnasium (50-340) from 5-7 PM or 7-9 PM.
+You may take the quiz during either one of these two periods, but
+students taking the quiz during the first period will not be allowed to
+leave the room until the end of the period.  The quiz will cover
+material from the beginning of the semester through recitation on
+October 7.    This quiz will be ``semi-''open book.  This means that you
+may bring a Scheme manual to the exam, and you may bring a single 8.5 by
+11 inch sheet on paper, on both sides of which you may write any notes
+that you think will help you during the exam. 
+
+
+\chapter{1. Homework exercises}
+
+Work the following exercises.  Write up your
+solutions and submit them as part of your homework to your TA in
+recitation.
+
+\beginbullets
+
+\bpar Exercise 4.1:  List structures.  Give combinations of {\tt car}s
+and {\tt cdr}s that will pick 2 from each of the following lists:
+
+\beginlisp
+(6 5 4 3 2 1 0)
+\pbrk
+((6 5) (4 3) (2 1) (0))
+\pbrk
+(6 (5 (4 (3 (2 (1 (0)))))))
+\pbrk
+(6 ((5 ((4 3)) 2) 1) 0)
+\endlisp
+
+\bpar Exercise 4.2:  Finger exercises.  Suppose we define {\tt a } and
+{\tt b} to be the following two lists:
+
+\beginlisp
+(define a (list 1 2))
+(define b (list 3 4 5))
+\endlisp
+
+What result is printed by the interpreter in response to evaluating
+each of the following expressions:
+
+\beginlisp
+(cons a b)
+(append a b)
+(list a b)
+\endlisp
+
+\bpar Exercise 4.3: More finger exercises.  Suppose we have defined 
+{\tt a b c} and {\tt d} to have the values {\tt 4 3 2} and {\tt 1}
+respectively.
+ What would the interpreter print in response to evaluating each of the
+following expressions?
+
+\beginlisp
+(list a 'b c 'd)
+(list (list a) (list b))
+(cons (list d) 'b)
+(cadr '((a b) (c d) (a d) (b c)))
+(cdr '(a))
+(atom? (caddr '(Welcome to MIT)))
+(memq? 'sleep '(where getting enough sleep))
+(memq? 'time '((requires good) (management of time)))
+\endlisp
+
+\bpar Exercise 4.4: do exercise 2.29 on page 103 of Abelson and
+Sussman.
+
+\endbullets
+
+\chapter{2. Programming Assignment: Food for Thought}
+
+Alyssa P. Hacker has taken on a part time job as a manager for Pitch-it-Kitsch'ns,
+a local fast food outfit.  Alyssa's job includes the construction of a
+data base system for keeping track of information about the meals
+prepared at Pitch-it.  To deal with this problem, Alyssa has begun to
+design a data base system, and in the problem set you are going to help
+Alyssa with this project.
+
+The main goals of this problem set are to give you experience in
+manipulating data structures, and to think about the manipulation of
+list structures.  In particular, we are going to explore the use of
+the concepts of {\tt map, accumulate} and {\tt filter} as general
+techniques for deriving information about and from list structures.  One
+of the things you should observe in doing this, is how such general
+tools can help you solve problems involving lists of objects, without
+worrying about the details of those lists.
+
+Now to the details.
+The basic components of Alyssa's system are two different kinds of data
+structures or abstractions.  The first is a data structure for a dish,
+which includes:  a name, some ingredients, the
+number of calories in the dish, and the cost of the dish.  To build such
+abstractions, Alyssa writes the following constructor.
+\beginlisp
+(define make-dish
+  (lambda (name ingredients cals cost)
+    (list name ingredients cals cost)))
+\endlisp
+
+An example of using this constructor is given below:
+\beginlisp
+(make-dish 'hamburger '((beef .25) (bun 1)) 0 0)
+\endlisp
+
+Here, the {\tt
+name} is a symbol identifying the dish, {\tt ingredients} is a list of
+entries, each of which
+is a list of two elements, the name of the ingredient, and the amount of
+a standard unit of that ingredient used in the dish.  For example, a
+hamburger uses a quarter pound of beef and one bun.  Initially, the
+{\tt calories} and {\tt cost} of the dish are set to zero.
+
+The second structure to be used is one that represents information about
+ingredients, and includes: a name, the number of calories
+in a standard unit, and the cost per standard unit of the ingredient.
+Alyssa uses the following constructor.
+\beginlisp
+(define make-ingredient
+  (lambda (name cals-unit cost-unit)
+     (list name cals-unit cost-unit)))
+\endlisp
+
+An example of using this constructor:
+\beginlisp
+(make-ingredient 'beef 200 .20)
+\endlisp
+i.e. 200 calories per pound, and 20 cents per pound.
+
+{\bf Exercise 1:}  Although we have introduced the notion of {\bf
+defabs} as a mechanism for building constructors and selectors, in this
+problem set, we want to you help us build such mechanisms by hand, to
+ensure that you understand their role.  Hence, complete the definitions
+below to provide the needed selectors for the constructors described
+above.
+
+\beginlisp
+(define dish-name \gobble{cadr)}
+\pbrk
+(define dish-ingredients \gobble{caddr)}
+\pbrk
+(define dish-cals \gobble{cadddr)}
+\pbrk
+(define dish-cost \gobble{caddddr)}
+\pbrk
+(define ingredient-name \gobble{cadr)}
+\pbrk
+(define ingredient-cals-unit \gobble{caddr)}
+\pbrk
+(define ingredient-cost-unit \gobble{cadddr)}
+\endlisp
+
+
+\vskip 20pt
+
+Now, we are going to help Alyssa build procedures for analysing and
+manipulating libraries of such structures.  To do this, we will make use
+of some standard procedures for manipulating list structure.  These
+include the following:
+
+{\tt Map} is a general procedure that takes as arguments a procedure and
+a list, and returns a new list, each of whose elements is obtained by
+applying the supplied procedure to each element of the original list.
+
+\beginlisp
+(define map
+  (lambda (proc lst)
+    (if (null? lst)   ; if lst is empty
+        '()           ; then return an empty list
+        (cons (proc (car lst))   ; otherwise apply procedure to first element
+              (map proc (cdr lst)))))) ; and add it to front of list
+                                       ; obtained by processing rest of list
+\endlisp
+
+
+{\tt Filter} is a general procedure that takes as arguments a predicate
+procedure and a list, and returns a new list.  The new list is obtained
+by applying the predicate to each element of the original list in turn,
+and including in the new list only those elements for which the
+application of the predicate returned a Boolean value of true.
+
+\beginlisp
+(define filter
+  (lambda (pred lst)
+    (cond ((null? lst)   ; if lst is empty
+           '())          ; then return an empty list
+          ((pred (car lst))  ; if first element satisfies predicate
+           (cons (car lst) (filter pred (cdr lst))))  ; then add to new list
+          (else  ; otherwise discard from new list, and handle remainder
+           (filter pred (cdr lst))))))
+\endlisp
+
+{\tt Accumulate} is a general procedure that takes as arguments a
+procedure for combining values, an initial value and a list, and returns
+a value, obtained by recursively applying the combining procedure to
+each element in the list.
+
+\beginlisp
+(define accumulate
+  (lambda (combiner init lst)
+     (if (null? lst)  ; if lst is empty
+         init         ; return initial value
+         (combiner (car lst)  ;; otherwise combine first element
+                   (accumulate combiner init (cdr lst))))))  ; with rest
+\endlisp
+
+
+When you load problem set 4, copies of these procedures are loaded for
+you, as is an example set of dishes and ingredients.  In particular, the
+symbol {\tt dishes} is bound to a list of dish structures, and the
+symbol {\tt ingredients} is bound to a list of ingredient structures. 
+
+{\bf Exercise 2:} The first thing Alyssa needs to do is make a list of
+all the dishes that are served in Pitch-it.  She knows that that
+information is contained within the list of dish abstractions. Using
+some or all of the procedures {\tt map, filter} 
+and {\tt accumulate}, write a procedure called {\tt dish-names}, which
+when applied to a list of dishes, returns a list of their names.  Apply
+this procedure to {\tt dishes} to test that it works correctly.
+
+\gobble{
+\beginlisp
+(define dish-names
+  (lambda (dish-list)
+    (map (lambda (d) (dish-name d)) dish-list)))
+\endlisp
+or
+\beginlisp
+(define dish-names
+  (lambda (dish-list)
+   (map dish-name dish-list)))
+\endlisp
+}
+
+{\bf Exercise 3:}  Alyssa also wants to be able to generate a list of
+the names of the ingredients of a particular dish.  Using some or all
+of the procedures {\tt map, filter} and {\tt accumulate}, write a
+procedure called {\tt dish-ingred-names}, which when applied to a data
+structure for a dish, returns a list of the names of the ingredients
+used in that particular dish.  Apply this procedure to an element of the
+list {\tt dishes} to test that it works correctly.  
+
+\gobble{
+\beginlisp
+(define dish-ingred-names
+  (lambda (dish)
+    (map car (dish-ingredients dish))))
+\endlisp
+}
+
+Using this procedure,  write another procedure, called {\tt
+dish-and-ingred-names}, which takes as argument a list of dishes, and
+returns a new list, each element of which is a list of two elements, the
+first being the name of the dish and the second being the list of
+ingredient names returned by {\tt dish-ingred-names}.
+
+\gobble{
+\beginlisp
+(define dish-and-ingred-names
+  (lambda (dishes)
+    (map (lambda (d) (list (dish-name d)
+                           (dish-ingred-names d)))
+         dishes)))
+\endlisp
+}
+
+{\bf Exercise 4:}  Alyssa wants to keep track of calories and cost for
+her dishes. As things stand that information is not directly
+available.  For most of the data structures for dishes in her data
+base, the calorie and cost information has been initialized to zero.
+Each dish contains information about the amount of each ingredient
+used in the dish, and each ingredient data structure contains
+information about the calories or cost per unit serving of the
+ingredient.  Somehow, Alyssa needs to combine that information together.
+She wants to write a set of
+procedures that can automatically update the information about dishes
+from the information about ingredients.  We will help her do this in
+several stages.  
+
+First, suppose we are given the name of an ingredient, and a list of
+ingredient data structures (e.g. the value of {\tt ingredients}).  We need a
+procedure, called {\tt find-ing}
+that given these two arguments, will return the ingredient data
+structure with the same name as the supplied argument.  Write such a
+procedure, using {\tt filter}.
+
+\gobble{
+\beginlisp
+(define find-ing
+  (lambda (name lst)
+    (car (filter (lambda (elt) (eq? name (ingredient-name elt))) lst))))
+\endlisp
+}
+
+Based on this procedure, Alyssa has written another procedure that will
+determine the number of calories in a dish.
+
+\beginlisp
+(define calories-of-dish
+  (lambda (dish ings-list)                      
+    ;arguments are a dish structure and a list of ingredient structures
+    (let ((dish-ings (dish-ingredients dish)))  ; get the ingredients of the dish
+      (accumulate-cals dish-ings ings-list))))  ; determine number of calories
+\endlisp
+
+In doing this, Alyssa has assumed that a procedure named {\tt
+accumulate-cals} can be created that will actually determine the
+number of calories in a dish.  Its arguments are a list of dish
+ingredients, each element of which is a list of two elements, the name
+of the ingredient and the amount of a unit portion of the ingredient
+used in the dish, and a list of all the ingredient data structures.
+Write the procedure, {\tt accumulate-cals}, which should recursively
+``cdr'' down the list of dish ingredients, adding the product of the
+portion of the ingredient used times the calories per unit portion of
+the ingredient.  You should use {\tt find-ing} to get the appropriate
+data structure for each ingredient.
+
+\gobble{
+\beginlisp
+(define accumulate-cals
+  (lambda (dish-ings ings-list)
+   ;arguments are the list of ingredients for a dish,
+   ;and a list of ingredient data structures
+     (if (null? dish-ings)
+         0
+         (let ((first-ing (car dish-ings)))
+           (+ (* (cadr first-ing)               ;get amount of ingredient
+                 (ingredient-cals-unit (find-ing (car first-ing)
+                                                 ings-list)))
+                                ;get unit calories from structure
+              (accumulate-cals (cdr dish-ings) ings-list))))))
+\endlisp
+}
+
+Now, Alyssa needs a procedure for updating all of the dish data
+structures.  Write a procedure called {\tt add-calories-to-dishes} that
+takes as arguments a list of dish data structures and a list of
+ingredient data structures and returns a new list of dish data
+structures which now include information about the number of calories in
+a dish.  For those of you who have looked ahead, {\bf DO NOT} use {\tt
+set!} to solve this problem.  Instead you should build a list of new
+data structures, that maintain the information in the old data
+structures, but add the new information as well.
+
+\gobble{
+\beginlisp
+(define add-calories-to-dishes
+  (lambda (dish-list ingredients-list)
+    (if (null? dish-list)
+        '()
+        (let ((next-dish (car dish-list)))
+          (cons (make-dish (dish-id next-dish)
+                           (dish-name next-dish)
+                           (dish-ingredients next-dish)
+                           (calories-of-dish next-dish ingredients-list)
+                           0)
+                (add-calories-to-dishes (cdr dish-list) ingredients-list)))))) 
+\endlisp
+}
+
+Apply this procedure to {\tt dishes} to test that it works correctly.
+
+\vskip 20pt
+
+{\bf Exercise 5:}  We need to do the same thing for updating information
+about the cost of each dish.  Write a set of procedures similar to those
+above for doing this.
+
+\vskip 20pt
+
+{\bf Exercise 6:}
+If you now look at the procedures of the previous two exercises, you
+should observe a common pattern, and by now you know that as a
+consequence, we are going to capture that common pattern in a higher
+order procedure.  In particular, write a procedure called {\tt
+accumulate-entry} which generalizes {\tt accumulate-cals} and the
+corresponding procedure for cost, which you wrote for exercise 5.
+Show how you would use this generalized procedure to implement {\tt
+calories-of-dish}.
+
+\gobble{
+\beginlisp
+(define accumulate-entry
+   (lambda (dish-ings ings-list select)
+      (if (null? dish-ings)
+          0
+          (+ (* (cadr (car dish-ings))
+                (select (find-ing (car (car dish-ings))
+                                  ings-list)))
+             (accumulate-entry (cdr dish-ings) ings-list select)))))
+\pbrk
+(define calories-of-dish
+  (lambda (dish ings-list)
+    (let ((dish-ings (dish-ingredients dish)))
+      (accumulate-entry dish-ings ings-list ingredient-cals-unit))))
+\endlisp
+}
+
+\vskip 20pt
+
+{\bf Exercise 7:}  The solutions in the previous exercises built
+specialized accumulators for finding out the number of calories or the
+cost of the dishes.  We have the general tool of {\tt accumulate}
+available to use, however, and here we consider how to use it to do
+the same thing.  Note that {\tt accumulate} operates on a list of
+values, accumulating them according to the supplied procedure.  To use
+{\tt accumulate}, we must first create a list of the calories
+associated with each ingredient.  We can do this by first mapping an
+appropriate procedure down a list of dish ingredients, and then
+applying accumulate to the resulting list.  Using this idea, write a
+procedure called {\tt new-accumulate-cals} that takes as arguments a
+list of dish ingredients and a list of all ingredient structures, and
+determines the calories associated with the dish.
+
+\gobble{
+\beginlisp
+(define new-accumulate-cals
+  (lambda (dish-ings ings-list)
+     (accumulate + 0 
+                 (map (lambda (ing)
+                         (* (second ing)
+                            (ingredient-cals-unit (find-ing (first dish-ings)
+                                                            ings-list))))
+                      dish-ings))))
+\endlisp
+}
+
+
+{\bf Exercise 8:}  Alyssa also wants to find all the dishes that contain
+a particular ingredient.  She knows that the procedure {\tt
+dish-and-ingred-names} created in 
+problem 3 will get her a list of elements, each of which is a list of
+the name of the dish, and the list of ingredients of the dish.
+
+Alyssa wants a new procedure,
+called {\tt contains-ingredient}, that takes two arguments, the name of
+an ingredient, and a list of dishes, and returns a new list containing
+the names of the dishes containing the ingredient.  
+Alyssa's idea is to first create a list of lists of the form
+\beginlisp
+(list (dish-name dish) (dish-ingred-names dish))
+\endlisp 
+one for each dish, by using {\tt dish-and-ingred-names}.  Then one can create a new list by
+including only
+those elements of the first list that contain the desired ingredient.
+Finally, the elements of this list can be used to create a new list
+containing the name of the dish associated with each element.  Using
+some or all of {\tt map, filter} and {\tt accumulate}, write such a
+procedure.  In doing this, you may find it useful to use the SCHEME
+procedure {\tt memq} described on page 102 of the text. 
+
+\gobble{
+\beginlisp
+(define contains-ingredient
+  (lambda (ing-name dish-list)
+    (map car
+        (filter
+          (lambda (elt)
+            (memq ing-name (second elt)))
+          (dish-and-ingred-names dishes)))))
+\endlisp
+}
+
+{\bf Exercise 9:}   Finally, Alyssa is interested in finding all pairs
+of dishes that share a common ingredient.  To do this, she needs several
+components. First, she needs a procedure, called {\tt get-all-pairs},
+which when given a list {\tt l} as argument, generates a list of 2-lists
+(i.e. lists of two elements) consisting of all order pairs of elements
+of {\tt l}.  For example,
+\beginlisp 
+(get-all-pairs '(1 2 3))
+\endlisp
+would return the list 
+\beginlisp
+
+\endlisp
+Using {\tt map} write the procedure {\tt get-all-pairs}.
+
+Next, Alyssa needs a procedure, called {\tt common-elts}, which given
+two lists as arguments, returns a list of the elements common to both
+lists.  Write this procedure, using {\tt map} and {\tt filter}.  You may
+find it useful to use the following procedure.
+\beginlisp
+(define flatten
+  (lambda (l)
+    (accumulate append '() l)))
+\endlisp
+
+\gobble{
+\beginlisp
+(define common-elts
+  (lambda (l1 l2)
+    (flatten
+      (map (lambda (elt) (filter (lambda (x) (eq? x elt))
+                                 l2))
+           l1))))
+\endlisp
+}
+
+Finally, using {\tt get-all-pairs} and {\tt common-elts}, together with
+{\tt map } and {\tt filter}, write a procedure {\tt commonality}, which
+when applied to a list of dishes, returns a new list of dishes that
+share a common ingredient.  The elements of the returned list each
+should be a list of the two dish names and the list of common ingredients
+in the dish.
+\gobble{
+\beginlisp
+(define commonality
+  (lambda (ds)
+    (filter third
+            (map (lambda (p)
+                    (list (first (first p))
+                          (first (second p))
+                          (common-elt (second (first p))
+                                      (second (second p)))))
+                 (get-all-pairs (dish-and-ingred-names ds))))))
+}
+
+\vfill
+\eject
+\beginlisp
+;; code for food problem set 
+\pbrk
+;; constructor for dishes
+\pbrk
+(define make-dish
+  (lambda (name ingredients cals cost)
+    (list name ingredients cals cost)))
+\pbrk
+
+;; constructor for ingredients
+\pbrk
+(define make-ingredient
+  (lambda (name cals-unit cost-unit)
+     (list name cals-unit cost-unit)))
+\pbrk
+;; sample list of dishes
+(define dishes
+   (list (make-dish 'hamburger '((beef .25) (bun 1)) 0 0)
+         (make-dish 'cheeseburger '((beef .25) (bun 1) (am-cheese 1)) 0 0) 
+         (make-dish 'swissburger '((beef .25) (bun 1) (sw-cheese 1)) 0 0) 
+         (make-dish 'hotdog '((frankfurter 1) (hbun 1)) 0 0)
+         (make-dish 'reg-coke '((coke-syrup .5)) 0 0)
+         (make-dish 'large-coke '((coke-syrup 1)) 0 0)
+         (make-dish 'doubleburger '((beef .5) (bun 1)) 0 0)))
+;; note that coke has an empty list of ingredients, and that
+;; the calories and cost have already been inserted into the structure
+\pbrk
+;; sample list of ingredients
+(define ingredients
+  (list (make-ingredient 'beef 200 1.50)
+        (make-ingredient 'am-cheese 100 .10)
+        (make-ingredient 'sw-cheese 200 .20)
+        (make-ingredient 'bun 50 .15)
+        (make-ingredient 'hbun 50 .10)
+        (make-ingredient 'frankfurter 150 .20)
+        (make-ingredient 'coke-syrup 75 .10)))
+\pbrk
+(define calories-of-dish
+  (lambda (dish ings-list)                      
+    ;arguments are a dish structure and a list of ingredient structures
+    (let ((dish-ings (dish-ingredients dish)))  ; get the ingredients of the dish
+      (accumulate-cals dish-ings ings-list))))  ; determine number of calories
+\pbrk
+;;general procedures for manipulating list structures
+(define map
+  (lambda (proc lst)
+    (if (null? lst)   ; if lst is empty
+        '()           ; then return an empty list
+        (cons (proc (car lst))   ; otherwise apply procedure to first element
+              (map proc (cdr lst))))))
+\pbrk
+(define filter
+  (lambda (pred lst)
+    (cond ((null? lst)   ; if lst is empty
+           '())          ; then return an empty list
+          ((pred (car lst))  ; if first element satisfies predicate
+           (cons (car lst) (filter pred (cdr lst))))  ; then add to new list
+          (else  ; otherwise discard from new list, and handle remainder
+           (filter pred (cdr lst))))))
+\pbrk
+(define accumulate
+  (lambda (combiner init lst)
+     (if (null? lst)  ; if lst is empty
+         init         ; return initial value
+         (combiner (car lst)  ;; otherwise combine first element
+                   (accumulate combiner init (cdr lst))))))
+\endlisp
+\end
+

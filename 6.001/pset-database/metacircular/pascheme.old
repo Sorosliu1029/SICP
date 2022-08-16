@@ -1,0 +1,131 @@
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+******
+This file contains the end of the Pascheme problem set from
+Fall 1983 PS8.  It is preserved here in case you want to fix it
+up and use it.
+
+The part up to just before "reflection 2" (where I've put some more ****)
+was discarded because (according to Hal) it
+"implied (unwittingly) that there is a link between type checking
+and tail recursion and assignment"
+
+The part after the **** is much briefer in the current problem set.
+****
+
+The loss of tail-recursive definitions of iterative procedures, such
+as LOOP in the SCHEME iterative factorial below, is a serious problem.
+In the next part we will see what can be done to alleviate the
+situation, and its consequences.
+
+(define (factorial n)
+  (define (loop count answer)
+    (cond ((> count n) answer)
+	  (else (loop (+ count 1) (* count answer)))))
+  (loop 1 1))
+
+One idea is to allow a special declaration, NOVALUE, for the type of
+the value of a procedure.  A procedure marked NOVALUE is explicitly
+noted in MINI-APPLY and its value is not checked.  This leaves us in a
+bad position, however, how are we to get a value out of an iteration?
+The traditional way this is done in ALGOL-like languages such as
+PASQUAL is by assignment to a value-collection variable.  We write:
+
+(define integer? (factorial (integer? n))
+  (define integer? answer 1)
+  (define novalue (loop (integer? count))
+    (cond ((> count n) 'done)	;value is ignored.
+	  (else (set! answer (* count answer))
+		(loop (+ count 1)))))
+  (loop 1)
+  answer)
+
+This programming style makes Cy very happy, indeed.
+
+[Part 3]
+	You are to implement the NOVALUE mechanism in MINI-APPLY so
+that iterative procedures in SCHEME can be translated to PASCHEME as
+shown above and will work iteratively in PASCHEME.  Hand in your
+modification to MINI-APPLY and some examples of use.
+
+                               Epilogue
+
+One evening, after work, Ben, Alyssa, and Louis get together for a few
+beers.  Louis, who has learned a great deal, but doesn't like what's
+going on at I-B-M, shows his old friends the PASCHEME system.  "Seems
+like old man Warbucks has become a real fascist!", Ben exclaims.  "And
+a stupid one too", Alyssa noted, looking up from her beer.  "He thinks
+his system is type-safe, but it is full of holes.  For example, the
+NOVALUE construct cannot really work.  If he allows that, how can he
+prevent me from just using the value without checking, like we used
+too."  She scribbled on a napkin, "Consider the following program:"
+
+(define integer? (factorial (integer? n))
+  (define novalue (loop (integer? count) (integer? answer))
+    (cond ((> count n) answer)
+	  (else (loop (+ count 1) (* count answer)))))
+  (loop 1))
+
+"I could return anything I like from LOOP, but I cannot see how the
+system could possibly prevent me from using its value."  Louis thought
+awhile and suggested that the system could check that the value of a
+NOVALUE procedure must be DONE.  Ben responded that of course that
+would break tail recursion.  Louis agreed, but then he pointed out
+that at least in this case the damage was not serious because the
+caller, FACTORIAL, checked the type.
+
+[Reflection 1]
+	Write a paragraph or two giving your views on this matter.
+Just how safe is this system?  Can you find any really big hole in the
+type system?  Is it possible to do better?
+
+
+******
+Ben noted that the system was not very flexible.  Since types are
+SCHEME predicates, there is no good way to define a new one.  This is
+a real problem.  
+
+[Reflection 2]
+	Write a short paragraph discussing the major changes required
+to make PASCHEME have an extensible type system.
+
+"In fact", Alyssa says, "there is no way to make a type be a definable
+predicate unless the system has a hole to allow a type predicate to
+accept an argument of any type at all.  Thus the system would have to
+have such a hole to have extensible types."  Ben disagrees.  He
+believes that it is possible to make MINI-APPLY and EXTEND-ENVIRONMENT
+treat the application of type predicates specially, so that one can
+define new ones which accept any type of argument, without further
+violating the type system.
+
+[Reflection 3]
+	Is Ben right?  What do you think?  Here we want another short
+paragraph describing your views.

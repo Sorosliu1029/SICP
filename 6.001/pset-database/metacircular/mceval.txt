@@ -1,0 +1,91 @@
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+The file @a[mceval.scm] contains a copy of a simple Scheme interpreter
+written in Scheme, essentially the same as the one in Section 4.1.
+There are a few minor differences, of which the most important are:
+@begin(itemize)
+The procedures @a[eval] and @a[apply] have been renamed @a[mini-eval] and
+@a[mini-apply], so as not to interfere with Scheme's own @a[eval] and
+@a[apply] operators.
+
+The interface to the underlying Scheme system via
+@a[apply-primitive-procedure] is handled somewhat differently from in
+the book.
+@end(itemize)
+See the attached code for details.
+
+If you load this file into Scheme and type @a[(initialize-evaluator)],
+you will find yourself typing at the driver loop.  Please note that
+this Scheme running in Scheme contains no error system of its own.  If
+you hit an error or type @c[ctrl-G], you will bounce back into Scheme.
+Also, you must type in procedure definitions directly to the driver
+loop, since there is no interface to NMODE.@foot{However, you can use
+the editor to write an ordinary Scheme procedure that calls
+@a[mini-eval] in order to predefine various things in the global
+environment.  Run @a[initialize-evaluator], then type @c[ctrl-G] to
+get back to Scheme, run your procedure to predefine things, then
+reenter the interpreter by typing @a[(driver-loop)].}
+
+In order to help you keep from becoming confused, the driver loop uses
+the prompt @a[MC-EVAL==>] instead of the ordinary Scheme prompt.
+
+Start up the interpreter and try a few simple expressions.  If you
+bounce out into Scheme, you can re-enter the interpreter by typing
+@a[(driver-loop)].  If you get hopelessly fouled up, you can run
+@a[initialize-evaluator], but this initializes the global environment,
+and you will lose any definitions you have made.
+
+Also, it is instructive to run the interpreter while tracing
+@a[mini-eval] and/or @a[mini-apply], to see just how the evaluator
+works.  (You will also probably need to do this while debugging your
+code for this assignment.)  If you do trace these procedures, you may
+want to use the Scheme procedures @a[print-breadth] and
+@a[print-depth] to avoid printing huge listings of the @a[env]
+argument to these procedures (printed by the tracer), which is in
+general a circular structure.  See the Chipmunk manual for information
+on the use of @a[print-breadth] and @a[print-depth].
+
+
+
+
+
+
+
+
+
+
+
+
+

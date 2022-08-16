@@ -1,0 +1,323 @@
+%% -*- LaTeX -*-
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+
+\input /zu/6001/6001mac
+
+\special{twoside}
+
+\evensidemargin 35pt
+
+\begin{document}
+
+\psetheader{Fall Semester, 1989}{Problem set 2}
+
+\medskip
+
+\begin{tabular}{ll}
+Issued: & Tuesday 19 September \\
+Due: & recitation, Wednesday 27 September \\
+Reading: & From text, Chapter 1, sections 1.2 and 1.3.
+(This completes chapter 1.)
+\end{tabular}
+
+\noindent
+{\small Problem sets should always be handed in at recitation.  Late work will
+not be accepted.}
+
+\section{Homework exercises}
+
+Write up and turn in the following exercises from the text:
+
+\begin{itemize}
+\item Exercise 1.11: Iterative exponentiation
+
+\item Exercise 1.24: Iteration
+
+\item Exercise 1.25: Products
+
+\item Exercise 1.28: Perversity
+\end{itemize}
+
+Also do the following exercise:
+
+For each of the following expressions, what must {\cf f} be in order for the
+evaluation of the expression to not cause an error?  For each expression, give
+a definition of {\cf f} such that evaluating the expression will not cause an
+error, and say what the expression's value will be, given your definition.
+
+\beginlisp
+f
+
+(f)
+
+(f 3)
+
+((f))
+
+(((f)) 3)
+\endlisp
+
+\section{Programming Assignment}
+
+Hand in your work on all labelled problems.
+
+\subsection{Pascal's Triangle}
+
+Imagine that we have a triangular maze, with paths connecting an entrance at
+the top to a set of bins at the bottom as in the diagram below.  Eventually the
+path ends up in one of the bins at the bottom of the lattice.  (Perhaps you
+have seen a demonstration of such a maze in an exhibit on probability.)  We
+illustrate one typical path on the diagram by labelling it with ``*''.
+
+\begin{minipage}[t]{\linewidth}
+\begin{verbatim}
+level
+
+0     *
+      |*  
+      | * 
+      |  *
+1     |   *
+      |\  *\
+      | \ * \
+      |  \*  \
+2     |   *   |
+      |\  |*  |\
+      | \ | * | \
+      |  \|  *|  \
+3     |   |   *   |
+      |\  |\  *\  |\ 
+      | \ | \ * \ | \
+      |  \|  \*  \|  \
+4     |   |   *   |   |
+      |\  |\  *\  |\  |\  
+      | \ | \ * \ | \ | \ 
+      |  \|  \*  \|  \|  \      
+5     |   |   *   |   |   |
+      |\  |\  |*  |\  |\  |\  
+      | \ | \ | * | \ | \ | \ 
+      |  \|  \|  *|  \|  \|  \
+6     |   |   |   *   |   |   \
+    |   |   |   | * |   |   |   |
+    +---+---+---+---+---+---+---+
+bin = 0   1   2   3   4   5   6 
+\end{verbatim}
+\end{minipage}
+
+There are two ways to get to level 1.  There are four ways to get to level 2
+(one way to get to level 2 bin 0, two ways to get to level 2 bin 1, and one way
+to get to level 2 bin 2).
+
+\problem{Problem 1}
+
+In general, how many ways are there to get to the $n$th
+level of the maze?  (This answer is easy.  Work it out before even
+thinking about going to lab.)
+
+It is a more complicated problem to determine how many different paths
+there are from the vertex to a particular bin at the bottom of the
+maze.
+
+We observe that if we are at level zero we can get into the maze only
+at bin zero.  If we are not at level zero there are only two ways to get
+to bin $k$ at level $n$ --- we must come from either bin $k$ of level $n-1$ or
+bin $k-1$ at level $n-1$.  Thus the number of paths to bin $k$ at level $n$
+must be the sum of the number of paths to the contributing bins.  We
+can formalize this description as a Scheme program as follows:
+
+\beginlisp
+(define (n-paths level bin)
+  (if (= level 0)
+      (if (= bin 0) 1 0)
+      (+ (n-paths (- level 1) (- bin 1))
+	 (n-paths (- level 1) bin))))
+\endlisp
+
+Compute, by hand, the table of values of {\cf (n-paths n k)} for $n, k = 0$, 1,
+2, 3, 4, 5.  This takes very little work (fewer than five minutes!) if you
+organize it carefully.  Start with small values and you will soon see the
+pattern.  Check your answer on a Chipmunk if you like.
+
+You have probably noticed that the numbers you computed in the previous
+exercise are the binomial coefficients (Pascal's triangle).  These numbers
+represent the number of combinations of $n$ objects taken $k$ at a time,
+ignoring order.
+
+\begin{center}
+{\cf (n-paths n k)} $= C(n, k)$
+\end{center}
+
+Our algorithm for computing these numbers is one of the worst that a
+sensible person might devise.
+
+\problem{Problem 2}
+
+In general, how many calls to {\cf n-paths} are required to
+compute the value of {\cf (n-paths n k)} using the algorithm indicated
+above?  The answer is a simple function of $n$ (independent of $k$).
+
+An alternative (and far better way) to compute binomial coefficients
+is to use the formula:
+\begin{center}
+$C(n, k) = \frac{n!}{k! (n-k)!}$
+\end{center}
+Unfortunately, factorials become very large very fast, and arithmetic
+with large numbers is expensive.  Also, computing $C(n, k)$ in this way
+requires a number of redundant multiplications (because some of the
+multiplications in the computation of n! are just to be undone by the
+division by either $k!$ or $(n-k)!$).
+
+\problem{Problem 3}
+
+Write a short, elegant program for {\cf (n-paths level bin)},
+that avoids the redundant multiplications indicated above.  Hand in
+this program, along with examples of its use, 
+showing that it works for n up to 6.  Give an estimate
+of the order of growth of time and space used by your program.
+
+\subsection{Smoothing}
+
+When random errors occur in measurements it is common to average data to reduce
+their effect.  The following exercises are concerned with a form of averaging
+called smoothing.  Consider measurements of the height of a ball thrown upwards
+with velocity V at time -T, with T chosen such that the ball reaches its
+maximum height (0) at time $t=0$.  The true position of the ball is
+$y(t)=-\frac{1}{2}gt^2$, the measured position $m(t)=y(t)+e(t)$, where $e(t)$
+is the measurement error.
+
+\problem{Problem 4}
+
+Construct a procedure {\cf true-pos} with arguments V, g and t that 
+computes the true height of the ball at time t.
+
+To reduce the effect of measurement errors, we might attempt to smooth the data
+by averaging adjacent values: $S[m(t)] = \frac{1}{2}(m(t+h)+m(t-h))$, where $h$
+is a small time increment.
+
+We can express the idea of smoothing as a procedure (analogous to
+the {\cf deriv} procedure discussed on p. 68 of the text) as follows:
+\beginlisp
+(define (smooth f h)
+  (lambda (x)
+    (average (f (+ x h))
+	     (f (- x h)))))
+
+(define (average x y)
+  (/ (+ x y) 2))
+\endlisp
+
+\problem{Problem 5}
+
+Even in the absence of random error ($e(t)=0$) $S[m(t)]$ differs from the true
+position, $y(t)$.  We call this difference the systematic error introduced by
+smoothing.  Determine how the systematic error depends on $h$.  You are to
+develop an expression for the systematic error in the measurement of $y(t)$ as
+a function of $h$.
+
+\problem{Problem 6}
+
+Verify, by numerical experiment, that the systematic error
+introduced by applying {\cf smooth} to {\cf true-pos} has the 
+dependence on $h$ that you determined above.
+
+When the random error term is non-zero, $S[m(t)]$ differs from $y(t)$ by the
+sum of the systematic error determined above and a term equal to
+$\frac{1}{2}(e(t-h)+e(t+h))$.  In many cases this is smaller than $e(t)$.  For
+example, when $e(t-h)$, $e(t)$, and $e(t+h)$ are roughly of the same size,
+$\frac{1}{2}(e(t-h)+e(t+h))$ is of the same size when $e(t-h)$ and $e(t+h)$ are
+of the same sign, but smaller when they differ in sign. In most practical
+situations, $h$ is chosen by compromise since reducing the size of $h$
+decreases the systematic error, but also reduces the likelihood that the
+contributions of $e(t-h)$ and $e(t+h)$ to $S[m(t)]$ will cancel out.
+
+When the random error of measurement is large it is often advantageous
+to repeat the smoothing operation a number of times, though this will
+increase the systematic error.  So, for example, {\cf (smooth (smooth m h)
+h)} may be less noisy than {\cf (smooth m h)} which may be less noisy than $m$.
+
+One useful abstraction for repeatedly applying a procedure is the
+{\cf repeated} procedure, defined below:
+\beginlisp
+(define (repeated f n)
+  (if (= n 0)
+      identity
+      (compose f (repeated f (- n 1)))))
+
+(define (identity x) x)
+
+(define (compose f g)
+  (lambda (x) (f (g x))))
+\endlisp
+
+For example, using this procedure, one can write:
+
+\begin{verbatim}
+==> ((repeated square 3) 5)
+390625
+\end{verbatim}
+
+\problem{Problem 7}
+
+Define and test a procedure, {\cf nth-smooth}, of three arguments, {\cf n}, the
+number of times to apply the smoothing procedure; {\cf f}, the function to
+smooth; and {\cf h}, the smoothing interval.  {\cf nth-smooth} must return the
+smoothed procedure.  For example, {\cf (nth-smooth 2 m h)} should return a
+procedure equivalent to {\cf (smooth (smooth m h) h)}.  You should be sure to
+work this out carefully before testing it on a Chipmunk.  The required
+procedure is not long, but some thought is required to get it right.
+
+%\beginlisp
+%   ***** Answer
+%   (define (nth-smooth n f h)
+%     ((repeated (lambda (g) (smooth g h)) n) f))
+%\endlisp
+
+{\cf ((smooth f h) t)} is equivalent to the algebraic expression
+$\frac{1}{2}(f(t-h)+f(t+h))$.  Write algebraic expressions equivalent to {\cf
+((smooth (smooth f h) h) t)} and to {\cf ((smooth (smooth (smooth f h) h) h)
+t)}.  You should see that the coefficients of {\cf f} in these expressions are
+closely related to the numbers in Pascal's triangle, discussed above.
+
+\problem{Problem 8}
+
+How many times must {\cf f}, the procedure that implements the
+function being smoothed, be applied when evaluating {\cf (nth-smooth n f h)}?
+
+\problem{Problem 9}
+
+Write a different implementation of {\cf nth-smooth} that applies the procedure
+that implements the function being smoothed only $n+1$ times when evaluating
+{\cf (nth-smooth n f h)}?  Make use of your work from Problem 3.
+
+\end{document}

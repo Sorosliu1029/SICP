@@ -1,0 +1,144 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+@Comment(Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. )
+
+@device(dover)
+@make(6001)
+
+@modify(excounter, numbered [Exercise @1], referenced [@1])
+
+@PageHeading(left "6.001 -- Fall Semester 1985",
+             center "@Value(Page)",
+             right "Problem set 6")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+Fall Semester, 1985
+
+Problem Set 6
+@end(center)
+@blankspace(0.25 in)
+
+@begin(flushleft)
+Issued: Tuesday, October 22
+
+Due:
+@begin(itemize)
+on Friday, November 1
+for recitations meeting at 9:00, 10:00, and 11:00
+
+on Wednesday, October 30
+for recitations meeting at 12:00, 1:00, and 2:00
+@end(itemize)
+
+Reading Assignment: Chapter 3, Sections 3.2 and 3.3
+
+@end(flushleft)
+
+
+@section(Homework exercises)
+
+Write up and turn in the following exercises from the text:
+@begin(itemize)
+Exercise 3.2: monitored procedures
+
+Exercise 3.11: environment diagrams
+
+Exercise 3.13: @a[make-cycle]
+
+Exercise 3.18: detecting cycles
+
+Exercise 3.21: printing queues
+@end(itemize)
+
+
+@section(Laboratory Assignment: Implementing Deques)
+
+For this week's laboratory exercise you are to design and implement a
+representation for deques.  
+
+As explained in exercise 3.23, a deque (double-ended queue) is a
+sequence in which items can be inserted and deleted at either the
+front or the rear.  The data-access operations are @a[make-deque],
+@a[empty-deque?], @a[front-deque], @a[rear-deque],
+@a[front-insert-deque!], @a[rear-insert-deque!],
+@a[front-delete-deque!], and @a[rear-delete-deque!].
+
+Your implementation should construct deques using pairs, and all
+operations should be accomplished in O(1) time.
+
+For this assignment, we will give you a few helpful hints, but
+otherwise, you are on your own:
+
+@begin(itemize)
+The hard part is arranging for all operations to be done in O(1) time.
+That is, the time should be independent of the number of elements in
+the deque.  You will probably need to design a representation where
+each element has pointers both to the next element and to the previous
+element.
+
+We strongly suggest that you do the assigned exercises before working on
+this part of the problem set.  In particular, exercise 3.13 should alert
+you to the problems of working with circular structures, and exercise
+3.21 will make you realize that the standard @a[print] command can be
+very misleading in dealing with non-standard structures.
+
+Above all, be sure to carefully design your representation before
+starting to write code.  With mutable structures especially, sitting
+down and hacking is a great way to waste time and drive yourself nuts
+with frustration.  Even a single misplaced @a[set-car!] or
+@a[set-cdr!] can irreparably trash your data structure (and @a[print]
+is not much help in figuring out what happened).
+@end(itemize)
+
+In grading this problem set, we will give great weight to the quality
+and form of your writeup, rather than only checking to see if your
+code is correct.  Your writeup should be in three parts:
+
+@begin(enumerate)
+First, you should explain your representation and provide
+box-and-pointer diagrams to show how a simple deque is
+implemented (compare figure 3.19 of the book).
+
+Next, you should provide
+implementations (and English explanations) of the constructors,
+selectors, and mutators.  For the mutators, you should draw
+box-and-pointer diagrams showing how the deque structure is changed
+by each operation (compare figures 3.20 and 3.21 of the book).
+
+Finally, you should show some interactions that test your representation:
+Construct a deque and then adding and deleting elements,
+verifying at each point that the front and rear elements of the deque
+are correct and that the deque is empty only when it is supposed to
+be.
+@end(enumerate)

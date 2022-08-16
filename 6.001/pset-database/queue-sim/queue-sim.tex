@@ -1,0 +1,647 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+\beginone {6.[???]} {Simulation of a Queueing System}
+%derived from Spring '82 PS7
+
+\noindent
+In this section we shall implement a simulation of a {\it multi-server
+queueing system}.  This models phenomena associated with customers
+waiting in line to obtain a service that is provided by any
+one of a number of identical servers.  New customers are constantly
+entering the system with requests for service that take various
+amounts of time.  We will model a setup in which a separate queue is
+formed for each server, and a customer entering the system joins the
+shortest queue.  This is the typical organization of many kinds of
+service facilities, for example, most banks, where the servers are the
+tellers and the queues are the lines formed at the individual tellers'
+windows.  Other such facilities are post offices, supermarkets, and so on.
+
+\parindent10pt
+Our simulation will provide information about the amount of time
+customers spend waiting in line, and will allow us to determine the
+effect upon this waiting time of adding additional servers, changing
+the rate at which new customers enter the system, or changing the rate
+at which requests are processed.\ft{The branch of mathematics call
+{\it queueing theory} has developed purely theoretical techniques for
+answering many of these same questions.  A discussion of these methods
+is outside the scope of this book.}
+
+\beginthree{Using the simulation}
+
+The simulation is run by calling the procedure {\tt simulate}, which
+takes four inputs.  The first is the number of servers in the system.
+The second input is the probability (a number between 0 and 1) that a
+new customer will enter the system during each time period.  The third
+input is a list specifying the distribution of times for service
+requests.  The service time for a given customer is obtained by
+choosing a number at random from this list.  (For example, a list {\tt (2
+3 4 4 8)} implies that the time needed to serve a customer will be 2
+with 20\% probability, 3 with 20\% probability, 4 with 40\% probability
+and 8 with 20\% probability.)  The fourth input specifies the number of
+time units for which the simulation is to run.
+
+Each time a customer leaves the system, the simulator prints a message
+giving the time the customer entered the system,
+the time the customer left the system,
+the amount of service requested, and the time spent waiting in
+line.  Here is a typical portion of the output for a system with 3
+servers and a 90\% probability of a customer entering during each time
+period:
+
+\code
+==> (simulate 3 0.90 '(2 3 4 4 8) 50)
+(enter 2 leave 5 service 3 wait 0) 
+(enter 4 leave 6 service 2 wait 0) 
+(enter 7 leave 9 service 2 wait 0) 
+(enter 5 leave 13 service 8 wait 0) 
+(enter 9 leave 13 service 4 wait 0) 
+(enter 6 leave 14 service 8 wait 0) 
+(enter 8 leave 15 service 2 wait 5) 
+(enter 13 leave 17 service 4 wait 0) 
+$\vdotss$
+(enter 35 leave 40 service 3 wait 2) 
+(enter 37 leave 43 service 3 wait 3) 
+(enter 36 leave 44 service 8 wait 0) 
+(enter 34 leave 44 service 4 wait 6) 
+(enter 38 leave 48 service 4 wait 6) 
+(enter 39 leave 48 service 4 wait 5) 
+(enter 41 leave 50 service 2 wait 7) 
+\uncode
+
+Observe how much worse the waiting time becomes if we
+decrease the number of servers to 2:
+
+\code
+==> (simulate 2 0.90 '(2 3 4 4 8) 50)
+(enter 2 leave 4 service 2 wait 0) 
+(enter 1 leave 5 service 4 wait 0) 
+(enter 3 leave 9 service 4 wait 2) 
+(enter 5 leave 11 service 2 wait 4) 
+(enter 4 leave 12 service 8 wait 0) 
+(enter 8 leave 14 service 3 wait 3) 
+(enter 7 leave 16 service 4 wait 5) 
+(enter 9 leave 18 service 4 wait 5) 
+$\vdotss$
+(enter 21 leave 38 service 4 wait 13) 
+(enter 20 leave 41 service 8 wait 13) 
+(enter 22 leave 42 service 4 wait 16) 
+(enter 24 leave 45 service 4 wait 17) 
+(enter 26 leave 46 service 4 wait 16) 
+(enter 25 leave 49 service 4 wait 20) 
+(enter 29 leave 50 service 4 wait 17) 
+\uncode
+
+\beginthree{Structure of the simulation program}
+
+The system we are modeling has two types of communicating
+objects---customers and servers---which we will model as procedures with local
+state.  In addition to customer and server objects, of which there can
+be any number, we will have an object that provides new customers to
+the system.
+
+By organizing the model in terms of independent objects, we make it very
+flexible.  For instance, it is a straightforward matter to modify the
+simulation to allow servers or customers who behave differently from
+the typical ones, or to allow servers as well as customers to
+constantly enter and leave the system.   We can easily
+arrange to print out additional information, such as the average
+waiting time of all customers in the system or an indication of which
+server served which customer.  We could also have more than one
+customer source, each with its own characteristic probability
+of a customer entering and distribution of customer request times.
+
+\beginthree{Customers}
+
+{\tt Make-customer} creates a customer object.  Its arguments specify
+the time the customer arrives in the system and the service time
+needed by the customer.  The customer object itself is a procedure
+(the internal procedure {\tt customer} below) with local state (the arguments of
+{\tt make-customer}).  After {\tt make-customer} creates the customer
+object, it asks the server with the shortest queue to serve the customer.
+
+\code
+(define (make-customer arrival-time time-to-service)
+  (define (customer message)
+    (cond ((eq? message 'how-long-do-you-need)
+           time-to-service)
+          ((eq? message 'done)
+           (let ((time (get-current-time)))
+             (print
+              (list 'enter arrival-time
+                    'leave time
+                    'service time-to-service 
+                    'wait (- time (+ arrival-time
+                                     time-to-service))))))
+          (else
+           (error "unknown message -- customer" message))))
+  (request-service (shortest-queue-server available-servers)
+                   customer)
+  customer)
+\uncode
+
+Servers communicate with customers by using the following procedures:
+
+\code
+(define (customer-service-time customer)
+  (customer 'how-long-do-you-need))
+
+(define (customer-finished customer)
+  (customer 'done))
+\uncode\noindent
+ A customer replies to the message {\tt how-long-do-you-need} by
+giving its required service time.  The {\tt done} message prompts the
+customer to print its arrival time, the current time, the service
+time, and the time spent waiting (which is computed from the other
+three times).
+
+The server with the shortest queue is identified by the following
+procedure, which is called with a list of servers as input.  It first
+uses {\tt mapcar} to
+form a list of pairs, each consisting of a server together with the
+length of its queue.  Then it calls a procedure
+{\tt pair-with-smallest-car}, which takes a list of pairs as argument
+and returns the pair that has the smallest {\tt car} (in this case, the
+smallest queue length).  The appropriate server is the {\tt cdr} of the
+resulting pair.
+
+\code
+(define (shortest-queue-server server-list)
+  (cdr
+   (pair-with-smallest-car
+    (mapcar (lambda (server)
+              (cons (server-queue-length server)
+                    server))
+            server-list))))
+
+(define (pair-with-smallest-car pairs)
+  (cond
+   ((= (length pairs) 1) (car pairs))
+   (else (let ((smallest-in-cdr
+                (pair-with-smallest-car (cdr pairs))))
+           (cond
+            ((< (caar pairs) (car smallest-in-cdr))
+             (car pairs))
+            (else smallest-in-cdr))))))
+\uncode
+
+\beginthree{Servers}
+
+A server is a procedure (the internal procedure {\tt me} below) with
+a local state variable {\tt my-queue}, which is a {\it queue} of
+customers (initially empty).  (Queues and the operations on queues
+are described in section 3.3.2 of the text.)
+The first customer on the queue is the one currently being served.
+
+\code
+(define (make-server)
+  (let ((my-queue (make-queue)))
+    (define (serve customer)
+      (after-delay (customer-service-time customer)
+                   service-completed))
+    (define (process-serve-request customer)
+      (let ((queue-was-empty (empty-queue? my-queue)))
+        (insert-queue! my-queue customer)
+        (if queue-was-empty
+            (serve (front my-queue)))))
+    (define (service-completed)
+      (customer-finished (front my-queue))
+      (delete-queue! my-queue)
+      (if (not (empty-queue? my-queue))
+          (serve (front my-queue))))
+    (define (me message)
+      (cond ((eq? message 'how-long-is-your-queue)
+             (length-queue my-queue))
+            ((eq? message 'serve-me) process-serve-request)
+            (else (error "unknown message -- server" message))))
+    me))
+\uncode
+
+When a server receives a {\tt how-long-is-your-queue} message
+(because a new customer is deciding which queue to join)
+
+\code
+(define (server-queue-length server)
+  (server 'how-long-is-your-queue))
+\uncode\noindent
+ it responds with the length of its queue.  (In order to be able to
+find the length of a queue, we will add one new operation,
+{\tt length-queue}, to the queue
+operations of section 3.3.2.)
+
+The server's local procedure {\tt process-serve-request} is called
+with a customer object as argument when a customer requests service:
+
+\code (define (request-service server customer)
+  ((server 'serve-me) customer))
+ \uncode\noindent
+ The server first adds the given customer to its queue.  If there was
+not already a customer on the queue, it then proceeds to serve the
+customer.  To serve a customer, the server finds out how long the
+transaction will take and arranges for its local procedure {\tt
+service-completed} to be called after that amount of time.  (The
+procedure {\tt after-delay} takes a time delay and a no-argument
+procedure and calls the procedure after the given delay.)  When the
+time is up, the server tells the customer at
+the head of the queue that it is done and proceeds to serve the next
+customer in the queue, if there is one.
+
+\beginthree{Creating customers}
+
+A source of customers has two local state variables: the probability
+(a number between 0 and 1) that a new customer will enter the system
+during each time period, and a list specifying the distribution of
+times for service requests.  When {\tt make-customer-source} creates a
+customer source (the procedure {\tt me} below) it requests that the
+source's local procedure {\tt customer-source-action} be called
+after 1 unit of time.  This procedure decides (based on the probability)
+whether to create a customer; if so, it creates one with a service
+time chosen at random from the list of service times.   Whether or not it
+creates a customer, it asks to be called again after 1 time unit.
+This is how we simulate a given probability that a customer will enter
+the system at any time.
+
+\code
+(define (make-customer-source chance-customer-enters
+                              request-distribution)
+  (define (customer-source-action)
+    (if (odds chance-customer-enters)
+        (make-customer (get-current-time)
+                       (pick-random request-distribution)))
+    (after-delay 1 customer-source-action))
+  (define (me message)
+     (error "unknown message -- customer-source" message))
+  (after-delay 1 customer-source-action)
+  me)
+\uncode
+
+
+The following procedure takes a number between
+0 and 1 as input and returns true with that probability
+and false otherwise.  It is used  by the customer source
+to decide whether or not to generate a new customer.
+
+\code
+(define (odds percentage)
+  (> percentage (/ (random 100) 100)))
+\uncode
+
+The customer source uses the following procedure to choose the
+customer's service time at random from the list of service times:
+
+\code
+(define (pick-random x)
+  (nth (random (length x)) x))
+\uncode
+
+\beginthree{Scheduling events}
+
+Servers and customer sources both use a procedure {\tt after-delay}
+to request that a procedure be called after a given delay.
+The idea here is
+that we maintain a data structure, called an {\it agenda}, that contains a
+schedule of things to do.
+See section 3.3.4 (under the heading ``The agenda'') for a definition
+of {\tt after-delay} and a specification of the agenda operations
+{\tt empty-agenda?}, {\tt first-agenda-item},
+{\tt remove-first-agenda-item!}, {\tt add-to-agenda!}, and
+{\tt current-time}.
+
+Since time in the simulation is maintained in the agenda, the
+procedure {\tt get-current-time} (used above by customers and customer sources)
+can be implemented as follows:
+
+\code
+(define (get-current-time) (current-time the-agenda))
+\uncode
+
+\beginthree{Initialization and main loop}
+
+There are two global variables that are used throughout the system.
+
+\code
+(define the-agenda nil)
+(define available-servers nil)
+\uncode\noindent
+ Initialization consists of creating {\tt the-agenda}, setting up a
+list of {\tt available-servers}, and creating a customer source.
+
+The main loop of the simulation repeatedly sends a signal to the first
+object on the agenda and removes that object from the agenda, until
+the requisite number of time units have elapsed.
+
+All of this is accomplished by the main procedure {\tt simulate}, which is
+called with four arguments: the number of servers, the probability
+that a new customer will enter the system during the next time
+period, the list from which the time to service the customer will be
+selected at random, and the number of time steps the simulation should
+run.  {\tt Simulate} first performs the initialization and then enters
+the main loop:
+
+\code
+(define (simulate number-servers
+                  chance-customer-enters
+                  request-distribution
+                  max-time)
+  (define (initialize-simulation)
+    (set! the-agenda (make-agenda))
+    (set! available-servers
+          (make-server-list number-servers))
+    (make-customer-source chance-customer-enters
+                          request-distribution))
+  (define (main-loop)
+    (cond ((= (get-current-time) max-time) 'done)
+          ((empty-agenda? the-agenda) 'done)
+          (else (let ((first-item (first-agenda-item the-agenda)))
+                  (first-item)
+                  (remove-first-agenda-item! the-agenda)
+                  (main-loop)))))
+  (initialize-simulation)
+  (main-loop))
+\uncode
+
+{\tt Make-server-list} {\tt cons}es together a list 
+of a given number of servers:
+
+\code
+(define (make-server-list how-many)
+  (cond ((= how-many 0) '())
+        (else (cons (make-server)
+                    (make-server-list (- how-many 1))))))
+\uncode
+
+\beginthree{Queues and agendas}
+
+Queues are described and implemented in section 3.3.2 of the text.
+For this application, we have defined an additional queue operation,
+{\tt (length-queue \an{queue})}, that returns the number of items in a queue:
+
+\code
+(define (length-queue queue)
+  (length (front-ptr queue)))
+\uncode\noindent
+ Note that each call to {\tt make-queue} produces a new queue, and operations
+performed on one queue do not affect other queues.
+
+Agendas are described and implemented in section 3.3.4 of the text
+(see ``agenda'' in the index).
+
+\beginexsix{
+The main loop in {\tt simulate} checks whether {\tt the-agenda}
+is empty.  Will this ever occur?  Why or why not?
+}
+
+%\endex
+
+\beginexsix{
+What would the simulator do if we removed the line}
+
+\excode
+(after-delay 1 customer-source-action)
+\unexcode\noindent{\ninepoint
+from the end of {\tt make-customer-source}?
+}
+
+\endex
+
+\beginthree{Changes to the simulation}
+
+Now that we have presented the entire simulator that we demonstrated
+at the beginning of this section, we will consider some changes to
+the program.
+
+Suppose we wish to know the average service times and waiting times
+for customers who go through the system.  We can compute this by
+building a ``statistician object'' that we can communicate with
+by calling the following procedures:
+
+\code
+(define (remember-service-time statistician time)
+  ((statistician 'service-time) time))
+
+(define (remember-waiting-time statistician time)
+  ((statistician 'waiting-time) time))
+
+(define (average-service-time statistician)
+  (statistician 'average-service))
+
+(define (average-waiting-time statistician)
+  (statistician 'average-wait))
+\uncode\noindent
+ The last two messages cause the statistician to output the average of
+all the service times and waiting times, respectively, that were
+communicated by means of the first two messages.
+
+The following two exercises add a statistician to the simulation.
+
+\beginexsix{
+Design the statistician object.
+Describe the internal state
+information that is kept by your statistician object and how
+this information is updated in response to messages received.
+A straightforward way for the statistician to compute the
+desired averages is to save away all the information received from the
+customers in a long list and do all the computation at the end.  But
+it is also possible to avoid storing all this information by computing the
+average incrementally.  For example, when a new value is received, the
+new average can be computed in terms of the new value, the old
+average, and the number of values that have been averaged so far.
+
+\parindent10pt
+Write a {\tt make-statistician} procedure that returns a
+statistician object in accordance with your design.
+Don't forget to initialize the object's internal state information.
+To test your procedure, create a statistician {\tt stat1}}
+
+\excode
+(define stat1 (make-statistician))
+\unexcode\noindent{\ninepoint
+ and send {\tt stat1} some values for service and
+waiting times, then ask {\tt stat1} for the two averages.
+}
+
+\beginexsix{ Modify the queuing simulation to include a
+statistician.  Each customer should notify the statistician of its
+service and waiting times when it leaves the system.  After the
+simulation has run for the designated number of time units, the system
+should request the average times from the statistician and print them.
+(Hint: The only procedures you should need to modify for this exercise
+are {\tt simulate} and {\tt make-customer}.)  }
+
+\endex
+
+
+The next two exercises let us get additional information about
+the simulation.
+
+\beginexsix{
+The simulator reports on customers only when they leave the system.
+When the simulation ends there are typically customers waiting
+in queues or in the process of being served, but we do not know about
+these.  Add a printout at the end of the simulation that reports on
+the customers remaining in the system, telling when each customer
+arrived and how much service it needs.  Include some indication
+of which customers are being served.
+}
+
+\beginexsix{
+Modify the simulator so that it prints an indication of which
+server served which customer.  (Hint: You can do this by assigning
+each server a number.  A customer will need some way of finding
+out the number of its server.)
+}
+
+\endex
+
+The following exercises implement changes to the treatment of
+customers in the simulation.
+
+\beginexsix{ Modify the simulator so that there can be more than
+one customer source, each with its own characteristic probability of a
+customer entering and distribution of customer request times.
+(Hint: {\tt Simulate} will have to accept a list of probabilities and
+request-distribution lists so that it can create customer sources
+with the desired parameters.)
+}
+
+\beginexsix{ Real people waiting on line don't behave quite like the
+customers in our model.  Rather than simply selecting the queue with
+the fewest customers on it, they might try to take into account the
+service times of the customers in a queue.  (For example, they don't
+want to get behind a post-office customer with 20 packages if another
+customer is just buying stamps.)
+Also, people generally keep an eye on the other queues and switch
+to another queue if it becomes shorter than the one they are currently on.
+
+\expart{a}
+Design a kind of customer that behaves differently from the ones in
+our simulation, and write a constructor {\tt make-customer1} that
+creates customers of this new kind. (Be sure that your customers
+respond to all the right messages.)
+To test your procedure, run a simulation using {\tt make-customer1}
+in place of {\tt make-customer}.
+
+\expart{b} Modify the simulation so that more than one kind of customer can enter
+the system.  If you have implemented multiple customer sources (as
+suggested in  the previous exercise), you might want to do this by
+specifying which customer constructor should be used by each customer
+source.  Alternatively, you might have a single customer source create
+more than one kind of customer either by cycling through a list
+of customer constructors or by selecting at random from a list of
+customer constructors.  In the latter case, you can control the probability
+of generating each kind of customer in the same way we controlled
+the distribution of service request times---by putting multiple
+copies of each customer constructor in the list.
+}
+
+\endex
+
+In the next two exercises, we confront the fact that in the real world,
+servers go on and off duty.
+
+\beginexsix{
+Modify the simulation so that servers, as well as customers,
+are added while the simulation is running.  The creation of
+servers, like the creation of customers, can be controlled
+by a probability.  (Generally the probability of a server
+entering the system will be much lower than the probability of
+a customer entering.)  Alternatively, you might want to
+schedule the addition of servers by giving {\tt simulate} a list
+of times at which servers should be created.
+}
+
+\beginexsix{Design a means of taking a server out of the system and a
+means of deciding when to do so, and add this to the simulation.  You
+might prefer to have the servers just take a break and come back to
+work after some period of time rather than leaving altogether.  In
+either case, be sure that a server doesn't walk off the job in the
+middle of serving a customer.  Also make sure that any customers
+remaining on the abandoned queue redistribute themselves to other queues.  }
+
+\endex
+
+Instead of having each server form its own queue, we might want a
+system in which all new customers enter a single queue and all
+servers draw from this queue.  Many banks have started to use this
+kind of system, on the grounds that it guards against a customer
+getting stuck in a slow line when there are other lines
+that are moving more quickly.
+
+\beginexsix{
+Redesign the simulation so
+that, instead of separate server queues, there will be a single
+queue-like object (let's call it {\tt waiting-line}) to which all
+customers are added.  Then all servers draw from {\tt waiting-line}.
+Here are some problems to watch out for in your design:
+
+\beginlist{
+In the original implementation, the customer currently being
+served remains at the head of the server's private queue.  If there is
+only one queue, then you must find some way to prevent more than one
+server from trying to serve the same customer.
+}
+
+\beginlist{
+You must worry about the problem of a server becoming idle
+(e.g., when the waiting line is temporarily empty) and then never
+accepting a new customer from the line.
+The original implementation avoided this problem by having new customers
+send ``serve me'' messages to specific servers.  If a server
+was idle, the ``serve me'' message would awaken it.  How will you
+address this problem now, when new customers go to the waiting line
+rather than to a specific server?  (Hint: One way to solve the
+problem is to make {\tt waiting-line} more than just a queue.  Have it also
+be able to initiate requests to servers.)
+}
+
+\endlist
+
+Write a brief description of your strategy for solving the above
+problems.  Describe (in terms of messages sent) the interactions
+between customers, servers, and the waiting line.
+
+\parindent10pt
+Implement the changes that you designed above.  The only old
+procedures you should need to change are {\tt initialize-simulation},
+{\tt make-customer}, and {\tt make-server}.  You will, of course, need
+to also write some new procedures.  Note that if you want {\tt
+waiting-line} to be more than just a queue, you should {\it not}
+modify the implementation of queues, but rather use a queue as
+part of a waiting line, similar to the way in
+which servers had queues in the old implementation.
+}
+
+\parindent10pt
+Do you think that the single queue arrangement provides better service
+(e.g., in a bank) than does the multiple queue arrangement?  What
+kinds of test could you run with your simulation to find out?  Are the
+averages currently kept by the statistician enough, or might you want
+to check other aspects of the behavior of the system?

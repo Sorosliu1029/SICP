@@ -1,0 +1,196 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+% for yTeX
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+\def\v#1{\hbox{\bf #1}}
+\def\unit#1{{\v{\^#1}}}
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Spring Semester, 1988}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Spring Semester 1988}
+\rectorightheader={Problem Set 3}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 3}
+
+\vskip 0.25truein
+
+\vpar
+Issued: February 18, 1988
+
+
+\vpar
+Due: in recitation on Febrary 24 {\it for sections meeting at 9, 10 and
+11} and on February 26 {\it for sections meeting at 12, 1 and 2}.
+
+
+\vpar
+Reading assignment:  Chapter 2, Section 2.1, 2.2
+
+\chapter{1. Homework exercises}
+
+Write up and turn in the following exercises:
+
+1. Exercise 2.3 from text
+
+2. Exercise 2.5 from text
+
+3. Exercise 2.6 from text
+
+4. Exercise 2.7 from text
+
+5. Exercise 2.11 from text
+
+
+\chapter{ 2. Lab Exercises}
+
+It often gets tiresome to write simple data abstractions over and over
+again.  Therefore many languages provide a data abstraction facility
+which takes must of the repetitiveness out of using abstraction.
+We will experiment with such an abstraction facility in the lab.
+
+Begin by installing the code for problem set 3 on your floppy disk,
+using the {\tt load-problem-set} operation documented in the Chipmunk
+manual.  The file to be loaded contains all of the code listed at the
+end of the problem set, in file PS3.SCM.  You will not need to edit or
+modify any of it.  The ``modifications file'' for problem set 3 that
+will be installed on your disk is an empty file, since for this problem
+set you will be writing new procedures, rather than modifying procedures
+that we supply.
+
+\section{Part 1}
+
+Read the first page of comments in PS3.SCM to see how the data
+abstraction abstraction works.
+
+Help out Johnson Space Center Data Disservices by defining an astronaut
+abstraction.  An astronaut has a weight (in pounds), a height (in
+inches), an age (in years), and a GPA of 4.0 (usually).  To save
+the data enterer's time, make sure that the GPA defaults to 4.0.
+
+\section{Part 2}
+
+Define variables, SALLY, JOHN, BUZZ, KATHY and DEKE whose values
+are instances of the astronaut abstraction, and which describe the
+following astronauts:
+
+\vskip 20pt
+
+\centerline{\begintable [|l|l|l|l|l|]
+\topline
+&name&&weight&&height&&age&&GPA&\cr
+\midline
+&SALLY&&120&&66&&34&&4.0&\cr
+\midline
+&JOHN&&150&&69&&31&&4.0&\cr
+\midline
+&BUZZ&&178&&70&&53&&3.5&\cr
+\midline
+&KATHY&&115&&65&&33&&4.0&\cr
+\midline
+&DEKE&&183&&69&&57&&4.0&\cr
+\botline
+\endtable }
+
+\section{Part 3}
+
+All crews on the leaner meaner Shuttle program are going to be
+restricted to three Astronauts.  There are strict mass restrictions on
+lift off weight so that the engines will not need to run at maximum
+thrust.  Write a procedure VALID-MISSION? which takes four arguments:
+COMMANDER, PILOT, MISSION-SPECIALIST, and CREW-MASS, and returns
+true only if the three chosen astronauts do not exceed the mass
+restriction.  Test your procedure with:
+
+
+\beginlisp
+(valid-mission? sally deke john 470)
+\endlisp
+
+\noindent and
+
+\beginlisp
+(valid-mission? buzz deke kathy 470)
+\endlisp
+
+\section{Part 4}
+
+The budget at NASA is really tight, and space suit cost is proportional
+to the square of astronaut height.  There will be a restriction on the
+total space suit cost for a mission.  The President is also worried
+about the world view of the astronuat corps and has ordered that there
+will be a certain minimum total GPA for every mission.
+
+Write a Higher Order Procedure MAKE-COSTING-PROCEDURE
+that takes a field name and a procedure
+to be applied to the contents of that field, and returns a procecedure
+that sums over three astronauts.  For instance:
+
+\beginlisp
+==> ((make-costing-procedure square 'height) sally deke john)
+13878
+\endlisp
+
+Now modify VALID-MISSION? to take additional arguments, MAX-SUIT-COST
+and ACCUM-GPA.
+
+\section{Part 5}
+
+Data Diservices decides that the salary of each astronaut should be kept
+in their record too.  NASA has told them there will be a cap on total
+salary costs per mission.  Modify your VALID-MISSION? procedure to take
+an additional argument, TOTAL-SALARY, and to take that into account in
+validating a crew configuration.  What else needs to be changed to make
+this work?
+
+\end

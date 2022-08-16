@@ -1,0 +1,151 @@
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+@comment(Julie: may want to fix up the reference to the mods file, both
+here and in the Include'd file query-database.txt)
+
+@make[report]
+@device[dover]
+@style[font=helvetica10]
+@set(page=1)
+
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001 -- Fall Semester 1984")
+
+@PageHeading(odd,
+             Left "Problem Set 9",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+
+Problem Set 9
+@end(center)
+@blankspace(0.25 in)
+
+Issued: Tuesday, 20 November 1984
+
+Due: Friday, 30 November 1984 for ALL recitation sections
+
+Reading Assignment: Chapter 4, Section 4.5
+ 
+@blankspace(0.25 in)
+ 
+@begin(center)
+@b[Exercises]
+@end(center)
+
+@blankspace(0.25 in)
+
+Write up and turn in the following exercises from Chapter 4 of the text.
+
+
+@begin(itemize)
+Exercise 4-27, page 343
+
+Exercise 4-28, page 345
+
+Exercise 4-30, page 346
+
+Exercise 4-31, page 346
+@end(itemize)
+
+@blankspace(0.25 in)
+
+@begin(center)
+@b[Programming assignment]
+@end(center)
+
+
+You will not be doing much programming in Scheme for this problem set.
+Instead you will be programming in the "query language" described in
+Chapter 4.
+@include(query-compiled.txt)
+
+@paragraph[Using the query system]
+@include(query-driver.txt)
+
+@include(query-editzap.txt)
+
+@comment[Here we set up the name of the variable (in the mods file)
+ containing the data base.  This parameterizes the included file.]
+@string(database-variable="ibm-data-base")
+@include(query-database.txt)
+
+@paragraph[In the Lab]
+The mods file for this problem set contains 
+the data base given in Section 4.4.1, including both the assertions
+and the rules.  To set up the data base, load this file into Scheme
+as described above.
+
+@begin(itemize)
+Try out the system by typing in queries as specified in exercise 4-27
+(p. 343) and exercise 4-28 (p. 345).
+
+Do exercise 4-29 (p. 346).
+
+Do exercise 4-41 (page 380).  You do not need to make any changes to the
+query language code in order to implement @i[unique].  Merely set up a
+small file of your own with the new code to be added to the query
+interpreter.  Note that during the debugging of your program, you will
+probably be switching back and forth between the editor and Scheme.  Each
+time you modify the definition of @i[uniquely-asserted?] and read it back
+into Scheme, be sure to also read in and execute the @i[put] command.
+Otherwise, you will change the procedure definition, but @i[qeval] will
+still dispatch to the old procedure.
+
+@end(itemize)
+@blankspace[0.25 inches]
+@begin[center]
+@b[Post-Lab Written Work]
+@end[center]
+Write up and turn in thoughtful answers to the following exercises from
+Chapter 4 of the notes.
+
+@begin(itemize)
+Exercise 4-35, page 359
+
+Exercise 4-36, page 359
+
+(Optional - hard) Exercise 4-38, page 360
+
+@end(itemize)
+
+
+@blankspace(0.25 in)
+

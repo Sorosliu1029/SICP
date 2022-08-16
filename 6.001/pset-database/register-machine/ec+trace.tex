@@ -1,0 +1,595 @@
+% for yTeX
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1988}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1988}
+\rectorightheader={Problem Set 9}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 9}
+
+\vskip 0.25truein
+
+\vpar
+Issued: Tuesday, 22 November 1988
+
+% NOTE: missing # in {\tt (LOAD " 5:/SCHEME/PSETS/PS10-ECEVAL.SCM") }
+% should be {\tt (LOAD "#5:/SCHEME/PSETS/PS9-ECEVAL.SCM") }, but
+% the # won't go through ytex.  There is surely a way to do this in
+% ytex, but for now it is written in by hand.
+
+% The code that goes with this handout is in PS9-ECEVAL.SCM, PS9-SYNTAX.SCM,
+% and PS9-ADDEND.SCM.  
+
+\vpar
+Due: 
+on Friday, 2 December
+
+\vpar
+Reading Assignment: Chapter 5, 121 pages! -- start early.
+
+\vpar
+{\bf FINAL EXAM}: The final exam will be held on Tuesday, 20 December 1988,
+from 1:30 PM to 4:30 PM in Dupont Gymnasium.  It will cover
+material from the entire semester.  The final is open-book.
+
+\vskip 1truein
+
+{\bf NOTE}: 
+This problem set covers two of the three major programs discussed in chapter
+5: the register-machine simulator and the explicit control evaluator.
+Problems 1 and 2 cover register machines, 3 and 4 involve using and
+modifying the explicit control evaluator.  The lectures on this material
+will cover these programs in the same order as the problem set, so
+you will have no trouble starting the problem set early.
+
+The following files are essentially the same as the
+code in the book with a few modifications to help you see what is
+going on.  You will not need to know the details of register machine
+simulator code, but you should (from reading the text) get 
+a general idea of what is going on.  The code for the explicit control 
+evaluator is included at the end of this handout.  A {\tt load-problem-set} 
+command will load PS9-ANSWER.SCM into the editor and the other files 
+into Scheme.
+
+\ftpar{\tt PS9-REGSIM.SCM}
+This is the register machine simulator discussed in section 5.1.5.  It
+has been modified to include a monitored stack, as suggested in the
+subsection ``Monitoring machine performance'' (p.  417), and to
+complain about various errors in machine descriptions, as suggested in
+exercise 5.9. In addition we added a simple tracing facility, a
+counter for the number of machine operations executed, and a dynamic
+display of the stack depth using chipmunk graphics.
+
+\ftpar{\tt PS9-SYNTAX.SCM }
+These are Scheme procedures that define the representation of
+expressions and environments.  This is essentially the same syntax as
+was used in the meta-circular evaluator, with a few additions required
+by the explicit-control version.
+
+\ftpar{\tt PS9-ECEVAL.SCM }
+This is the explicit-control evaluator described in
+section 5.2. All of the code has been collected here in the form of a
+definition to be processed by the register machine simulator when the
+file is loaded, so do not be surprised if the loading takes quite a
+while. This version of the evaluator also has hooks in it to handle
+code produced by the compiler.
+
+\ftpar{\tt PS9-ANSWER.SCM }
+This is the file where you can enter your answers.  It contains tables
+for entering statistics, which can be edited or filled in by hand,
+and Scheme procedures that you will want to zap into Scheme. Use the 
+Scheme primitive {\tt list-file} to print a copy of the file.
+
+\chapter{Part I -- The register machine simulator}
+
+Register machines are built with {\tt define-machine} and can be run by 
+typing {\tt (start <machine-name>)}.  See pages 394-405 for some example 
+machines definitions, taking note of the syntax for {\tt define-machine}.
+
+To make use of the facilities for monitoring machine performance, you will need
+to use the initialization procedures between each run of a machine.  The {\tt
+initialize-stack} and {\tt initialize-ops-counter} instructions are included to
+print statistics and to reset some of machine's local state variables that were
+used in statistics gathering.  (Page 413 of the book describes {\tt
+initialize-stack}, and an example below shows how you will want to use
+both instructions.)
+
+\section{Problem 1 -- Building register machines}
+
+Consider the following procedure for counting atoms in a data structure.
+
+\beginlisp
+(define (count-atoms lst)
+        (cond ((null? lst) 0)
+              ((atom? lst) 1)
+              (else (+ (count-atoms (car lst))
+                       (count-atoms (cdr lst))))))
+\endlisp
+
+Design a register machine for computing {\tt count-atoms} by filling
+in the following program shell.  Assume the argument to {\tt count-atoms} is 
+in {\tt lst} register when the machine starts, and the result is placed in
+{\tt value} after it has finished.  The initializations should be the
+last instructions performed by the machine.
+
+\beginlisp
+(define-machine count-atoms-machine
+  (registers value continue lst)
+  (controller
+        .
+        .
+        .
+    (perform (initialize-stack))
+    (perform (initialize-ops-counter))))
+\endlisp
+
+The above shell is included in the file {\tt PS9-answer.scm } along
+with a procedure {\tt try-count-atoms} to help you test your machine.  
+Note the statistics initializations as the last machine intructions.  
+
+In addition to statistics for stack usage and total number of operations, we 
+have added some procedures to help you debug your machines.  The two 
+procedures {\tt remote-trace-on} and {\tt remote-trace-off} take a single
+argument, a register machine, and control the printing of machine intructions 
+as they are executed.  In addition, there is a facility for tracing a specific 
+register of a machine using {\tt remote-trace-reg-on} and 
+{\tt remote-trace-reg-off}; both procedures take a register machine and a 
+register name.  A message will be printed every time that register is set to 
+a new value.  For example:
+
+\beginlisp
+1 ==> (remote-trace-reg-on count-atoms-machine 'value)
+()
+\pbrk
+1 ==> (try-count-atoms '(a . b))
+(REG-TRACE: VAL NEW-VALUE: 1) 
+(REG-TRACE: VAL NEW-VALUE: 1) 
+(REG-TRACE: VAL NEW-VALUE: 0) 
+        .
+        .
+        .
+(REG-TRACE: VAL NEW-VALUE: 2) 
+(TOTAL-PUSHES: 6 MAXIMUM-DEPTH: 4) 
+(MACHINE OPERATIONS: 48) 
+2 
+\endlisp
+
+Turn in a listing of your machine.
+
+\section{Problem 2 -- Running hand-coded count-atoms}
+
+Assume you are going to run your machine only on balanced binary trees,
+e.g., a pair of atoms, {\tt (cons 'a 'b)}, is such a tree, as well as
+{\tt (cons t1 t2)} where {\tt t1} and {\tt t2} are themselves balanced binary 
+trees of the same size.  Fill out the table in {\tt PS9-answer}, which 
+contains more examples of balanced binary tress.  Derive formulas for the 
+number of operations, total stack pushes and maximum stack depth as a function 
+of $n$, where $n$ is the depth of a tree.  (The tree printed as {\tt (a . b)} 
+is of depth 1.)  
+
+
+\chapter{Part II -- The explicit control evaluator}
+
+The explicit control evaluator is implemented as a register machine,
+so you will have Scheme embedded in the simulator embedded in
+Scheme!!! To start the machine, type {\tt (go)}. On the bottom of the screen
+you will see a graphical representation of the depth of the stack.
+Note that the graph "wraps around" back to the left side for long
+runs.  At the end of a run, the system will print a few statistics.
+For example:
+
+\beginlisp
+1 ==> (go)
+(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0) 
+(MACHINE OPERATIONS: 5) 
+EC-EVAL==>(define (f x) (+ x (* x x)))
+F 
+(TOTAL-PUSHES: 3 MAXIMUM-DEPTH: 3) 
+(MACHINE OPERATIONS: 35) 
+EC-EVAL==>(f 10)
+110 
+(TOTAL-PUSHES: 21 MAXIMUM-DEPTH: 8) 
+(MACHINE OPERATIONS: 179) 
+EC-EVAL==>
+Quit!
+\endlisp
+
+Notice that the explicit control evaluator has the prompt {\tt EC-EVAL==>}
+to show you that you are not talking to Scheme. Try playing around
+with a few expressions. Use the "alpha" and "graphics" to help see the
+graph of the stack depth. When it gets too cluttered you can clear the
+screen with the {\tt clear-graphics} procedure which has been installed as
+a primitive operation. The other primitives are:
+
+\beginlisp
+    car cdr cons atom? eq? null? + - * / > < = 
+\endlisp
+
+\vpar
+but it is easy to add more. See the procedure {\tt setup-environment} in
+the ECEVAL file.
+
+As you will probably notice, there is no error handler for the
+evaluator, so the slightest mistake will bounce you back out to
+Scheme. Just hit a {\tt <cntl>G} and type {\tt (go)} again (your old 
+definitions will still be defined).
+
+\section{Problem 3 -- Running interpreted count-atoms}
+Crank up the explicit control evaluator and carefully type in the
+following procedure definitions:
+
+\beginlisp
+(define (count-atoms-r lst)
+        (cond ((null? lst) 0)
+              ((atom? lst) 1)
+              (else (+ (count-atoms-r (car lst))
+                       (count-atoms-r (cdr lst))))))
+
+(define (count-atoms-i lst)
+        (define (loop l1 l2 result)
+                (cond ((null? l1) 
+                          (cond ((null? l2) result)
+                                (else (loop (car l2) (cdr l2) result))))
+                      ((atom? l1) (loop (car l2) (cdr l2) (+ 1 result)))
+                      (else (loop (car l1) (cons (cdr l1) l2) result))))
+        (loop lst '() 0))
+\endlisp
+
+Fill in the values of the two tables for interpreted versions of 
+{\tt count-atoms} in {\tt PS9-answer.scm}.  Observe how the shapes of the 
+stack usage differ between {\tt count-atoms-r} and {\tt count-atoms-i}.  
+Derive formulas for number of operations, total stack pushes and maximum 
+stack depth for each of the interpreted procedures.   Write a brief 
+explanation (one paragraph) of your observations.  For example, can 
+you make any general statements about the relative performance, in terms of 
+stack space and number of operations, between the recursive and iterative 
+versions?  
+
+\chapter{Part III -- Debugging from the explicit control evaluator}
+
+To find bugs in programs, it is often useful to be able to watch the
+program execute on a particular input.  One way of doing this is to trace 
+the operation of the evaluator by using {\tt remote-trace-on} and 
+{\tt remote-trace-off} on the evaluator register machine.  Once tracing
+has been turned on, every register machine instruction of the evaluator will
+automatically be traced, since the code runs on the explicit-control-evaluator 
+machine.  For example, here is a trace (via {\tt photo}) of the evaluation of 
+{\tt 'a} : 
+
+\beginlisp
+1 ==> (remote-trace-on explicit-control-evaluator)
+() 
+\pbrk
+1 ==> (go)
+(PERFORM (INITIALIZE-STACK))
+(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0) 
+(PERFORM (INITIALIZE-OPS-COUNTER))
+(MACHINE OPERATIONS: 2) 
+(PERFORM (NEWLINE))
+                                                 ; Newline performed
+(PERFORM (PRINC 'EC-EVAL==>))EC-EVAL==>
+(ASSIGN EXP (READ))'a                            ; User input here
+\pbrk
+(ASSIGN ENV THE-GLOBAL-ENVIRONMENT)
+(ASSIGN CONTINUE PRINT-RESULT)
+(GOTO EVAL-DISPATCH)
+(BRANCH (SELF-EVALUATING? (FETCH EXP)) EV-SELF-EVAL)
+(BRANCH (QUOTED? (FETCH EXP)) EV-QUOTE)
+(ASSIGN VAL (TEXT-OF-QUOTATION (FETCH EXP)))
+(GOTO (FETCH CONTINUE))
+(PERFORM (USER-PRINT (FETCH VAL)))
+A                                                ; The result!
+(GOTO READ-EVAL-PRINT-LOOP)
+(PERFORM (INITIALIZE-STACK))
+(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0) 
+(PERFORM (INITIALIZE-OPS-COUNTER))
+(MACHINE OPERATIONS: 14) 
+(PERFORM (NEWLINE))
+                                                 ; Newline performed
+(PERFORM (PRINC 'EC-EVAL==>))EC-EVAL==>
+(ASSIGN EXP (READ))
+Quit!
+\endlisp
+
+As you can see, the traces can quickly get out of hand! Furthermore,
+it is not at all clear which occurence of an instruction is being
+executed.  {\tt (GOTO (FETCH CONTINUE))}, for example,
+occurs at many different places in the evaluator machine.  By
+comparing the surrounding instructions in both the trace and the machine
+definition, you may be able to determine which instruction in the
+machine is being executed.  In general, however, making sense out of your 
+register machine trace is similar to doing reverse compilation.
+Therefore, we would like to trace application of 
+{\tt EC-EVAL} Scheme procedures, rather than register machine instructions.  
+
+The {\tt trace} procedure on the Chipmunks lets you trace Scheme procedure
+applications; the next problems develop a modification to the explicit
+control evaluator to provide a similar tracing mechanism.  You will be
+modifying the explicit control evaluator to handle the {\tt trace} special
+form.  {\tt Trace} takes one argument, a procedure, and informs that procedure
+that whenever it is applied, it should print out its own name and the list of
+actual arguments to which it's being applied.  The following shows an example
+of the use of {\tt trace}:
+
+\beginlisp
+EC-EVAL==>(define (factorial n)
+                  (cond ((= n 0) 1)
+                        (else (* n (factorial (- n 1))))))
+
+FACT 
+(TOTAL-PUSHES: 3 MAXIMUM-DEPTH: 3) 
+(MACHINE OPERATIONS: 37) 
+EC-EVAL==>(trace fact)
+
+FACT 
+(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0) 
+(MACHINE OPERATIONS: 18) 
+EC-EVAL==>(fact 2)
+
+(CALLING PROCEDURE FACT WITH (2)) 
+(CALLING PROCEDURE FACT WITH (1)) 
+(CALLING PROCEDURE FACT WITH (0)) 
+2 
+(TOTAL-PUSHES: 80 MAXIMUM-DEPTH: 14) 
+(MACHINE OPERATIONS: 715) 
+EC-EVAL==>
+\endlisp
+
+\section{Problem 4 -- Tracing in the explicit control evaluator}
+
+Implement {\tt trace} by following each of the steps below.  One
+of the goals of the implementation should be to avoid slowing the
+execution of untraced procedures.  Note that you are not being asked 
+to implement {\tt untrace}, so there is no easy way to stop a procedure 
+from being traced.  
+
+There are a number of possible approaches you could take in the implementation.
+One would be to modify the Scheme code in the procedure object being traced by
+adding a print expression at the beginning of the procedure body.  However,
+this would not work well for tracing primitive (or, as you will see later,
+compiled) procedures, since the Scheme code of the procedure body is not 
+available in those cases.  Instead, we will add a new kind of procedure object 
+called a {\it traced procedure object}, which will contain the real
+procedure object.  In addition to the real procedure object, a traced 
+procedure object will contain a special symbol so it can recognized as a 
+traced procedure, and the procedure name to be printed when the procedure is 
+called.
+
+\section{Step 1: a trace expression}
+
+Write two new procedures for working with expressions represented
+as lists:  {\tt tracing?} takes an expression and returns a true value 
+when the expression is a trace expression; {\tt traced-proc} returns the 
+procedure part of a trace expression.  These should be analogous to
+the procedures in section 4.1.2 of the book and {\tt PS9-SYNTAX.SCM}.
+Turn in a listing of your procedures.
+
+\section{Step 2: representing traced procedures}
+
+Write procedures for changing a procedure object (as represented by
+the evaluator) into a traced procedure object.  You will need to
+work with the representation of procedure objects, so review
+{\tt make-procedure} (page 305) and {\tt primitive-procedure-objects}
+(page 311).  
+
+{\tt (change-to-traced-procedure! <name> <procedure-object>)}
+will mutate the procedure object to be a traced procedure object.  
+Hint: This is tricky. You will need to mutate the old procedure object, 
+not build a new one, but you must also keep all the pieces of 
+the old one in the new one.  In particular, you will have to store the 
+lamba expression, environment, and tag ({\tt primitive} or {\tt procedure})
+along with the name.  All this is necessary in order to make the other
+three procedures in this step behave correctly.	
+
+{\tt (traced-procedure? <procedure-object>)} is a true value 
+whenever the procedure is being traced, i.e., whenever it is a traced 
+procedure object.
+
+{\tt (procedure-part-traced <traced-proc>)} returns the (untraced)
+procedure object that is {\it almost} the procedure object used when
+{\tt change-to-traced-procedure!} was applied.  By {\it almost} we
+mean that it is a different procedure object of the same tag
+(i.e., primitive or compound) and with the same ({\tt eq?})
+lambda-expression and environment.
+
+{\tt (name-part-traced <traced-proc>)} returns the name of the 
+procedure object used when {\tt change-to-traced-procedure!} was applied.
+
+Test your procedures by building some procedure objects using 
+{\tt make-procedure}, changing them into traced procedures, and
+applying the selector procedures.  Turn in a listing of your
+procedures.
+
+\section{Step 3: print routines}
+
+We have provided you with a procedure, {\tt print-call}, that takes a 
+procedure name and a list of arguments and prints a line of the form:
+\beginlisp
+        (CALLING PROCEDURE * WITH (3 2))
+\endlisp
+Don't be mislead by the call to {\tt reverse} inside {\tt print-call}.
+This is just to make your life easier, since argument lists are stored
+in reverse order within the evaluator.
+
+In addition, the {\tt user-print} routine in {\tt PS9-MCEVAL.SCM}
+must be modified to handle traced procedures in some reasonable way.
+We have included a modified version of {\tt user-print} that you will
+want to use with your modified evaluator.  Zap both procedures into
+Scheme.
+
+\section{Step 4: building traced procedures in the evaluator machine}
+
+Modify the explicit-control-evaluator definition to handle the {\tt trace} 
+special form.  First, add a new branch in the {\tt eval-dispatch} part of the 
+code to branch to a new label {\tt ev-trace-command}.  Next, add a section 
+of code beginning with the new label {\tt ev-trace-command} that contains 
+instructions to change the current procedure object to a traced procedure.  
+These changes should make the evaluator handle expressions of the form
+{\tt (trace <procedure>)}. 
+
+\section{Step 5: applying traced procedures in the evaluator machine}
+
+Now that you have traced procedure objects in the environment, you need to
+modify the code that handles procedure application to deal with these new 
+objects.  Add a branch to the {\tt apply-dispatch} part of the code so that 
+traced procedures can be treated specially.  Next, add the corresponding code 
+for traced procedure application under the label {\tt traced-apply} to first 
+print the trace information and then apply the real procedure part of the 
+traced procedure as usual. Turn in a listing of the evaluator, marking your 
+changes.  
+
+\section{Step 6: using your tracing mechanism}
+
+Your new evaluator should be now able to correctly trace compound and 
+primitive procedures.   Try tracing some procedures, including some
+that are called from within compound procedures.  Turn in a {\tt photo} 
+session from running the {\tt factorial} program above, but this time trace 
+the call to the primitive "{\tt -}" procedure.
+
+\end
+
+%stuff below was used in an earlier (spring 87) version of the pset
+
+\chapter{Part IV -- The compiler!!}
+
+The compiler translates Scheme expressions into register machine code
+which can be run as part of the explicit control evaluator machine
+(check out the book!). You can look at the output of the compiler by
+using the {\tt compile} procedure from Scheme. For example:
+
+\beginlisp
+1 ==> (pp (compile '(* x y)))
+((ASSIGN FUN (LOOKUP-VARIABLE-VALUE '* (FETCH ENV)))
+ (ASSIGN VAL (LOOKUP-VARIABLE-VALUE 'X (FETCH ENV)))
+ (ASSIGN ARGL (CONS (FETCH VAL) '()))
+ (ASSIGN VAL (LOOKUP-VARIABLE-VALUE 'Y (FETCH ENV)))
+ (ASSIGN ARGL (CONS (FETCH VAL) (FETCH ARGL)))
+ (GOTO APPLY-DISPATCH))
+\endlisp
+
+To actually run the code, use the procedure {\tt compile-and-go} which
+compiles an expression and runs the result via the explicit control
+evaluator:
+
+\beginlisp
+1 ==> (compile-and-go '(* 5 (+ 4 6)))
+(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0) 
+50 
+(TOTAL-PUSHES: 4 MAXIMUM-DEPTH: 4) 
+(MACHINE OPERATIONS: 37) 
+EC-EVAL==>
+Quit!
+\endlisp
+
+You can compile definitions with {\tt compile-and-go} which will run the
+define and make the compiled procedure available from the evaluator.
+(Since {\tt compile} and {\tt compile-and-go} are top-level to Scheme, you can
+{\tt zap} explicit calls to them from NMODE instead of typing them by hand!).
+
+\beginlisp
+1 ==> (compile-and-go '(define (f x) (+ x 5)))
+(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0) 
+F 
+(TOTAL-PUSHES: 1 MAXIMUM-DEPTH: 1) 
+(MACHINE OPERATIONS: 15) 
+EC-EVAL==>(f 10)
+15 
+(TOTAL-PUSHES: 5 MAXIMUM-DEPTH: 3) 
+(MACHINE OPERATIONS: 66) 
+EC-EVAL==>
+Quit!
+\endlisp
+
+By the way, becuase of the design of the tracing feature in Problem 4, and
+because compiled code is executed from the evaluator, you should be
+able to trace compiled procedures as well as procedures called from compiled
+procedures!  However, in this problem you will again be gathering some 
+performance statistics, and although your changes to the evaluator in
+problem 4 should not significantly affect these statistics, reload the
+original verion of the evaluator before doing problem 5.  To do this, type
+{\tt (LOAD "\#5:/SCHEME/PSETS/PS9-ECEVAL.SCM") }
+
+\section{Problem 5 -- Compiled runs of count-atoms}
+
+Run the compiled version of the recursive {\tt count-atoms} procedure 
+(using {\tt compile-and-go}).  There is a definition in {\tt
+PS9-ANSWER.SCM} that gives the code for a recursive procedure
+called {\tt count-atoms-comp}.  After zapping this definition, you
+can compile the code by typing {\tt (compile-and-go count-atoms-code)},
+and then run the procedure {\tt count-atoms-comp}.
+
+Fill out the table in {\tt PS9-ANSWER.SCM} and derive formulas as before.  
+Write a paragraph explaining a few of the reasons why the compiled run of 
+{\tt count-atoms-comp} is more efficient than the interpreted run of the same 
+procedure (i.e., {\tt count-atoms-r}).
+
+\section{Problem 6 -- Compiled code for count-atoms}
+
+Make a listing of the compiled code for {\tt count-atoms} by making a
+{\tt photo} of the evaluation of: 
+
+\beginlisp
+(pp (compile count-atoms-code))
+\endlisp
+
+Annotate your transcript like the version of {\tt factorial} on
+pages 478-479 in your book. In particular, for each jump to
+{\tt apply-dispatch} you should indicate which procedure is about to be
+applied. Include your annotated printout in the problem set.
+
+\end

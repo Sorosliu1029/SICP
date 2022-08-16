@@ -1,0 +1,361 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+
+@comment(this file should be included in a file that contains the
+problem set header.  File names below assume that this is PS10)
+
+This problem set covers the three major programs discussed in chapter
+5: the register-machine simulator, the explicit-control evaluator, and
+the compiler.  We are not asking you to do much programming for this
+assignment, but there is an enormous amount of code to digest.
+
+The following files are to be used with this problem set.  We have not
+appended listings to this handout, since they are essentially the same
+as the code in chapter 5.  You will not need to know any details of
+this code, but you should (from reading the text) get a general idea
+of what is going on.
+
+@begin(description)
+@a[PS10-REGSIM.SCM]@\This is the register machine simulator discussed
+in section 5.1.5.  It has been modified to include a monitored stack,
+as suggested in the subsection ``Monitoring machine performance'' (p.
+417), and to complain about various errors in machine descriptions,
+as suggested in exercise 5.9.
+
+@a[PS10-SYNTAX.SCM]@\These are Scheme procedures that define the
+representation of expressions and environments.  This is essentially
+the same syntax as was used in the meta-circular evaluator, with a few
+additions required by the explicit-control version.
+
+@\The above two files will be automatically loaded in Scheme when you
+@a[load-problem-set] number 10.  The following two files should be
+loaded explicitly, when you need them.
+
+@a[PS10-ECEVAL.SCM]@\This is the explicit-control evaluator described
+in section 5.2.  All of the code has been collected here in the form
+of a definition to be processed by the register machine simulator when
+the file is loaded, so do not be surprised if the loading takes quite
+a while.  @b[You should not load this file until the previous two
+files have been loaded.]  This version of the evaluator also has hooks
+in it to handle code produced by the compiler.  (More about this
+below.)
+
+@a[PS10-COMP.SCM]@\This is the compiler, discussed in section 5.3.
+@end(description)
+
+
+@paragraph(Problem 1 -- Designing and Simulating Register Machines)
+
+Do Exercise 5.4, (page 404), parts A and B.  You should give the
+two machines you define different names, such as @a[rexpt] for recursive
+exponentiation and @a[iexpt] for iterative exponentiation.  We repeat the 
+definitions here (with @a[cond] rather than @a[if]) for your convenience.
+
+@begin(example)
+(define (rexpt b n)
+  (cond ((= n 0) 1)
+        (else (* b (rexpt b (- n 1))))))
+@end(example)
+
+@begin(example)
+(define (iexpt b n)
+  (define (iter counter product)
+    (cond ((= counter 0) product)
+          (else (iter (- counter 1) (* b product)))))
+  (iter n 1))
+@end(example)
+
+Type in your definitions using the @a[define-machine] syntax as in
+section 5.1 of the book.  The @a[define-machine] syntax will be set up
+as part of loading the register-machine simulator by
+@a[load-problem-set 10].  To define your machines in Scheme simply
+``zap'' your definitions to Scheme from the editor, just as you would
+any Scheme expression.
+
+You can test your machines by assigning initial values to the
+registers, and using @a[start] to start running.  (See page 415-416 of
+the book.)  For example, you should be able to compute the value of
+@a[rexpt] with b=3 and n=2 as follows (assuming you have named
+your input registers @a[b] and @a[n]):
+@begin(example)
+(remote-assign rexpt 'n 2)
+
+(remote-assign rexpt 'b 3)
+
+(start rexpt)
+
+@end(example)
+If all goes well, the simulation should terminate, printing @a[done],
+and you can now find the answer by examining the @a[val] register (or
+whichever register you stashed the answer in):
+@begin(example)
+(remote-fetch rexpt 'val)
+@end(example)
+
+This version of the register machine simulator includes a
+monitored stack.  To access it, you can include in your machine
+definition the instruction 
+@begin(example)
+(perform (initialize-stack))
+@end(example)
+as the very last instruction in the controller sequence.
+This will print the total number of pushes and the maximum stack
+depth used during the computation.
+
+Note that the maximum stack depth is essentially a measure of the
+space required by the computation, while the total number of pushes is
+a good indication of the time required.
+
+After you get your machines debugged, do some analysis of the stack
+usage.  For each machine implementing exponentiation, how many stack
+pushes are performed in computing @a[(expt 3 3)], @a[(expt 3 4)]?
+What is the maximum stack depth in each case?
+
+For each machine, give formulas for the number of pushes and maximum
+depth used in computing @a[(expt b n)] as a function of @a[n] for
+@a[n]>0.  Hint: For the recursive implementation, both of these should
+grow linearly with @a[n].  That is, they should be formulas of the form
+@a[xn+y], so you should be able to derive the formula by doing two
+experiments.  Then do a third experiment to check your formula.
+
+@b[Advice:] As you will find from doing this problem, low-level
+machine programming like this can be painful.  (That is why we build
+interpreters and compilers, after all.)  In particular, it is very
+easy to mess up the use of the stack, forgetting to save a register
+that was restored, or vice versa.  If you get hopelessly bogged down,
+it may help to monitor the actual saves and restores.  You can do this
+by changing the stack abstraction in REGSIM.SCM.
+
+Turn in for this problem listings of your machine definitions together
+with the stack-usage formulas that you derived.
+
+@paragraph(Problem 2 -- Using the Evaluator)
+
+Load into Scheme the file @a[ECEVAL], which should have been writtin
+onto your disk by @a[load-problem-set].  (You must have @a[REGSIM] and
+@a[ECEVAL-SYNTAX] loaded first -- These should have been loaded by
+@a[load-problem-set]).  Loading @a[ECEVAL] will define
+@a[explicit-control-evaluator] as a register machine.  To start the
+machine, execute the no-argument procedure called @a[go].  At the
+beginning of each @a[read-eval-print] cycle, the system prints the
+stack statistics that tell how many operations were used during the
+previous cycle.
+
+In order to help you keep straight when you are typing at Scheme and
+when you are typing at the simulated evaluator, the simulation uses the
+prompt @a[EC-EVAL==>].  Here is an example, showing the evaluator
+being started and used:
+@begin(example)
+==> (go)
+@d[(TOTAL-PUSHES: 0 MAXIMUM-DEPTH: 0)]
+EC-EVAL==> (define x 73)
+@d[X]
+@d[(TOTAL-PUSHES: 3 MAXIMUM-DEPTH: 3)]
+EC-EVAL==> (+ x (* x 2))
+@d[219]
+@d[(TOTAL-PUSHES: 16 MAXIMUM-DEPTH: 8)]
+EC-EVAL==>
+@end(example)
+
+Play around evaluating some expressions.  Note that there is no real
+error handler for the evaluator, so most errors will bounce you out
+into Scheme.  You can restart by executing @a[go].  The simulated global
+environment will remain intact, so you won't lose previous definitions
+by encountering an error.  The only primitive operations that have
+been placed in the global environment are:
+@begin(example)
+car cdr cons atom? eq? null? + - * / > < =
+@end(example)
+but you can define more if you like.  See the procedure
+@a[setup-environment] in the @a[ECEVAL] file.
+
+Once you have things working, type in the definition of the procedure
+@a[rexpt] that you hand-translated in problem 1.
+Be careful -- @a[if] is not defined in the evaluator, thus you should
+type in the definition using the @a[cond] special form.
+Note that you must
+type definitions into the evaluator directly, not to the editor,
+since there is no editor interface on the simulation level.  Don't be
+shocked when this procedure runs extremely slowly compared to how fast
+it would run in Scheme (better use small values of @a[n]).  Think
+about the multiple layers of simulation involved.
+
+Determine how many pushes, and the maximum stack depth required by the
+explicit control evaluator to compute @a[(rexpt b n)] as a function of
+@a[n].
+
+@paragraph(Problem 3 -- Varying the procedure)
+
+Type in and run the following alternative version of the @a[rexpt]
+procedure:
+@begin(example)
+(define (rexpt1 b n)
+  (cond ((= n 0) 1)
+        (else (* (rexpt1 b (- n 1)) b))))  ;Arguments to * reversed
+@end(example)
+
+Once again, take statistics and give formulas for the number of pushes
+and maximum stack depth involved.  You should discover that @a[rexpt]
+and @a[rexpt1] behave somewhat differently.  What is the reason for
+this difference?  Does either procedure execute more efficiently?
+
+@paragraph(Problem 4 -- Iteration)
+
+Give formulas for the stack usage in the evaluator using the @a[iexpt]
+iterative
+computation of the exponentiation function.
+You should find that the maximum stack depth required here is
+independent of @a[n] (for @a[n>0]).  This illustrates that the
+procedure really is being executed as an iteration, because of the
+tail-recursive nature of the evaluator.
+
+@paragraph(Problem 5 -- Compilation)
+
+Assuming that all the previous files have been loaded, you can load
+the compiler into Scheme.  The basic program here is called
+@a[compile].  For example
+@begin(example)
+==> (compile '(+ x (* y z)))
+@end(example)
+will show you the compilation of this expression.  The code sequence
+is actually the third element in the list returned by the compiler.
+
+Use the compiler to compare the compilation of the expressions
+@begin(example)
+(+ x (* y z))       @r[versus]        (+ (* y z) x)
+@end(example)
+
+Explain the differences between these two code sequences, in
+particular, why different registers are being saved and restored.
+Does this shed any light on the comparison between @a[rexpt] and
+@a[rexpt1] in problem 3?
+
+@paragraph(Problem 6 -- Compiling procedures)
+
+Make a listing of the compiled code for the definition of @a[rexpt].
+You can do this by evaluating
+@begin(example)
+(define code
+  (compile
+   '(define (rexpt b n)
+      (cond ((= n 0) 1)
+            (else (* b (rexpt b (- n 1))))))))
+@end(example)
+and then pretty-printing @a[code] and making a transcript.  Make an
+annotated version of the code, similar to the annotated version of
+@a[factorial] on pp. 478-479 of the text.  In particular, for each
+jump to @a[apply-displatch], you should indicate which procedure is
+about to be applied.
+
+@paragraph(Problem 7 -- Running compiled code)
+
+The compiler system includes a procedure called
+@a[compile-and-go], which takes an expression, compiles it, and runs
+the result.  It leaves us in the explicit-control evaluator.
+@begin(example)
+==> (compile-and-go
+      '(define (crexpt b n)
+         (cond ((= n 0) 1)
+               (else (* b (crexpt b (- n 1))))))
+@end(example)
+This will compile the definition of @a[crexpt] and run the @a[define]
+so that @a[rexpt] can now be called just like any procedure:
+@begin(example)
+EC-EVAL==> (crexpt 2 3)
+@end(example)
+In this case @a[crexpt] is just like @a[rexpt], except that it calls
+compiled code, rather than having the interpreter trace through the
+definition every time.
+
+In this way, define compiled versions @a[crexpt], @a[crexpt1], and
+@a[ciexpt] of the procedures you defined in problems 2,3, and 4.
+Take stack usage statistics for each one, and give formulas for total
+number of pushes and maximum depth.
+
+@paragraph(Problem 7 -- Summary analysis)
+
+You now have experimented with three versions of the @a[expt] procedure,
+both in compiled and interpreted form.  For each program you have a
+formula, in terms of @a[n], of the approximate time (number of pushes)
+and space (maximum stack depth) required to compute @a[(expt b n)].
+
+Taking the ratio of compiled to interpreted version will tell us how
+much the compiler speeds up the computation, and how much space
+efficiency it buys us.  (Since all the formulas are of the form
+@a[xn+y] each ratio will approach a constant as @a[n] becomes large.
+It is this constant in which we are interested.)
+
+Fill in the following table, with the ratios that you compute for each
+of the three procedures
+
+@begin(programexample)
+
+                Ratio of Compiled to Interpreted Code
+                     Speed-up                Space-saving
+--------------------------------------------------------------
+REXPT      |                      |                          |
+-----------|----------------------|--------------------------|
+REXPT1     |                      |                          |
+-----------|----------------------|--------------------------|
+IEXPT      |                      |                          |
+--------------------------------------------------------------
+@end(programexample)
+
+Also compute the ratios of time and space usage comparing @a[expt]
+with the special-purpose machine you designed in problem 1.  Fill in
+the following chart:
+
+@begin(programexample)
+
+               Ratio to Performance of Interpreted Code
+                     Speed-up                Space-saving
+--------------------------------------------------------------
+compiled code |                   |                          |
+--------------|-------------------|--------------------------|
+hand-generated|                   |                          |
+code          |                   |                          |
+--------------------------------------------------------------
+@end(programexample)
+
+
+Your special-purpose machine should do much better than the compiled
+version, since (if you are careful) your ``hand-compilation'' should
+be much better than what is produced by our rather rudimentary
+general-purpose compiler.  Can you think of improvements to the
+compiler that would help it generate code that would come closer in
+performance to your hand-generated procedure?
+

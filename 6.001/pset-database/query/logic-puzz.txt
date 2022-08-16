@@ -1,0 +1,457 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input) @device(dover)
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+@make(6001)
+
+@modify(excounter, numbered [Exercise @1], referenced [@1])
+
+@PageHeading(left "6.001 -- Spring Semester 1985",
+             center "@Value(Page)",
+             right "Problem set 9")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs 
+Spring Semester, 1985
+
+Problem Set 9
+@end(center) 
+@blankspace(0.25 in)
+
+@begin(flushleft)
+Issued: April 23, 1985 
+Due: For recitations meeting at 9:00, 10:00 and 11:00, Friday, May 3, 1985.
+     For recitations meeting at 12:00, 1:00 and 2:00, Wednesday, May 1, 1985.
+
+Reading Assignment: Sections 4.4 and 4.5.  
+@end(flushleft)
+
+@blankspace(0.25 in)
+@begin(center)
+@b[LABORATORY ASSIGNMENT: Logic Puzzles]
+@end(center)
+
+For this problem set, you will not be doing any programming in Scheme.
+Instead you will be programming in the "query language" described in
+Chapter 4.
+@include(query-compiled.txt)
+
+@paragraph[Using the query system]
+@include(query-driver.txt)
+
+@comment[Here we set up the name of the variable (in the mods file)
+ containing the data base.  This parameterizes the included file.]
+@string(database-variable="logic-puzzle-data-base")
+@include(query-database.txt)
+
+@comment(I'm not including query-editzap.txt because this assignment
+ doesn't require any complicated queries.)
+
+@paragraph[Logic puzzles]
+A common pastime for game aficionados is solving logic puzzles,
+in which the reader attempts to infer a solution to an association problem
+from a small set of clues.  The most common form for such puzzles is
+to consider a collection of equal-sized classes of objects, with the
+members of each class explicitly given.  Based on a set of clues, the
+reader attempts to identify for each element of each class, exactly
+one member of each of the other classes that is associated with it.
+When the puzzle is completed, there should be @a[n] such associations,
+when @a[n] is the size of each class.  Each association has @a[m]
+elements, one from each of the @a[m] classes, and each of the @a[n*m]
+total elements appears in exactly one association.
+
+We will use the query language
+to construct an inference engine for solving simple logic
+association puzzles.
+
+@paragraph[Sample Puzzle -- Fun and games with 6.001]
+After hours, the staff of 6.001 (Eric, Hal, and Julie) like to relax
+by playing computer games (like Zork, Chess and Scrabble) and munching
+on snack food (like Foie-gras, Ring-dings and Yogurt).  Based on the
+following clues, you are to determine which person plays what game,
+and eats what food.
+
+(1) Eric loves Zork.
+
+(2) Hal hates liver.
+
+(3) Health food lovers detest fantasy games, such as Zork.
+
+(4) Scrabble players love foie-gras.
+
+
+In this example, we have three classes of objects, NAME,
+GAME and FOOD, each of which has three members:
+
+NAME--(Eric, Hal, Julie)
+
+GAME--(Zork, Chess, Scrabble)
+
+FOOD--(Foie-gras, Ring-dings, Yogurt)
+
+The problem is solved when each person in the class NAME is
+associated with exactly one GAME and one FOOD, such that the GAME and
+FOOD associated with each person is different. For example
+
+@begin(programexample)
+(eric, scrabble, foie-gras)
+
+(hal, chess, ring-dings)
+
+(julie, zork, yogurt)
+@end(programexample)
+
+@paragraph[Using the query language to solve logic puzzles]
+To record associations between objects from different
+classes, we will put assertions of the form
+@begin(programexample)
+(ASSOCIATE <foo> <bar>)
+@end(programexample)
+into our data base.
+This indicates that the object <foo>, from one class, is associated with the
+object <bar>, from some other class.  For example,
+@begin(programexample)
+(ASSOCIATE ERIC ZORK)
+@end(programexample)
+indicates that ERIC is associated with ZORK.
+Similarly, the assertion
+@begin(programexample)
+(DISSOCIATE <foo> <bar>)
+@end(programexample)
+indicates that the object <foo> is not associated with the object <bar>.
+
+Although we will put some associations and dissociations into the
+data base by hand, we will not completely solve the puzzle by hand.
+Rather, we will write rules to deduce additional associations and
+dissociations from the ones that are known.
+
+In making assertions and writing rules of inference for this puzzle,
+we will  preserve the order of the classes as indicated above, when
+relating objects from different classes.
+That is, NAMEs will always appear before GAMEs and FOODs, and GAMEs
+will always appear before FOODs.
+
+
+To help keep track of what is going on, you should to use the
+following chart. Insert an O when the system has
+inferred an association between the elements labeling the
+corresponding row and column, and insert an X when the system has
+inferred a dissociation. 
+
+@blankspace(2.5 inches)
+
+
+@paragraph(Problem 0 -- Warmup Exercise, Nothing to Turn In)
+ The initial data base contains two
+types of assertions.  One set of assertions indicates the membership
+of objects in the three classes, for example
+@begin(programexample)
+(MEMBER ERIC NAME)
+@end(programexample)
+The other set of assertions defines the ordering of the
+three classes, for example
+@begin(programexample)
+(CLASS-ORDER NAME GAME)
+@end(programexample)
+
+Test that ERIC
+is a member of the class NAME, by querying the system about the
+relationship
+@begin(programexample)
+(MEMBER ERIC NAME)
+@end(programexample)
+
+Try out some other simple queries about the members of the classes,
+NAME, GAME and FOOD.  Note that there are several ways of querying the
+system about  a particular fact.  For example, try querying the system
+about the class to which ERIC belongs by means of the query
+@begin(programexample)
+(MEMBER ERIC ?x)
+@end(programexample)
+
+What query should one ask the system in order to find all the members
+of the class FOOD?
+
+What query should one ask the system in order to find the ordering
+relationship among the three classes of objects?
+
+When you feel comfortable with the use of the query system, continue
+with the problems below.
+
+@paragraph(Problem 1)
+Now we are ready to start creating our inference system for solving
+the simple logic puzzle we gave earlier.
+Write
+the explicit ASSOCIATE or DISSOCIATE  assertion
+incorporated in each of the four
+clues above. Remember that
+the order of the arguments to ASSOCIATE and DISSOCIATE is important;
+that is, NAMEs should always appear before GAMEs, which should always
+appear before FOODs.
+
+Install these assertions into your query system, and fill in the appropriate
+portions of the chart. (Remember that to install assertions into the
+system, you must modify
+the @a[logic-puzzle-data-base] in the supplied file and reinitialize
+the query system.)  Be sure to test that your assertions have been
+added to the system by querying it appropriately.
+
+Turn in a list of the assertions you added, a copy of the current
+state of the chart, and a list of the queries you used to test that
+the assertions were correctly added.
+
+@blankspace(1.0 inches)
+Clearly such simple assertions are not sufficient to solve the
+problem, and we will need some means of performing inferences on the
+assertions.
+
+@paragraph(Problem 2)
+To write rules for performing inferences, we are going to need a way
+of telling if two objects are the same.  We could do this using
+@a[LISP-VALUE], for example
+@begin(programexample)
+(RULE (SAME ?X ?Y)
+      (LISP-VALUE EQUAL? ?X ?Y))
+@end(programexample)
+Although the examples in the text
+use LISP-VALUE in this way,
+this is really contrary to the spirit of the
+query language. Since the query language
+is all about pattern matching,
+we should be able to test whether two things
+are the same without having to cross the abstraction
+barrier into the underlying Scheme.  Write a simple rule, called
+@a[SAME], that tests whether two objects are in fact the same, 
+without using  @a[LISP-VALUE].  (Hint: you may
+find it useful to look at the forms of the rules for
+@a[APPEND-TO-FORM] on page 347 of the text.  Extra hint: think about
+what it means for a rule to have no body.)
+
+Add this rule to your system and test it out.  (Note that rules are
+added in the same way as assertions -- namely, add the rule to the list
+@a[@value(database-variable)] in the supplied file and reinitialize the
+query system.)  Turn in a listing of the rule for SAME.
+
+@paragraph(Problem 3)
+
+One example of an inference rule is the following.  If X, from one
+class, is associated with Y, from another class, then X must be
+dissociated with any other member of Y's class, since only one element
+of a class is associated with any other element.  For example, if ERIC
+is associated with SCRABBLE, then ERIC must be dissociated with ZORK and
+CHESS.  We would like to write a rule for inferring this.  
+
+Using the rule for @a[SAME], together with the  @a[MEMBER] assertions,
+write a rule  called @a[SAME-CLASS]
+for determining if two elements belong to the 
+same class.  Add this rule to your system, and test
+it by asking queries such as
+@begin(programexample)
+(SAME-CLASS ERIC HAL)
+@end(programexample)
+and
+@begin(programexample)
+(SAME-CLASS ERIC ZORK)
+@end(programexample)
+Also test the query
+@begin(programexample)
+(SAME-CLASS ERIC ?X)
+@end(programexample)
+
+Does the query system infer that ERIC is in the same class as ERIC?
+If it does, be sure to modify your rules, using SAME, to prevent this
+from happening.
+
+Using SAME-CLASS and ASSOCIATE as a basis, write a
+rule (or set of rules) for inferring that two objects are DISSOCIATEd
+based on the observation above.  Remember that there is an order
+associated with objects, so that NAMEs always appear before GAMEs,
+which appear before FOODs.  This means that 
+DISSOCIATE should only succeed on (or report) things in the
+right order.
+
+
+Add this rule (or set of rules) to your system and
+use them to fill out all the additional portions of the chart that can
+be explicitly determined.  Turn in a listing of the rules you added,
+and a copy of the current state of the chart.
+Also turn in a list of the queries you made to fill in the chart.
+
+@paragraph(Problem 4)
+Another rule of inference can be based on the following observation.
+If two elements are associated with one another, then the set of
+dissociated elements for each of them is the union of each of their
+sets of dissociated elements.  For example, if we know that SCRABBLE is
+associated with  FOIE-GRAS, and HAL is dissociated with FOIE-GRAS, then
+we can infer that HAL is dissociated with SCRABBLE.  We need to write a
+set of rules to infer this.  Because the order of objects in our
+expressions is important, let's first write an intermediate rule called
+@a[RIGHT-ORDER] that has the following behaviour.
+
+The query
+@begin(programexample)
+(RIGHT-ORDER <x> <y>)
+@end(programexample)
+should be true if the classes to which <x> and
+<y> belong satisfy the @a[CLASS-ORDER] relationship, that is if
+(CLASS-ORDER <x-class> <y-class>) is true, where <x-class> is the
+class to which <x> belongs (and similarly for <y>). 
+
+Write a rule for inferring @a[RIGHT-ORDER] and add it to your system.
+
+Use RIGHT-ORDER,
+ASSOCIATE, and DISSOCIATE to write a
+new rule or set of rules for inferring dissociations of the form 
+@begin(programexample)
+(DISSOCIATE-1 <x> <y>)
+@end(programexample)
+based on the above discussion.
+(Note that we are deliberately calling this rule @a[DISSOCIATE-1]
+rather than @a[DISSOCIATE].  We will come back to this in a later
+problem.)
+
+Install  these rules in your
+system and use DISSOCIATE-1 to fill in more of the chart.  Turn in a
+listing of the new rules and a copy of the current state of the chart.
+Also turn in a list of the queries you made to fill in the chart.  (Don't
+worry if a deduction appears more than once in response to a query.)
+
+
+
+@paragraph(Problem 5)
+If we now look at the chart we have been filling in, we see that
+within each block there are rows or columns in which all but one of
+the elements has been dissociated.  This implies that the remaining
+undecided space in the row or column must be an association.  Write
+down assertions of the form
+@begin(programexample)
+(ASSOCIATE <foo> <bar>)
+@end(programexample)
+for each such element of the chart, and insert an O into that
+spot in the chart.  (There should be six such assertions).  Add the
+assertions to the system, and hand in a list of the assertions.
+
+@paragraph(Problem 6)
+Having added these assertions to the system, we can now run through
+the same stages that we did in problems 3, 4 and 5.  In other words,
+you should be able to use the inference rules
+from problems 3 and 4 to fill in the
+remainder of the chart, except possibly for some rows or columns in
+which all but one of the elements has been dissociated.  As in problem
+5, you can fill in those spots by hand.  Make appropriate queries to
+fill in the rest of the chart, and turn in a list of the queries you
+made.  Based on
+the results, you should now be able to list the three sets of
+associations of a unique person, game and food.  What are those
+associations?
+
+@paragraph(Problem 7)
+In problem 5 we really cheated in that we used the chart to determine
+what new assertions could be added to our database.  In principle, we
+should have written a new rule that could infer an association between
+X and Y if X is dissociated with all other elements of Y's class.  Why
+is it difficult (or impossible) to write a general rule to do this,
+given the formalism we have been using?
+
+Suppose we restrict ourselves to assuming that all classes have
+exactly three members.  Write  new rules that will infer 
+associations of the form
+@begin(programexample)
+(ASSOCIATE-1 <foo> <bar>)
+@end(programexample)
+when all the other (in this case 2) members of 
+either <foo>'s class or <bar>'s class are dissociated with <bar> or <foo>
+respectively (as determined by either @a[DISSOCIATE] or
+@a[DISSOCIATE-1]). Add these rules to your system and test them by
+querying the system about the relationship
+@begin(programexample)
+(ASSOCIATE-1 HAL YOGURT).
+@end(programexample)
+
+Turn in a listing of the new rules you have created.
+
+Why does the query system report the answer several times?
+How does the amount of time needed to process this query
+compare to earlier examples?  (Note that you need not let the system
+run to completion on this example.)
+
+@paragraph(Post-Lab Writeup)
+The following problems can be written up after you finish in the lab.
+
+@paragraph(Problem 8)
+In Problem 3 we wrote a rule called @a[DISSOCIATE] for inferring dissociations.
+In Problem 4 we wrote another rule for inferring dissociations, but
+we called it @a[DISSOCIATE-1] instead of @a[DISSOCIATE].
+Similarly, in Problem 7 we called our new rule
+@a[ASSOCIATE-1] rather than @a[ASSOCIATE].  Why did we do this?  In
+particular, what would happen to the query system if we renamed
+@a[DISSOCIATE-1] and @a[ASSOCIATE-1] to be @a[DISSOCIATE] and
+@a[ASSOCIATE] respectively, and tried to query the system?
+
+@paragraph(Problem 9)
+Throughout this problem set we have gone to great lengths to preserve
+an ordering among the different classes of objects in our puzzle.
+Our use of
+ASSOCIATE, DISSOCIATE and DISSOCIATE-1 relied on their 
+being asymmetric in that, for
+example, 
+@begin(programexample)
+(ASSOCIATE ERIC ZORK)
+@end(programexample)
+did not	imply that 
+@begin(programexample)
+(ASSOCIATE ZORK ERIC).
+@end(programexample)
+
+Suppose we added the rules
+@begin(programexample)
+
+(RULE (ASSOCIATE ?X ?Y)   
+      (ASSOCIATE ?Y ?X))
+
+(RULE (DISSOCIATE ?X ?Y)   
+      (DISSOCIATE ?Y ?X))
+
+(RULE (DISSOCIATE-1 ?X ?Y)   
+      (DISSOCIATE-1 ?Y ?X)).
+
+@end(programexample)
+
+What would happen if we now tried to run our inference system?  Why?
+
+
+

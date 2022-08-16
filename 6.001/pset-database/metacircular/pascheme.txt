@@ -1,0 +1,748 @@
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+		     MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+	   Department of Electrical Engineering and Computer Science
+	   6.001---Structure and Interpretation of Computer Programs
+			      Fall Semester, 1989
+				 Problem Set 8
+
+
+
+Reading: SICP, sections 4.1, 4.2, 4.3
+	 Attached program
+
+Issued:  Tuesday,    7 November
+Due:	 Wednesday, 22 November (Drop Date)
+
+Problem set 9 will be issued Tuesday, 14 November and will be due Wednesday, 29
+November.  Note that the dates of ps8 and ps9 partially overlap --- ps9 will be
+handed out well before ps8 is due.  These problem sets and Quiz II are spread
+across three weeks, so you still have, in effect, one week to complete each of
+the problem sets and one week to prepare for the quiz.
+
+This is a long problem set with many difficult parts.  It requires a good
+understanding of the Scheme interpreter, which is described in section 4.1 of
+the text.  We strongly suggest that you not attempt to do the assignment all at
+once, but instead spread your work over the two weeks allotted.  The beginning
+of the assignment is a pre-lab that does not require use of the computer
+(although there is some code that you can try if you really want to).  It is a
+good idea to write up the pre-lab exercises before doing any programming work.
+
+Quiz II:
+
+  A special handout for the second quiz will be given out this Thursday, 9
+  November.  Please make sure to pick up a copy, study it, and bring it with
+  you to the quiz.  The quiz will be held in 50-340 on Thursday, 16 November.
+  You may take the quiz 5-7pm xor 7-9pm, but you may not leave early if you
+  choose the 5-7pm period.  There will be no recitation sections Friday, 17
+  November.
+
+				       
+			     Paranoid Programming
+
+Ben Bitdiddle, Chief Systems Programmer for the Itsey Bitsey Machine Company,
+has just made a terrible discovery: Many of his programs are giving wrong
+answers.  A hurried investigation reveals that the bugs are not in Ben's code,
+but rather in the I-B-M Scientific Subroutine Library, which the company has
+subcontracted to a cut-rate software house.  For example, the SQRT procedure
+supplied in the library, which Ben has used freely throughout his programs,
+claims that the square root of 25 is -6.
+
+Ben is so aghast at this that he decides to adopt a "paranoid programming
+style."  With each procedure he suspects of being buggy, he will associate
+three sets of predicates that will perform various consistency checks on the
+arguments and the returned value of any call to the procedure:
+
+
+preconditions --  used to check the arguments for applicability,
+
+postconditions -- used to check that the returned value is well-formed, and
+
+transfer conditions -- relations between the arguments and the returned value
+that should be satisfied in any call to the procedure.
+
+
+For example, the SQRT procedure should only be called with a non-negative
+argument, should always return a non-negative value, and should have the
+transfer condition that the square of the returned value is approximately equal
+to the argument.  Thus, if we define the two predicates
+
+  (define (non-negative? x) (>= x 0))
+
+  (define (square-root-good-enough? v x)
+    (define tolerance .001)
+    (define (square x) (* x x))
+    (< (abs (- (square v) x)) tolerance))
+
+we can use NON-NEGATIVE? as both the precondition and the postcondition, and
+SQUARE-ROOT-GOOD-ENOUGH? as the transfer condition.
+
+To investigate the feasibility of this idea, Ben decides to implement a
+paranoid programming system (PPS) for procedures of one argument.  Given a
+procedure of one argument, he writes a program that constructs a "careful
+version" of the procedure, that performs checks indicated by appropriate
+declarations.  For example, Ben constructs a careful version of SQRT as
+follows:
+
+  (define csqrt (careful-version sqrt))
+
+  (declare preconditions csqrt non-negative?)
+  (declare postconditions csqrt non-negative?)
+  (declare transfer-conditions csqrt square-root-good-enough?)
+
+Ben's CAREFUL-VERSION constructor takes as input a suspect one-argument
+procedure and returns as its value another one-argument procedure, which, when
+applied, runs the original procedure and also checks the declared conditions,
+signaling an error if any condition fails.  Declarations associate conditions
+with procedures, and the conditions associated with a procedure can be accessed
+via selectors called PRECONDITIONS, POSTCONDITIONS, and TRANSFER-CONDITIONS.
+In principle, a single procedure may have many declared conditions.  Thus,
+PRECONDITIONS, POSTCONDITIONS, and TRANSFER-CONDITIONS each return a list of
+predicates.  The original suspect procedure is also associated with the careful
+version, and can be retrieved using a selector called KERNEL-PROCEDURE.
+
+  (define (careful-version suspect-procedure)
+    (define (me x)                      ;ME will be the careful version
+      (check-all (preconditions me) (lambda (pred) (pred x)))
+      (let ((v (suspect-procedure x)))
+	(check-all (postconditions me) (lambda (pred) (pred v)))
+	(check-all (transfer-conditions me) (lambda (pred) (pred v x)))
+	v))
+    (set-kernel-procedure! me suspect-procedure)
+    me)
+
+CHECK-ALL takes as arguments a set of predicates (represented as a list) and a
+specification of how to apply each predicate to arguments.  It applies each
+predicate in the set, and signals an error if any predicate returns false.
+
+  (define (check-all set-of-predicates predicate-application-form)
+    (define (loop s)
+      (cond ((null? s) true)
+	    ((predicate-application-form (car s)) (loop (cdr s)))
+	    (else (error "Failed consistency check" (car s)))))
+    (loop set-of-predicates))
+
+The actual declarations and associations are accomplished using a general
+GET/PUT mechanism similar to the one used for implementing generic operators in
+Chapter 2 of the text.  One stylistic difference is that the keys into the
+table are not symbols, but rather the actual procedure objects.
+
+  (define (preconditions proc)       
+    (get proc preconditions))        
+
+  (define (postconditions proc)
+    (get proc postconditions))
+
+  (define (transfer-conditions proc)
+    (get proc transfer-conditions))
+
+  (define (kernel-procedure f)
+    (get f kernel-procedure))
+
+  (define (declare declaration-type proc predicate-procedure)
+    (let ((set (get proc declaration-type)))
+      (if (not (memq predicate-procedure set))
+	  (put proc declaration-type (cons predicate-procedure set)))
+      'OK))
+
+  (define (set-kernel-procedure! f1 f2)
+    (put f1 kernel-procedure f2))
+
+PUT and GET are implemented using a local table, as explained on pages 216-217
+of the book.
+
+Ben's Paranoid Programming System works very well -- so well that I-B-M begins
+using it for its own internal software development (to protect itself, for
+example, from Louis Reasoner's code.  Louis is a trainee working for Alyssa P.
+Hacker, who works for Ben Bitdiddle.  His code usually contains bugs.).
+
+One common thing that people do at I-B-M is combine procedures to make more
+complex procedures.  For instance, given an ABS procedure that computes
+absolute values, and a SQRT procedure that computes square roots, one can form
+a composition SQRT-ABS that computes the square root of the absolute value of
+its input.
+
+  (define sqrt-abs (compose sqrt abs))
+
+where COMPOSE is defined as
+
+  (define (compose f g)
+    (lambda (x) (f (g x))))
+
+Ben notices that if we use COMPOSE with careful procedures, this can lead to
+redundant testing of preconditions and postconditions.  For example, suppose
+that CABS -- the careful version of ABS -- has a postcondition asserting that
+the returned value is non-negative.
+
+  (define cabs (careful-version abs))
+  (declare postconditions cabs non-negative?)
+
+Then CSQRT-ABS, defined as the composition of CSQRT and CABS, will test that
+the value returned by CABS is non-negative twice -- once as a postcondition of
+CABS and once as a precondition of CSQRT.  To avoid this wasteful computation,
+Ben proposes the following composition operator for careful procedures:
+
+  (define (careful-compose f g)
+    (define (kernel x)
+      (let ((vg ((kernel-procedure g) x)))
+	(check-all (postconditions g) (lambda (p) (p vg)))
+	(check-all (transfer-conditions g) (lambda (p) (p vg x)))
+	(check-all (set-difference (preconditions f) (postconditions g))
+		   (lambda (p) (p vg)))
+	(let ((vf ((kernel-procedure f) vg)))     ;Compute value of F
+	  (check-all (transfer-conditions f) (lambda (p) (p vf vg)))
+	  vf)))
+    (define (me x)
+      (check-all (preconditions g) (lambda (p) (p x)))
+      (let ((vme (kernel x)))
+	(check-all (postconditions f) (lambda (p) (p vme)))
+	vme))
+    (set-kernel-procedure! me kernel)
+    (put me preconditions (preconditions g))
+    (put me postconditions (postconditions f))
+    me)
+
+The idea is that the careful composition of F and G should check all the
+preconditions, postconditions, and transfer conditions of G and all the
+postconditions and transfer conditions of F, but only those preconditions of F
+that are not automatically guaranteed by the postconditions of G.  The
+resulting careful composition has as its preconditions the preconditions of G,
+as its postconditions the postconditions of F, and as its kernel procedure a
+procedure that computes the value of the composition and performs all necessary
+checks not included in the preconditions and postconditions of the composition.
+
+Ben eliminates redundant conditions on the interface between F and G
+by using a SET-DIFFERENCE operator that returns all the elements of a
+set S1 that are not contained in a set S2:
+
+  (define (set-difference s1 s2)
+    (cond ((null? s1) '())
+	  ((memq (car s1) s2) (set-difference (cdr s1) s2))
+	  (else (cons (car s1) (set-difference (cdr s1) s2)))))
+
+
+			       Warm-up Exercises
+
+We suggest that you do the exercises in this section BEFORE coming to the
+laboratory.
+
+One of the suspect procedures in the subroutine library, SORT, takes as
+argument a list of distinct numbers, and claims to return a list of the same
+numbers, sorted into ascending order, for example
+
+  (sort '(2 8 5 3)) ==> (2 3 5 8)
+
+Alyssa P. Hacker tries to make a careful version of SORT, using the Paranoid
+Programming System.  She constructs the careful version, CSORT, using the
+predicates LIST-OF-NUMBERS? and ASCENDING-ORDER?, which were written for Alyssa
+by her trainee, Louis Reasoner.
+
+  (define csort (careful-version sort))
+
+  (declare preconditions csort list-of-numbers?)
+  (declare postconditions csort list-of-numbers?)
+  (declare postconditions csort ascending-order?)
+
+LIST-OF-NUMBERS checks that its argument is a list whose elements are all
+numbers:
+
+  (define (list-of-numbers? x)
+    (cond ((null? x) true)
+	  ((atom? x) false)
+	  ((not (number? (car x))) false)
+	  (else (list-of-numbers? (cdr x)))))
+
+ASCENDING-ORDER? checks that the elements of its input list are in ascending
+order:
+
+  (define (ascending-order? x)
+    (cond ((null? x) true)
+	  ((< (car x) (cadr x)) (ascending-order? (cdr x)))
+	  (else false)))
+
+Unfortunately, Louis's ASCENDING-ORDER? procedure has a bug.
+
+Exercise 1
+
+  Explain what the bug is.  Hint: Describe what the procedure will do, given
+  the list (1).  Show how to repair Louis's program.
+
+Exercise 2
+
+  Louis fixed his code, and ASCENDING-ORDER? worked as intended.
+  Unfortunately, this was not enough to ensure correct SORT behavior.  CSORT
+  still did not work, even though the declarations were satisfied.  The
+  behavior was:
+
+    (csort '(4 6 5 9)) --> (5 6 9)
+
+  Ben recommended that an appropriate transfer condition would catch this bug.
+  Alyssa suggested checking that the input and output lists have the same
+  length, but Ben said this would not be a sufficient test to absolutely
+  guarantee that CSORT was not failing.
+
+  Explain why Ben is correct, giving a particular example of an incorrect value
+  that might be returned by CSORT that would not be caught by Alyssa's
+  suggestion.
+
+  Produce an appropriate predicate that, when declared as a transfer condition
+  for CSORT, will be guaranteed to catch any incorrect answers.  Give
+
+
+  i.   a definition of the transfer predicate, in Scheme,
+
+  ii.  a brief statement of what condition the predicate is checking,
+
+  iii. the declaration required to add this transfer condition to CSORT.
+
+Exercise 3
+
+  Alyssa asks Ben to explain why his CAREFUL-COMPOSE method is useful.  Ben
+  illustrates as follows:
+
+  Consider computing big roots of numbers by repeatedly taking square roots:
+
+    (define (big-root n) (repeated n sqrt))
+
+    (define (repeated n f)
+      (cond ((= n 1) f)
+	    ((even? n)
+	     (let ((g (repeated (/ n 2) f)))
+	       (compose g g)))
+	    (else (compose f (repeated (-1+ n) f)))))
+
+  Suppose we form a careful big-root procedure by repeatedly composing the
+  careful procedure CSQRT, which is defined to have NON-NEGATIVE?  both as a
+  precondition and a postcondition:
+
+    (define (c-big-root n) (repeated n csqrt))
+
+  The number of times that NON-NEGATIVE? is tested in computing big roots would
+  be considerably reduced if we had used CAREFUL-COMPOSE rather than COMPOSE in
+  our definition of REPEATED.
+
+  Show that Ben is right, as follows:
+
+  Suppose we define C-16TH-ROOT to be (C-BIG-ROOT 4)
+
+  i.  How many times will NON-NEGATIVE? be called in (C-16TH-ROOT 2) with
+      REPEATED defined using COMPOSE?  Explain your answer.
+
+  ii. How many times will NON-NEGATIVE? be called in (C-16TH-ROOT 2) with
+      REPEATED defined using CAREFUL-COMPOSE?  Explain your answer.
+
+  These questions are tricky, so be careful.  If you like, you may check your
+  answers by instrumenting (i.e., using TRACE on) the PPS and running it.  The
+  code for the PPS is contained in the file PS8-PPS.SCM, which you can load and
+  run.  But you need not do this exercise on the computer at all.
+
+
+			    A paranoid interpreter
+
+Ben's paranoid programming system makes programs so reliable that Oliver
+Warbucks, the president of I-B-M, decrees that condition testing should be
+installed in the I-B-M Scheme interpreter.  Ben and Alyssa realize that this
+will make the interpreter so inefficient that they refuse to do the job, and go
+off to work for the Hot-Tari company to make video games.  Poor Louis Reasoner
+is the only one left at I-B-M to install the new interpreter, and he
+desperately needs our help.
+
+In the new version of Scheme, the CAREFUL-VERSION constructor will not be used
+at all.  Every procedure is potentially a careful procedure, with associated
+pre-, post-, and transfer conditions.  Moreover, the "careful" mechanism will
+be extended to work for procedures of any number of arguments.  A procedure's
+precondition will be a predicate that takes the same arguments as the
+procedure.  The postcondition is still a procedure of one argument (the value
+returned by the procedure).  The transfer condition for a procedure of N
+arguments is a procedure of N+1 arguments -- the returned value followed by the
+procedure arguments.
+
+Louis begins by changing the metacircular evaluator EVAL procedure (as
+indicated in the starred line below) to call a special CAREFUL-APPLY rather
+than the old APPLY:
+
+  (define (eval exp env)
+    (cond ((self-evaluating? exp) exp)
+	  ((quoted? exp) (text-of-quotation exp))
+	  ((variable? exp) (lookup-variable-value exp env))
+	  ((definition? exp) (eval-definition exp env))
+	  ((assignment? exp) (eval-assignment exp env))
+	  ((lambda? exp) (make-procedure exp env))
+	  ((conditional? exp) (eval-cond (clauses exp) env))
+	  ((application? exp)
+	   (careful-apply (eval (operator exp) env)	;*****
+			  (list-of-values (operands exp) env)))
+	  (else (error "Unknown expression type -- EVAL"))))
+
+Exercise 4
+
+  CAREFUL-APPLY uses the ordinary APPLY in order to apply procedures.  However,
+  if the procedure has any associated declarations, CAREFUL-APPLY must check
+  these.
+
+    (define (careful-apply procedure arguments)
+      ; part 1: check preconditions, if any
+      (if (not (and (null? (postconditions procedure))
+		    (null? (transfer-conditions procedure))))
+	  (let ((val (apply procedure arguments)))
+	    ; part 2: check postconditions, if any
+	    ; part 3: check transfer conditions, if any
+	    val)
+	  (apply procedure arguments)))
+
+  Give the missing expressions part 1, part 2, part 3 indicated above.  (You do
+  not need to do this in the laboratory.)
+
+Exercise 5
+
+  Cy D. Fect, the local Algol and Fortran wizard, asked Louis why he uses an
+  explicit IF test to see if there are any transfer and postconditions and skip
+  to APPLY if not.  After all, he observes, the expressions part 1, part 2, and
+  part 3 should have no effect if there are no relevant conditions.  Louis says
+  that he doesn't understand this either, but that before Ben left, he muttered
+  something about doing things this way so as not to destroy the tail-recursive
+  properties of the language any more than necessary.  Please explain what Ben
+  was talking about.
+
+
+				 Strong typing
+
+Having lost his most talented programming staff, Oliver has decided that it is
+time to tighten management controls in his programming department.  He never
+liked the free style of Ben and his employees.  Cy D. Fect, who is now the
+senior member of the staff, and who never liked Lisp anyway, convinces Oliver
+to call in a famous consultant, Professor N. Wirthless, to evaluate the
+situation.  Wirthless is the internationally renowned inventor of the famous
+programming language, Pasqual, which was designed to force programmers to write
+"well-structured" programs.
+
+Wirthless tells Oliver that Scheme (like all Lisps) is a terrible programming
+language because it allows programmers to write programs that are not
+"type-safe" -- a program may be passed an argument that is of the wrong type.
+For example, SQRT can be passed a list, which it is not prepared to handle.  He
+advocates a "strong type system," which can prevent such a problem.  In a
+strongly typed language, every variable is declared to have a "type," which
+constrains what its value must be.  In addition, every procedure that returns a
+value must also have a declared type of its value.
+
+Louis showed Wirthless Ben's PPS system, which Wirthless dismissed lightly:
+"Like all Lisp-ish systems, it is very pretty, but the fatal flaw is that the
+declarations are optional.  For effective software management, it is necessary
+to make the declarations a mandatory part of every program.  We must outlaw
+sloppy programs and punish sloppy programmers.  Only then will we have
+effective management.  In fact, PPS encourages sloppy work because it makes it
+too easy to find errors at run time and fix them.  This may be good in a
+research environment, where the programs are continually under development and
+the users are the programmers, but in the situation where we want to sell a
+product, we want to be sure it is solid before it gets to the market."
+
+This was pretty convincing to Oliver and Cy, but the company could not easily
+switch to Pasqual because it has a huge investment in Scheme software it has
+already written.  Specifically, it makes heavy use of procedures as arguments
+(which work passingly well in Pasqual) and procedures as values (which don't
+work at all in Pasqual).  Wirthless proposes a modification to Scheme that
+enforces strong typing.  The new system will be called Pascheme.
+
+In Pascheme, every procedure is defined with a type declaration for each
+argument and a type declaration for the value.  The types are represented as
+predicates that test whether an object is of the required type.  Syntactically,
+a procedure will be defined with types declared as follows:
+
+  (define <TYPE OF VALUE>
+	  (<PROCEDURE-NAME> (<TYPE OF ARG1> <VAR1>) .. (<TYPE OF ARGn> <VARn>))
+    <BODY>)
+
+For example, in Pascheme we would write:
+
+  (define integer? (factorial (integer? n))
+    (cond ((= n 1) 1)
+	  (else (* n (factorial (- n 1))))))
+
+The procedure name itself will automatically be declared to have type
+PASCHEME-PROCEDURE?.
+
+In addition, the syntax of DEFINE must be extended to allow the definition of
+variables that are not procedures, as in the Scheme definition (DEFINE A 3).
+The extension that will be used is:
+
+  (define <TYPE> <NAME> <VALUE>)
+
+For example,
+
+  (define integer? a 3)
+
+Lambda expressions will be extended to look like:
+
+  (lambda <TYPE OF VALUE>
+	  ((<TYPE OF ARG1> <VAR1>) ... (<TYPE OF ARGn> <VARn>))
+	  <BODY>)
+
+Thus, the procedure-definition syntax shown above will be syntactic sugar for
+
+  (define pascheme-procedure? <PROCEDURE-NAME>
+	  (lambda <TYPE OF VALUE>
+		  ((<TYPE OF ARG1> <VAR1>) ... (<TYPE OF ARGn> <VARn>))
+		  <BODY>))
+
+and the lambda expression for the FACTORIAL procedure defined above will now
+look like:
+
+  (lambda integer? ((integer? n))
+	  (cond ((= n 1) 1)
+		(else (* n (factorial (- n 1))))))
+
+In the initial implementation of Pascheme, a type will be a predicate in the
+underlying Scheme system (the implementation language), not a user-definable
+Pascheme predicate.
+
+
+			       In the Laboratory
+
+In this laboratory assignment, we will be helping Louis implement the changes
+to Scheme required to build Pascheme.  The file PS8-EVAL.SCM contains a simple
+Scheme interpreter written in Scheme, essentially the same as the one in
+Section 4.1.  There are a few minor differences; the most important are:
+
+  The procedures EVAL and APPLY have been renamed MINI-EVAL and MINI-APPLY, so
+  as not to interfere with Scheme's own EVAL and APPLY operators.
+
+  The interface to the underlying Scheme system via APPLY-PRIMITIVE-PROCEDURE
+  is handled somewhat differently from the way it is handled in the book.  See
+  the attached code for details.
+
+  If you load this file into Scheme and type (INITIALIZE-EVALUATOR), you will
+  find yourself typing at the driver loop.  Please note that this Scheme
+  running in Scheme contains no error system of its own.  If you hit an error
+  or press the ABORT key, you will bounce back into Scheme.
+
+  The driver loop uses the prompt MC-EVAL==> instead of the ordinary Scheme
+  prompt.
+
+Start up the interpreter and try a few simple expressions.  If you bounce out
+into Scheme, you can re-enter the interpreter by typing (DRIVER-LOOP).  If you
+get hopelessly fouled up, you can run INITIALIZE-EVALUATOR, but this
+initializes the global environment, and you will lose any definitions you have
+made.
+
+Also, it is instructive to run the interpreter while tracing MINI-EVAL and/or
+MINI-APPLY, to see just how the evaluator works.  (You will also probably need
+to do this while debugging your code for this assignment.)  If you do trace
+these procedures, you may want to use the Scheme procedures PRINT-BREADTH and
+PRINT-DEPTH to avoid printing huge listings of the ENV argument to these
+procedures (printed by the tracer), which is in general a circular structure.
+See the Chipmunk manual for information on the use of PRINT-BREADTH and
+PRINT-DEPTH.
+
+For this assignment, you will need to modify a few of the procedures in the
+interpreter, and also write a few new procedures.  To help you, PS8-MODS.SCM
+contains the procedures that you will need to modify.  (You should not need to
+modify all of the procedures in this file. Part of your task is to figure out
+precisely which procedures must be modified.)  You can load this file into
+an Edwin buffer, which you can edit while doing this assignment.  The entire
+PS8-EVAL.SCM file can be LOADed directly into Scheme without your worrying
+about editing it.
+
+
+				   Strategy
+
+The changes required to implement Pascheme are of two basic sorts.  There are
+syntactic changes, which concern the ways in which program expressions are
+represented symbolically, and semantic changes, which concern the actual
+computations that will be performed.  In general, syntactic changes are made in
+the constructors, selectors, and predicates that determine the syntax of the
+language.  Semantic changes will be made in the content procedures MINI-EVAL
+and MINI-APPLY and their helper procedures.  Syntax and semantics are not
+completely independent; they interact in the representation of the
+computational objects manipulated by the interpreter, such as procedure
+objects.  In particular, in this interpreter, procedure objects are represented
+by lists containing a lambda expression and an environment.  We will need to
+augment the representation of lambda expressions to include the type
+information.
+
+				    Syntax
+
+The first part of the implementation is to change the interpreter syntax so
+that DEFINE expressions and LAMBDA expressions have typed variables and a typed
+value.  This change has several pieces.
+
+Problem 1
+
+  Change the procedure-object selectors PARAMETERS and PROCEDURE-BODY to
+  correctly accommodate the new structure of lambda expressions.  PARAMETERS
+  should return the entire typed parameter list -- do not strip off the types
+  here.  In addition, define a new selector, PROCEDURE-VALUE-TYPE, that gets
+  the type predicate for the value of a procedure.  Modify USER-PRINT so that
+  it prints the procedure's return value type.  (You may make USER-PRINT print
+  the entire lambda expression if you wish.)
+
+Problem 2
+
+  Change DEFINITION-VARIABLE and DEFINITION-VALUE to parse the new definition
+  syntax.  DEFINITION-VARIABLE must supply a typed variable for the thing being
+  defined.  There are two cases:
+
+  i.  In the case that we are defining a simple variable to have a value, we
+      supply the type explicitly.  For example:
+
+      For (DEFINE INTEGER? A 3), DEFINITION-VARIABLE should return (INTEGER? A)
+      and DEFINITION-VALUE should return 3.
+
+  ii. In the case that we are defining a new compound procedure we must supply
+      a type, PASCHEME-PROCEDURE? for the procedure variable being defined.  For
+      example:
+
+      For (DEFINE INTEGER? (FACTORIAL ...) ...), DEFINITION-VARIABLE should
+      return (PASCHEME-PROCEDURE? FACTORIAL) and DEFINITION-VALUE should return
+      an appropriate LAMBDA expression.
+
+Problem 3
+
+  An environment will be made by EXTEND-ENVIRONMENT by pairing the elements of
+  the typed formal parameter list of the lambda expression with their values.
+  An environment will thus have types in the bindings.  (These types will be
+  used in evaluating assignments, to check that values assigned to the
+  variables are correct.)  Change the procedures that define the representation
+  of environments to implement the new features.
+
+Problem 4
+
+  As a result of your modification to DEFINITION-VARIABLE in problem 2,
+  DEFINE-VARIABLE! is now passed a typed variable.  Change DEFINE-VARIABLE! so
+  that it will pass the right information to the environment-manipulation
+  procedures and set up the appropriate type when a variable is defined, given
+  your new environment structure (problem 3).  You should permit the type to be
+  changed when a variable is redefined using DEFINE.
+
+Problem 5
+
+  Change the initial global environment to have the type PASCHEME-PROCEDURE? for
+  each of the initial procedure entries.  Also include appropriate types for
+  the variables TRUE and FALSE.
+
+
+Your modified evaluator should now work as it did before.  It should take the
+typed syntax and ignore the types, except in the building and accessing of
+elements in the environment.  It is important to test this before going on to
+the next step!  Otherwise you may become horribly confused.  You should hand in
+listings of the changes you made and also a transcript demonstrating that the
+interpreter works at this point.
+
+
+				   Semantics
+
+We will now change the interpreter semantics so that the types are checked when
+the program is run.  In this implementation, we will check types only for
+user-defined Pascheme procedures -- not for primitives.
+
+A type is any predicate of the underlying Scheme implementation language.  Thus
+a type predicate will be applied to its arguments using the underlying Scheme's
+APPLY.  In fact, since we will have to get at the Scheme value of the type
+predicate name (that is, the type predicate itself) in order to have something
+to APPLY, we will have to use Scheme's EVAL as well.  To simplify matters, you
+may use the following procedure to apply the Scheme value of a symbol
+representing a unary (one-argument) predicate to its argument:
+
+  (define (apply-unary-predicate-symbol predicate-name argument)
+    (apply (eval predicate-name (the-environment))
+	   (list argument)))
+
+Problem 6
+
+  Change MAKE-FRAME to check types of arguments as they are being bound to
+  formal parameters.
+
+Problem 7
+
+  Change MINI-APPLY to check types of values being returned from (user-defined)
+  procedures.
+
+Problem 8
+
+  Change the way assignments and definitions are executed so that types are
+  checked on assignment of a value to a variable.  You should permit the type
+  to be changed when a variable is redefined using DEFINE.
+
+Problem 9
+
+  Define PASCHEME-PROCEDURE? as a type predicate so that you can pass Pascheme
+  procedures as arguments and return them as values.
+
+  At this point you should be able to run a program again.  Debug your changes
+  in the context of the simple recursive FACTORIAL procedure.  Pass FACTORIAL
+  as an argument to some other procedure and demonstrate its use.  Supply us
+  listings of your changes and a transcript demonstrating that they work.  Be
+  sure to demonstrate that your interpreter checks types of arguments and
+  return values.
+
+Problem 10 (Program design problem)
+
+  Pascheme's type system is not very flexible.  Since types are Scheme
+  predicates, not Pascheme predicates, there is no good way for the Pascheme user
+  to define a new predicate.  Write a short paragraph discussing the major
+  changes required to make Pascheme have an extensible type system -- that is,
+  to allow the user to define new types as Pascheme procedures that return true
+  or false.
+
+
+	      Post-Lab Essay: Run-time vs. compile-time checking
+
+In fairness to advocates of type-safe languages, we should point out that Prof.
+Wirthless would not be happy with Pascheme.  Pascheme does its type checking when
+programs are run (so-called "run-time type checking"), whereas most typed
+languages (including Pasqual) do type checking when the syntax of programs is
+analyzed (so-called "compile-time type checking" or "static type analysis").
+The idea is that many kinds of type violations can be found by analyzing the
+text of a program without running the procedures, rather than waiting to bomb
+out when the program is run using actual inputs.  For example, if the result of
+a procedure that returns type INTEGER?  is used as an argument to a procedure
+that expects type LIST?, we should not need to run the program in order to know
+that a type violation will occur.
+
+On the other hand, Pascheme allows types that are defined by arbitrary (Scheme)
+predicates (and, indeed, by arbitrary Pascheme predicates, if modified as in
+problem 10).  Give some examples of types that it would be
+possible to check without running the procedures involved, and indicate roughly
+how to go about doing this.  Give some examples of types that you think could
+not be checked in any useful way without actually running the procedures.  Can
+you define a type for which you can PROVE that it is impossible to do check
+without running the program, no matter how elaborate an analysis program one
+writes? In the same vein, notice that Pascheme (and Pascal), unlike Ben's
+original PPS, does not have any transfer conditions.  Can you think of any
+useful transfer conditions that it would be possible to check without actually
+running the procedures?
+
+Problem 11
+
+  Write a two-page essay comparing the advantages of run-time type checking
+  with the advantages static type analysis.  Do not attempt to give a complete
+  treatment of the issues -- many Ph.D.  theses could be (indeed, have been)
+  written on this topic.

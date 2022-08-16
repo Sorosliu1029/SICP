@@ -1,0 +1,273 @@
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+
+		 MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+       Department of Electrical Engineering and Computer Science
+	6.001 Structure and Interpretation of Computer Programs
+
+			     Problem Set 4
+		       Version: 2/27/84 10:27:38
+
+Issued: March 6, 1984
+
+Due: on Wedneday, March 14, 1984
+	for recitations meeting at 9:00, 10:00, and 11:00
+     on Friday, March 16, 1984
+	for recitations meeting at 12:00, 1:00, and 2:00
+
+
+			      QUIZ NOTICE
+
+Quiz #1 will be held on on Monday, March 19, 1984.  The quiz will be
+held in Walker Memorial Gymnasium (50-340) from 5-7PM xor 7-9PM.  You
+may take the quiz during either one of these two periods, but students
+taking the quiz during the first period will not be allowed to leave the
+room until the end of the period.  The quiz is open book.  It will cover
+material from the beginning of the semester through the material in
+problem set 3, and in the notes through section 2.2.1.
+
+Reading Assignment: Chapter 2, Sections 2.2.2 through 2.2.6 and Section 2.3
+
+Video tape: Video tapes are provided as an optional service for people
+who want to review course material.  Tapes are available in Barker
+library.
+
+
+Tape number        Corresponding section         Corresponding Lecture
+                         in notes
+
+ 1                         1.1                      Feb. 9
+ 2                         1.2                      Feb. 14
+ 3 and 4                   1.3                      Feb. 16
+ 5                         2.1                      Feb. 23
+ 6                         none                     Feb. 28
+ 7-8                       2.2                      March 1 and March 6
+ 9 (extra material         none                     none
+    on pattern matching)
+10			   2.3			    March 8
+
+
+Write up and turn in the following exercises from the text:
+
+	o Exercise 2-23: Deep-reverse
+
+	o Exercise 2-24: Fringe
+
+	o Exercise 2-25: Make-mobile
+
+	o Exercise 2-26: QUOTE practice
+
+
+
+	    LABORATORY ASSIGNMENT: A Simple Partial Evaluator
+
+Imagine that we have made the following declarations:
+
+	(DEFINE X 3)
+	(DEFINE Y (UNKNOWN))		; we don't know what Y is
+	(DEFINE Z 4)
+
+Then if we consider the following combinations we could simplify them as
+shown:
+
+	Combination			Simplified Combination
+
+	Z					4
+
+	(+ X 2)					5
+
+	(IF (= Z 4) 1 2)			1
+
+	(IF (= Y 2)			(IF (= Y 2) 7 5)
+	    (IF (= X 3)
+		(+ X Z)
+		0)
+	    5)
+
+These sorts of simplifications are amazing!  The interesting idea that
+is exhibited here is that under certain conditions it is possible to
+transform a combination into an equivalent and simpler combination.  So
+called "source to source" program transformations can result in
+substantial efficiency improvements.
+
+One way of performing source to source transformations is to try and
+evaluate a combination without any guarantee that enough is known to
+produce a final value.  For example, the last combination shown above
+"needs" the value of Y.  However, even without the value of Y we have
+been able to do some computation to produce the simplified result shown.
+
+The process of evaluating a combination with potentially incomplete
+information is called "partial evaluation".  This problem set concerns a
+simple partial evaluator that we have provided for you (see the attached
+listing).   The partial evaluator works on combinations of numbers,
+booleans, and procedures and the special form IF.
+
+The partial evaluator is used by applying PARTIAL-EVAL to an expression.
+All of the variables in the expression must be defined to either have a
+given numeric value or to be (UNKNOWN).  UNKNOWN is a procedure of no
+arguments that returns a value that represents the fact that we don't
+currently know the value of a variable.  Assuming that the definitions
+above have been made we can try out the partial evaluator as follows:
+ 
+	-> (PARTIAL-EVAL '(IF (= Z 4) 1 2))
+
+	1
+
+	->
+
+You should read through the partial evaluator IN DETAIL to understand
+how it works.  The procedure SYSTEM-EVAL returns the value of a variable
+or a combination, just as if you had typed it into Scheme.
+
+NOTE: If you ask PARTIAL-EVAL to work on an expression with a variable
+that has not been defined an error will occur.
+
+[Problem 1]
+
+In this problem we ask you to add the special form SEQUENCE to the
+partial evaluator that we have given to you.  This special form is used
+to provide a list of combinations for Scheme to evaluate.  Consider the
+sequence
+
+	(SEQUENCE (+ X 2) (IF (= Z 4) 1 2))
+
+If this sequence was partially evaluated, the result would be:
+
+	(SEQUENCE 5 1)
+
+You should turn in a computer listing of your improved partial
+evaluator, along with some test cases that you have designed to show
+that your parital evaluator works properly on SEQUENCE.
+
+Note: You should find the procedure PARTIAL-EVAL-LIST useful.
+
+[Problem 2]
+
+Consider the sequence
+
+	(SEQUENCE (PRINT X) 4 (PRINT Y))
+
+What will happen when this sequence is partially evaluated?  Why might
+this result be undesirable?
+
+
+[Problem 3]
+
+A partial evaluator can also check to make sure that procedures are used
+with the proper number of arguments.  We have provided a data base of
+primitive procedures and the number of arguments that they require
+called PROCEDURE-DEFS.  PROCEDURE-DEFS is a list of PROC-DEF records.
+PROC-DEF-OP and PROC-DEF-ARGS are the selectors for PROC-DEF records.
+
+Write a procedure named CHECK-NUMBER-OF-ARGS that takes as parameters
+the name of a procedure and the number of arguments that it is being
+applied to.  CHECK-NUMBER-OF-ARGS should return T if the number of
+arguments is consistent with the data base or if the procedure is not in
+the data base, and NIL otherwise.
+
+Modify PARTIAL-APPLY to use CHECK-NUMBER-OF-ARGS to check to make sure
+that a procedure is being used with the proper number of arguments.   If
+a procedure is NOT being used with the proper number of arguments then
+signal an error with
+
+   (ERROR "Message of your choice" exp)
+
+where EXP is the offending combination.
+
+Make up some test cases to test your improvement to PARTIAL-APPLY.  Turn
+in the results of your tests and a printout of your improved partial
+evaluator.
+
+Note:   You may use the system provided LENGTH procedure in your
+modification.
+
+
+[Problem 4]
+
+In this problem we ask you to add the special form COND to your partial
+evaluator.   
+
+	(COND (p1 c1)
+	      (p2 c2)
+	       ...
+	      (pn cn))
+
+COND can be partially evaluated using the following algorithm:
+
+	o Partially evaluate all predicates and consequents.
+	o Throw away all clauses of the COND where the predicate
+	  is known to be false.
+	o If the first clause of the resulting COND has a true predicate
+	  then the value of the COND is the consequent of the first clause.
+	  Otherwise, return the partially evaluated COND with the false
+	  clauses eliminated.
+
+These three steps can be structured in the following way:
+
+	((COND? EXP)
+	  (CHECK-FIRST-CLAUSE-TRUE (THROW-AWAY-FALSE-CLAUSES
+			(PARTIAL-EVAL-CLAUSES (COND-CLAUSES EXP)))))
+
+PARTIAL-EVAL-CLAUSES takes a list of clauses and returns another list of
+clauses, one in which all of the predicates and consequents of the first
+list of clauses have been partially evaluated.  THROW-AWAY-FALSE-CLAUSES
+takes a list of clauses and returns a list of the clauses whose
+predicates are not known to be false.  CHECK-FIRST-CLAUSE-TRUE takes the
+list of partially evaluated clauses returned by THROW-AWAY-FALSE-CLAUSES
+and checks to see if the predicate of the first clause on the list is
+known to be true, returning the consequent of the first clause if so and
+a COND expression made up of the whole list of clauses if not.  To help
+you out we have included the code for CHECK-FIRST-CLAUSE-TRUE.
+
+(DEFINE (CHECK-FIRST-CLAUSE-TRUE LIST-OF-CLAUSES)
+  (IF (NULL? LIST-OF-CLAUSES)
+      NIL
+      (LET ((FIRST-CLAUSE (CAR LIST-OF-CLAUSES)))
+        (IF (AND (KNOWN? (CLAUSE-PREDICATE FIRST-CLAUSE))
+                 (CLAUSE-PREDICATE FIRST-CLAUSE))
+            (CLAUSE-CONSEQUENT FIRST-CLAUSE)
+            (MAKE-COND LIST-OF-CLAUSES)))))
+
+
+NOTE: If CHECK-FIRST-CLAUSE-TRUE gets an empty list of clauses (its
+input is NIL) it returns NIL.  This is because the value of a COND that
+does not have any true predicates is NIL.
+
+Design some sample combinations to test your extension to the partial
+evaluator.  Consider the case of nested CONDs.  Turn in a listing of
+your test cases, the results that they produce, and a listing of your
+partial evaluator.
+
+
+
+
+

@@ -1,0 +1,527 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+\input /zu/6001/6001mac
+
+\begin{document}
+
+\psetheader{Fall Semester, 1989}{Problem Set 1}
+
+\medskip
+
+\begin{flushleft}
+Issued:  12 September 1989 \\
+\smallskip
+Due:  In recitation, 20 September 1989
+\end{flushleft}
+
+\noindent
+{\small
+Problem sets should always be handed in at recitation.  Late work will
+not be accepted.}
+
+\begin{flushleft}
+Reading: 
+\begin{tightlist}
+
+\item ``Course Organization'': Review this if you haven't
+already done so. 
+
+\item Text: section 1.1.
+
+\item  ``A 6.001 User's Guide to the Chipmunk System'': Chapters 1
+and 2.  Bring this manual to lab with you to use as a reference.
+\end{tightlist}
+\end{flushleft}
+
+Before you can begin work on this assignment, you will need to get a copy of
+the textbook and to pick up the manual package.  To obtain the manual package,
+follow the instructions given in the Course Organization memo.
+
+The laboratory assignments for 6.001 have been designed with the
+assumption that you will do the required reading and textbook
+exercises before you come to the laboratory.  You should also read
+over and think through the entire assignment before you sit down at
+the computer.  It is generally much more efficient to test, debug, and
+run a program that you have planned before coming into lab than to try
+to do the planning ``online.''  Students who have taken 6.001 in
+previous terms report that failing to prepare ahead for laboratory
+assignments generally ensures that the assignments will take much
+longer than necessary.
+
+
+\section{Part 1: Homework exercises}
+
+Do the following exercises before going to the lab.  Write up your
+solutions and include them as part of your homework.
+
+\paragraph{Exercise 1}
+Exercise 1.1 on page 19 of the text.  You may use the computer to check your
+answers, but first do the evaluation by hand so as to get practice with
+understanding Scheme.  Typing expressions such as these to the interpreter and
+observing its behavior is one of the best ways of learning about the language.
+Experiment and try your own problems (you need not turn in your own problems).
+Though the examples shown are often indented and printed on several lines for
+readability, an expression may be typed on a single line or on several, and
+redundant spaces and carriage returns are ignored.  It is to your advantage to
+format your work so that you (and others) can easily read it.
+
+
+\paragraph{Exercise 2}
+For each of the following four expressions, show a sequence of
+steps---using the substitution model of evaluation---that reduce the
+expression to a number.  In each expression, assume that $exp_1$
+and $exp_2$ are subexpressions that evaluate to 5 and 12,
+respectively.  (Of course, you can't show the details of evaluating
+these two subexpressions.)  Also, for each expression, tell whether
+applicative-order evaluation stipulates that $exp_1$ is evaluated
+before $exp_2$, or vice versa, or whether the order of evaluating
+these two subexpressions is unspecified.
+\beginlisp
+((lambda (x) ((lambda (y) (- y x)) $exp_1$)) $exp_2$)
+\null
+((lambda (y) ((lambda (x) (- y x)) $exp_2$)) $exp_1$)
+\null
+((lambda (x y) (- y x)) $exp_2$ $exp_1$)
+\null
+((lambda (y) (lambda (x) (- y x)) $exp_1$) $exp_2$)
+\null
+(((lambda (x) (lambda (y) (- y x))) $exp_1$) $exp_2$)
+\endlisp
+
+\paragraph{Exercise 3}
+Translate the following arithmetic expression into Scheme prefix notation:
+\begin{displaymath}
+\frac{3+2+(1-(5-(2+\frac{3}{4})))}{4 (7-3) (1-6)}
+\end{displaymath}
+
+\paragraph{Exercise 4}
+Do Exercise 1.4 on page 23 of the text.
+
+
+\section{Part 2: Getting started in the lab and using the debugger}
+
+When you come to the lab, find a free computer and log in and initialize one of
+your disks, as described at the beginning of chapter 1 of the Chipmunk manual.
+You should also write your name and address on a label affixed to the jacket of
+the floppy disk.  Floppy disks are notoriously unreliable storage media, so it
+is a good idea to copy your data onto a second disk (that is used only for this
+purpose) when you have completed each laboratory assignment.  See the
+description of how to copy disks in the Chipmunk manual, and do not hesitate to
+ask the lab assistants for help.
+
+After you have successfully logged in, load the material for problem set 1
+using the method described in chapter 1 of the Chipmunk manual---namely, press
+\key{EXTEND} (i.e., the key marked \kkey{2}) then type {\tt load problem set}
+and press \key{ENTER}.  When the system asks for the problem set number, type
+{\tt 1} and press \key{ENTER}.  The system will load some files and will leave
+you connected to the Scheme interaction buffer, where Scheme prompts you for an
+expression to evaluate.
+
+\subsection{Evaluating expressions} 
+
+To get used to typing at the Chipmunks, check your answers to exercise
+1.1.  After you type each expression, press the \key{EXECUTE} key (at
+the lower right side of the keyboard) to evaluate the expression and
+see the result.  Notice that when you type a right parenthesis, the
+cursor briefly highlights the matching left parenthesis.  You can
+correct typing errors with the \key{BACKSPACE} key.\footnote{Edwin is
+a version of Emacs, the editor used on Athena workstations.  It has
+many powerful editing features, which you can read about in chapter 2
+of the Chipmunk manual.  Although simple cursor motion will be your
+primary editing tool at first, it will be greatly to your advantage to
+learn to use some of the more sophisticated editing commands as the
+semester progresses.}
+
+To type expressions that go over a single line, use the \key{ENTER}
+key (not the \key{EXECUTE} key) to move to the next line.  Notice that
+the editor automatically ``pretty prints'' your procedure as you type
+it in, indenting lines to the position determined by the number of
+unclosed left parentheses.
+
+\subsection{Using the debugger}
+
+When you program, you will certainly make errors, both simple typographical
+typographical mistakes and more significant conceptual bugs.  Even expert
+programmers produce code that has errors; superior programmers make use of
+debuggers to identify and correct the errors efficiently.  At some point over
+the next month\footnote{Don't do it now---you have enough to do now.}, you
+should read chapter 3 of the Chipmunk manual.  This chapter describes Scheme's
+debugging features in detail.  For now, we've provided a simple exercise to
+acquaint you with the debugger.
+
+Loading the code for problem set 1, which you did above, defined three
+tiny procedures called {\tt p1, p2} and {\tt p3}.  We won't show you
+the text of these procedures---the only point of running them is to
+illustrate the debugger.
+
+Evaluate the expression {\tt (p1 1 2)}.  This should signal an error.
+The screen splits into two windows, with the ordinary interaction
+buffer at the top, and a {\tt *Scheme Error*} window at the bottom.
+The error window contains the message
+\beginlisp
+Wrong Number of Arguments 1
+within procedure \#[COMPOUND-PROCEDURE P2]
+\endlisp
+At the bottom of the screen is a question asking whether or not you
+want to debug the error.
+
+Don't panic.  Beginners have a tendency, when they encounter an error,
+to immediately respond ``No'' to the offer to debug, sometimes without
+even reading the error message.  Let's instead see how Scheme can be
+coaxed into producing some helpful information about the error.
+
+First of all, there is the error message itself.  It says that the
+error was caused by a procedure being called with 1 argument, which is
+the wrong number of arguments for that procedure.  The next line tells
+you that the error occurred within the procedure {\tt P2}, so the
+actual error was that {\tt P2} was called with 1 argument, which is
+the wrong number of arguments for {\tt P2}.
+
+Unfortunately, the error message alone doesn't say where in the code
+the error occurred.  In order to find out more, you need to use the
+debugger.  The debugger allows you to grovel around, examining pieces
+of the execution in progress in order to learn more about what may
+have caused the error.
+
+Type {\tt y} in response to the system's question.
+Scheme should respond:
+\beginlisp
+Subproblem Level: 0  Reduction Number: 0
+Expression:
+(P2 B)
+within the procedure P3
+applied to (1 2)
+\endlisp
+
+This says that the expression that caused the error was {\tt (P2 B)},
+within the procedure {\tt P3}, which was called with arguments 1 and
+2.  Ignore the stuff about subproblem and reduction numbers.  You can
+read about them in chapter 4 of the Chipmunk manual.
+
+The debugger differs from an ordinary Scheme command level, in that you use
+single-keystroke commands, rather than typing expressions and pressing
+\key{EXECUTE}.  One thing you can do is move ``up'' in the evaluation sequence
+to see how the program reached the point that signaled the error.  To do this,
+type the character {\tt u}.  The debugger should show:
+\beginlisp
+Subproblem level: 1 Reduction number: 0
+Expression:
+(+ (P2 A) (P2 B))
+within the procedure P3
+applied to (1 2)
+\endlisp
+Remember that the expression evaluated to cause the error was {\tt (P2
+B)}.  Now that we have moved ``up,'' we learn that this expression was
+being evaluated as a subproblem of evaluating the expression {\tt (+
+(P2 A) (P2 B))} still within procedure {\tt P3} applied to 1 and 2.
+
+So we've learned from this that the bug is in {\tt P3} where the
+expression {\tt (+ (P2 A) (P2 B))} calls {\tt P2} with the wrong
+number of arguments.  At this point, one would normally quit the
+debugger and edit {\tt P3} to correct the bug.
+
+Before leaving the debugger, let's explore a little more.  Press {\tt
+u} again, and you should see
+\beginlisp
+Subproblem Level: 2  Reduction Number: 0
+Expression:
+(+ (P2 X Y) (P3 X Y))
+within the procedure P1
+applied to (1 2)
+\endlisp
+which tells us that the program reached the place we just saw above as
+a result of trying to evaluate an expression in {\tt P1}.
+
+Press {\tt u} again and you should see some mysterious stuff.  What
+you are looking at is some of the guts of the Scheme system---the part
+shown here is a piece of the interpreter's read-eval-print loop.
+In general, backing up from any error will eventually land you in the
+guts of the system.  At this point you should stop backing up unless,
+of course, you want to explore what the system looks like.  (Yes:
+almost all of the system is itself a Scheme program.)
+
+In the debugger, the opposite of {\tt u} is {\tt d}, which moves you
+``forward.'' Go forward until the point of the actual error,
+which is as far as you can go.
+
+Besides {\tt b} and {\tt f}, there are about a dozen debugger single-character
+commands that perform operations at various levels of obscurity.  You can see a
+list of them by typing {\tt ?} at the debugger.  For more information, see the
+Chipmunk manual.
+
+Type {\tt q} to quit the debugger and return to ordinary Scheme.  (If you are
+left in the *Help* buffer, just press the \key{scheme} key (labeled \kkey{7})
+to return to the Scheme interaction buffer.)
+
+\section{3. Programming Assignment: \\ Graphing Epicycloids and Hypocycloids}
+
+Now that you've gained some experience with the Chipmunks, you should be ready
+to work on the programming assignment.  When you are finished in the lab, you
+should write up and hand in the numbered problems below.  You may want to
+include listings and/or pictures in your write-up.  Chapter 1 of the Chipmunk
+manual explains how to use the lab printers.
+
+In this assignment, you are to experiment with simple procedures that plot
+curves called epicycloids and hypocycloids.  These are defined formally as
+follows.
+
+Consider a circle of radius {\tt b} and a disk of radius {\tt a} rolling on the
+circumference of the circle.  Consider a point {\tt p} that rotates with the
+disk at a distance {\tt a1} from the center of the disk.  The curve traced by
+this point as the disk rolls around the circle is called an {\it epicycloid} if
+the disk is rolling around the outside of the circle, and a {\it hypocycloid}
+if the disk is rolling around the inside of the circle.
+
+\begin{figure}
+\vspace{4 in}
+\caption{Constructing epicycloids and hypocycloids}
+\end{figure}
+
+If the equation of the circle with center point at $(0, 0)$ is
+
+\beginlisp
+x$^2$ + y$^2$ = b$^2$
+\endlisp
+then the locus of the point {\tt p=(x,y)} can be described for the
+epicycloid as follows:
+
+\[
+\begin{array}{lll}
+x(t) & = & (a+b) sin (\frac{a}{b} t)  -  a_1 sin (\frac{a+b}{b} t) \\
+y(t) & = & (a+b) cos (\frac{a}{b} t)  -  a_1 cos (\frac{a+b}{b} t)
+\end{array}
+\]
+
+The corresponding equations for the hypocycloid are
+
+\[
+\begin{array}{lll}
+x(t) & = & (b-a) sin (\frac{a}{b} t)  -  a_1 sin (\frac{b-a}{b} t) \\
+y(t) & = & (b-a) cos (\frac{a}{b} t)  -  a_1 cos (\frac{b-a}{b} t)
+\end{array}
+\]
+
+We can graph epicycloids on the Chipmunk using the procedure
+below.  The arguments to the procedure are the radii
+{\tt a} and {\tt b} of the disk and the circle, the distance {\tt a1} from
+the center of the disk
+to the plotted point, and a parameter {\tt dt} that determines the
+increment at which points are plotted.
+
+\begin{minipage}[t]{\linewidth}
+\beginlisp
+(define (epicycloid a b a1 dt)
+  (define (horiz t)
+    (- (* (+ a b) (sin (/ (* a t) b)))
+       (* a1 (sin (/ (* (+ a b) t) b)))))
+  (define (vert t)
+    (- (* (+ a b) (cos (/ (* a t) b)))
+       (* a1 (cos (/ (* (+ a b) t) b)))))
+  (define (iter t)
+    (draw-line-to (horiz t) (vert t))
+    (iter (+ t dt)))
+  (iter 0))                            ; start drawing
+\endlisp
+\end{minipage}
+
+The {\tt epicycloid} procedure contains internally defined
+procedures that compute the horizontal and vertical coordinates
+corresponding to a given value of {\tt t}, and a procedure {\tt iter}
+that repeatedly draws lines connecting the points for
+consecutive values of {\tt t}.
+The primitive {\tt draw-line-to}, used by {\tt iter}, moves the
+graphics pen to the indicated {\tt x} and {\tt y} coordinates, drawing a line
+from the current point.
+
+
+\subsection{Trying the program}
+
+Start a new file on your disk to hold the code for your program by
+pressing {\key{FIND FILE} (\shift \kkey{0})} and enter a name for this
+file: {\tt ps1.scm}.  You can use some other name besides {\tt ps1} if
+you like, but you should end the name in {\tt .scm}.  This tells the
+editor that the file contains Scheme code.  Edwin will inform you that
+this is a new file, and will create an empty edit buffer for it.
+Subsequent laboratory assignments will include large amounts of code,
+which will be loaded automatically into an edit buffer when you begin
+work on the assignment.  This time, however, we are asking you to type
+the code yourself, to give you practice with the editor.
+
+Type in the definitions of the procedure {\tt epicycloid}.  Use the
+\key{ENTER} key to go from one line to the next, so that Edwin will
+automatically indent the code.  If Edwin's indentation does not match
+what you expected, you have probably omitted a parenthesis---observing
+Edwin's indentation is an excellent way to catch parenthesis errors.
+It's also a good idea to leave a blank line between procedure
+definitions.
+
+``Zap'' your procedures from the editor into Scheme, using the
+\key{EVALUATE BUFFER} key ({\shift \kkey{7}}).\footnote{\key{EVALUATE
+BUFFER} transmits the entire buffer to Scheme, and is the easiest thing to use
+when you only have one or two procedures in your buffer.  With larger amounts
+of code, it is better to use other ``zap'' commands, which transmit only
+selected parts of the buffer, such as individual procedure definitions.  For a
+description of these commands, see Chapter 3 of the Chipmunk manual under the
+heading ``Scheme Interaction.''}.  If you get an error at this point, you
+probably have a badly formed procedure definition.  Ask for help.  Otherwise,
+test your program by evaluating
+\beginlisp
+==> (clear-graphics)
+\null
+==> (epicycloid 40 35 60 0.1)
+\endlisp
+to draw an epicycloid curve.
+
+\begin{figure}
+\vspace{4 in}
+\caption{{\tt (epicycloid 40 35 60 0.1)}}
+\end{figure}
+
+To see the drawing, press the key marked \key{GRAPHICS} at the upper
+right of the keyboard.  The Chipmunk system enables you to view either
+text or graphics on the screen, or to see both at once.  This is
+controlled by the keys marked \key{GRAPHICS} and \key{ALPHA}.
+Pressing \key{GRAPHICS} shows the graphics screen superimposed on the
+text.  Pressing \key{GRAPHICS} again hides the text screen and shows
+only graphics.  \key{ALPHA} works similarly, showing the text screen
+and hiding the graphics screen.
+
+Try drawing some epicycloid curves with various parameters.  Use
+{\tt clear-graphics} to clear the screen and {\tt position-pen} to change
+the initial position from which the curve is drawn.
+
+To save your work on your disk, press {\key{SAVE FILE} (\kkey{0})}.
+It's a good idea to save your work periodically, to protect yourself
+against system crashes.
+
+
+If you typed the program incorrectly, you will need to debug the
+procedure and return to the editor to make corrections.
+
+Observe that the {\tt epicycloid} procedure does not terminate.  It
+will keep running until you stop execution by typing \ctrl\key{g} or
+\key{ABORT}.  (The \key{CTRL} key at the upper left of the keyboard is
+used like a \key{SHIFT} key.  To type \ctrl\key{g}, hold down the
+\key{CTRL} key and press \key{g}.)
+
+\subsection{Exercise 5}
+
+Define a procedure {\tt radius-scale} that takes as argument a number
+{\tt m}, and calls {\tt epicycloid} with ${\tt a}=30$, ${\tt b}=20$,
+${\tt a1}={\tt m}\times 60$, and ${\tt dt}=0.1$.
+
+Explore the family of figures generated by {\tt radius-scale} as {\tt m}
+varies smoothly from 0 to 1. Turn in two or three sketches showing how
+the figures change, together with a listing of the procedure
+{\tt radius-scale}.
+
+\subsection{Exercise 6}
+
+A hypocycloid is similar in definition to an
+epicycloid.  Using the editor, make a copy of your code for
+{\tt epicycloid}, and modify it to implement a definition for
+{\tt hypocycloid}.  Turn in a listing of the procedure.
+
+\subsection{Exercise 7}
+
+Investigate the family of hypocycloids generated with ${\tt a}=60$,
+${\tt b}=30$, ${\tt dt}=0.2$, and
+{\tt a1} varying from 0 to 70. All these figures should have 3-fold
+symmetry. Turn in sketches of some of the figures to indicate how
+the shape varies as {\tt a1} changes.
+
+\subsection{Exercise 8}
+
+Investigate the hypocycloids that are generated with ${\tt a}=60$,
+${\tt a1}=60$, ${\tt dt}=0.2$, and {\tt b} taking on values that are integer
+multiples of 5 that are greater than 0 and less than 60.  Pay
+particular attention to the symmetry of the figures.  (For example,
+${\tt b}=30$ produces 3-fold symmetry and {\tt b}=40 produces 4-fold
+symmetry.)  Find a value of {\tt b} that produces a figure with 5-fold
+symmetry; with 11-fold symmetry.  What kind of symmetry is produced by
+${\tt b}=35$?  Turn in a sketch of one of the more interesting figures
+you discover.
+
+\subsection{Exercise 9}
+
+\newcommand{\twopib}{$2\pi\times b$}
+
+If we restrict {\tt a} and {\tt b} to be integers, then the epicycloid
+will be completely drawn by the time that {\tt t} reaches \twopib.
+Explain why.  (In general, waiting until {\tt t} reaches \twopib\  may
+cause the figure to be traced more than once.  The number of times
+that the figure will be retraced can be specified in terms of {\tt a}
+and {\tt b}.  You might think about how to do this.)  Modify the {\tt
+epicycloid} program so that it stops when {\tt t} becomes greater than
+\twopib.  (Let the procedure return 0 when it stops).  This requires
+only a small modification to the {\tt iter} procedure.  In order to do
+this conveniently, in Scheme define {\tt pi} to be 3.14159 (or \hbox{\tt
+(* 4 (atan 1 1))} for a more accurate value).  Also define {\tt
+2pi} to be a constant equal to twice {\tt pi}.  Turn in a listing of
+your modified procedure, as well as the expressions you type to Scheme
+to define {\tt pi} and {\tt 2pi}.
+
+\subsection{Exercise 10}
+
+({\it Design problem\/}) The {\tt epicycloid} procedure given above does a
+lot of unnecessary computation.  Each time it plots a point, it
+computes the sum of {\tt a} and {\tt b} four times.  In computing the
+argument to {\tt sin} and {\tt cos} it multiplies {\tt t} by a constant and
+then divides the result by {\tt b}, rather than just multiplying by a
+single constant that could have been computed just once at the
+beginning of the plot.  It takes no advantage of the fact that many of
+the same quantities, such as \mbox{\tt (/ (* (+ a b) t) b)}, are used in
+computing both the {\tt x} and the {\tt y} coordinates.
+
+Redesign the procedure to eliminate as many of these redundant
+computations as you can.  (You may need to define extra internal
+variables or procedures.)  Implement your design as a new procedure
+{\tt epicycloid1}.  Test your procedure to verify that it draws the same
+figures as does the original {\tt epicycloid}.  Does your modification
+improve the speed by a noticeable amount?  (Use a wristwatch, or the
+clock at the lower right of the screen, to determine approximate
+timings.)  Turn in a listing of {\tt epicycloid1}, together with the
+expressions you ran to make timing tests, and the comparative timings
+for {\tt epicycloid} and {\tt epicycloid1}.
+
+
+\subsection{Finally}
+
+Please indicate the names of any students you cooperated with in doing
+this assignment.
+
+How much time did you spend in lab on this assignment?  How much time
+did you spend in total on this assignment?
+
+
+
+\end{document}

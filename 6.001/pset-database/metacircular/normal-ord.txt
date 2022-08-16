@@ -1,0 +1,238 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+
+
+@comment(Edited by Julie -- from Fall '84 PS8.txt)
+@comment(**TO FIX: STUFF ABOUT MODIFICATIONS FILE)
+
+
+@make(6001)
+@set(chapter=1)
+@set(page=1)
+
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001 -- Fall Semester 1984")
+
+@PageHeading(odd,
+             Left "Problem Set 8",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+
+Problem Set 8
+@end(center)
+@blankspace(0.25 in)
+
+Issued: 6 November, 1984
+
+Due: Wednesday, 21 November, 1984, for ALL sections.
+
+Reading Assignment: Sections 4.1 through 4.4 (Note that this is a
+2-week assignment)
+
+
+@b[Exam notice:] Exam #2 will be held on Thursday, November 15, 1984.
+The exam will be held in Walker Memorial Gymnasium (50-340) from 5-7PM
+xor 7-9PM.  You may take the exam during either one of these two
+periods, but students taking the exam during the first period will not
+be allowed to leave the room until the end of the period.  The exam is
+open book.  It will cover material from the beginning of the semester
+through the material in Problem Set 7, and in the text through the
+end of chapter 3.
+ 
+
+@begin(center)
+@b[Exercises]
+@end(center)
+
+Write up and turn in the following exercises from chapter 4 of
+the text:
+
+@begin(itemize)
+Exercise 4.1 -- page 299
+
+Exercise 4.16 -- page 323
+
+Exercise 4.17 -- page  324
+@end(itemize)
+
+@newpage()
+
+@begin(center)
+@b[Delayed Evaluation]
+@end(center)
+
+This problem set asks you to modify the Lisp evaluator to allow for
+procedures that pass parameters in a ``call-by-name'' style.  The
+necessary modification is outlined in section 4.2.1 of the
+text.  Although this modification does not require writing a great
+deal of code, you will need to have a good understanding of the
+evaluator in order to do this problem set.  Read the beginning of
+chapter 4 and plan your work carefully before coming to the lab.  
+
+@paragraph(Pre-lab assignment)
+
+The following problem should be done before beginning work on the lab
+assignment: 
+
+The interpreter given in Section 4.1, unlike the full Scheme
+interpreter, does not have an @a[if] construct, only a @a[cond].
+Louis Reasoner claims that in fact @a[if] is unnecessary, since we
+could define it as an ordinary Lisp procedure:
+
+@begin(example)
+(define (if predicate action alternative)
+  (cond (predicate action)
+        (else alternative)))
+@end(example)
+
+Explain why this does not work.  In particular, suppose you use this @a[if]
+procedure to define @a[factorial]:
+
+@begin(example)
+(define (factorial n)
+  (if (= n 1)
+      1
+      (* n (factorial (- n 1)))))
+@end(example)
+
+What happens when you attempt to evaluate @a[(factorial 3)] ?  Why. 
+
+We realize that you have seen this problem before, but we want you to
+be thinking about this issue before going on to the rest of the
+assignment.  Note also that you cannot try out the above definitions
+in an ordinary Scheme, since Scheme's own definition of @a[if] will
+interfere with the one you attempt to define.  (Ordinarily, there is
+nothing to stop you from re-defining Scheme primitives, but @a[if] is
+implemented in Scheme as a special form.)
+
+@paragraph(In the laboratory)
+
+@include(mceval.txt)
+
+For this assignment, you will need to modify a few of the procedures
+in the interpreter, and also write a few new procedures.  To help you,
+@a[ps8-mods.scm] contains the procedures that you will need to modify.
+You can load this file into an NMODE buffer, which you can
+edit while doing this assignment.  The entire @a[mceval.scm] file
+can be LOADed directly into Scheme without your worrying about editing
+it.
+
+
+
+@paragraph(Lab problem 1)
+
+Section 4.2.1 of the text sketches the modification you are to make
+to the evaluator.  Filling in the details will require modifying a few
+of the procedures already given, and also writing new procedures (for
+example, to handle thunks).  Be sure to test your implementation.  For
+all of these lab problems, turn in listings of the procedures that you
+write and modify.
+
+As part of your testing process, try the following example from p. 316
+of the text:
+
+@begin(example)
+MC-EVAL==> (define (try (delayed a) (delayed b))
+             (cond ((= a 0) 1)
+                   (else b)))
+
+MC-EVAL==> (try 0 (/ 1 0))
+1
+@end(example)
+
+Two more hints in designing the implementation:
+@begin(itemize)
+Be sure to tell @a[user-print] about thunks, so if it is
+passed a thunk to print, it will first undelay it.
+
+Try the example in Exercise 4.10 of the text, which
+illustrates a easily-made bug in the undelaying strategy.
+
+@end(itemize)
+
+@paragraph(Lab problem 2)
+
+When you think your implementation is working, try defining @a[if] as
+a procedure, as shown on page 317 of the text.  Use @a[if] in
+defining @a[factorial], as in the pre-lab exercise.  This definition
+should work.  Also, try Exercise 4.9 of the text. 
+
+@paragraph(Lab problem 3)
+
+Do exercise 4.11 of the text.
+
+Test your implementation by trying the following examples:
+
+@begin(example)
+MC-EVAL==> (define (integers-from n)
+             (cons n (integers-from (+ n 1)))
+
+MC-EVAL==> (define integers (integers-from 1))
+
+MC-EVAL==> (car integers)
+1
+
+MC-EVAL==> (car (cdr integers))
+2
+@end(example)
+
+@paragraph(Lab problem 4)
+
+Do Exercise 4.12 on page 319 of the text.  Only, rather than just
+describing the modification in detail, actually implement this in your
+interpreter. 
+
+@paragraph(Lab problem 5)
+
+Design and carry out an experiment to test whether the modification
+you made in lab problem 4 is working correctly.  Show the experiment,
+saying how the evaluator should respond both before and after the
+modification in lab problem 4.  (Hint: Think about programs that use
+@a[set!].  Also, look at Exercise 3.44 of the text.)  Write a brief
+paragraph of explanation.  (Note: illegible or incoherent paragraphs
+will be graded unsympathetically, if graded at all.)
+
+@newpage()
+@begin(programexample)
+@include(MCEVAL.SCM)
+@end(programexample)

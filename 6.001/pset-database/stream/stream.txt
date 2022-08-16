@@ -1,0 +1,586 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+
+@make(6001)
+@set(chapter=1)
+@set(page=1)
+
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001 -- Fall Semester 1984")
+
+@PageHeading(odd,
+             Left "Problem Set 7",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+
+Problem Set 7
+@end(center)
+@blankspace(0.25 in)
+
+Issued: 30 October 1984
+
+Due:
+@begin(itemize)
+on Friday, 9 November 1984
+for recitations meeting at 9:00, 10:00, and 11:00
+
+on Wednesday, 7 November 1984,
+for recitations meeting at 12:00, 1:00, and 2:00
+
+@b[Note the switch in due dates for morning and afternoon
+recitations.] 
+
+@end(itemize)
+
+Reading Assignment: Finish Chapter 3
+
+@b[Reminder:] Exam #2 will be on Thursday, 15 November 1984
+
+
+Video tapes: Video tapes are provided as an optional service for people
+who want to review course material.  Tapes are available in Barker
+library.
+
+@begin(programexample)
+Tape number        Corresponding section         Corresponding Lecture
+                         in text
+
+ 1                         1.1                      13 Sept
+ 2                         1.2                      18 Sept
+ 3 and 4                   1.3                      20 Sept
+ 5                         2.1                      25 Sept
+ 6                         none                     27 Sept
+ 7-8                       2.2                       2 Oct
+ 9 (extra material         none                      4 Oct
+    on pattern matching)
+10			   2.3			    11 Oct
+11			   2.4			    16 Oct
+12			   3.1			    18 Oct
+13			   3.2			    23 Oct
+14 (first 20 minutes)	   3.3			    25 Oct
+14 (last 30 minutes)       3.4                      30 Oct
+15                         3.4                       1 Nov
+16                         3.4                       1 Nov
+@end(programexample)
+
+@begin(center)
+@b[Exercises]
+@end(center)
+
+Write up and turn in the following exercises from chapter 3 of
+the text:
+
+@begin(itemize)
+Exercise 3-20 -- page 208
+
+Exercise 3-40 -- page 252
+
+Exercise 3-62 -- page 285
+
+@end(itemize)
+
+@newpage()
+
+@begin(center)
+@b[Streams and Delayed Evaluation]
+@end(center)
+
+The purpose of this assignment is to give you some experience with the
+use of streams and delayed evaluation as a mechanism for organizing
+systems.  Delayed evaluation is a powerful technique, so be careful.
+Some of the phenomena you will see here may be mind-boggling -- hold
+onto your chairs.  Many of the procedures which you will need have
+been provided in the code attached, which will be loaded automatically
+when you begin work on this problem set.  You should be familiar with
+their contents before starting work in the laboratory.  Most of the
+work in this laboratory assignment is conceptual.  There are no large
+programs to write, but lots of hard ideas to understand.
+
+The code to be loaded with this problem set contains a number of
+useful stream operations that you can play with.  Listings are
+attached to this handout.
+
+@paragraph(Problem 1)
+
+As explained in section 3.4.4, we can define an infinite stream of
+ones and use this to define the stream of integers.
+@begin(programexample)
+(define ones (cons-stream 1 ones))
+
+(define integers (cons-stream 1 (add-streams ones integers)))
+@end(programexample)
+Type in these definitions and verify that they work by using the
+@a[print-stream] procedure, which has been loaded with this problem
+set.  Show how to define the stream of all integers that are not
+divisible by either 2, 3, or 5.  (Use @a[filter].)
+
+@paragraph(Problem 2)
+
+Do exercise 3-46 on page 271 of the text.  The @a[merge] procedure
+has been predefined and loaded with the code for this problem set.
+Use @a[print-stream] to print the first few elements of the stream
+@a[S].  What are the 6 numbers immediately following 405 in the
+sequence?
+
+@paragraph(Plotting streams)
+
+The code you load with the problem set contains definitions for
+procedure called @a[plot-stream], which plots values of a stream on
+the graphics screen.  @a[Plot-stream] takes three inputs -- a stream,
+a maximum y value y@-[m] and number @a[n], and plots the first @a[n]
+values of the stream.  The plot is scaled so that the vertical
+distance on the screen is the range @plusminus()y@-[m] and the
+horizontal distance on the screen is the range 0 through @a[n].  (The
+procedure will truncate values so that they lie within the range
+@plusminus()y@-[m], that is, values outside of this range will be
+plotted as points at the top and bottom edges of the screen.)
+
+To see how this works, try
+@begin(programexample)
+(define square-roots (map sqrt integers))
+
+(plot-stream square-roots 10 100)
+@end(programexample)
+
+The code also contains the following definition
+@begin(programexample)
+(define (tty-stream) (cons-stream (read) (tty-stream)))
+@end(programexample)
+which produces the stream of expressions that you type in at the
+keyboard.  To experiment with this, try
+@begin(programexample)
+(plot-stream (tty-stream) 100 50)
+@end(programexample)
+and type in numbers (in the range @plusminus()100), pressing
+@c[execute] each time you complete a number.  Notice how the delayed
+evaluation of @a[tty-stream] works: the values are plotted as you type
+them in because the @a[tty-stream] is evaluated, element-by-element,
+as @a[plot-stream] calls for successive values.  To see the
+interaction another way, try evaluating
+@begin(programexample)
+(print-stream (tty-stream))
+@end(programexample)
+and notice how your typed values are printed back at you.
+
+@paragraph(Problem 3)
+
+Try evaluating the expression
+@begin(programexample)
+(plot-stream (integral (tty-stream) 0 1.0)
+             100
+             100)
+@end(programexample)
+Where you type in numbers at the terminal.  (@a[Integral], defined on
+page 273 of the text , is included in the problem-set code.)  Explain
+the results you get if you type in 
+@begin(alphaenumerate)
+all 1's
+
+successive integers 1, 2, 3, ...
+
+the sequence 0, 0, 0, 0, 10, 0, 0, 0, ...
+
+the sequence 0, 0, 0, 10, 10, 10, 0, 0, 0, -10, -10, -10, 0, 0, 0, ...
+@end(alphaenumerate)
+
+
+One wonderful thing one can do with streams is represent infinite
+power series.  For example, the series for the exponential function
+is:
+@begin(programexample)
+e@+[x] = 1 + x/1! + x@+[2]/2! + x@+[3]/3! + ...
+@end(programexample)
+Such a series can be represented as the stream of the coefficients of
+the successive powers of @a[x].  
+
+Given such a series we can produce a function which computes
+the a sequence of values converging
+to the value of the function
+represented by the series as follows:
+@begin(programexample)
+(define (function series)
+  (lambda (x)
+    (define (next power-x last-approximation terms)
+      (let ((approximation
+	     (+ last-approximation
+		(* power-x (head terms))))) 
+	(cons-stream approximation
+		     (next (* x power-x)
+			   approximation
+			   (tail terms)))))
+    (next 1 0 series)))
+@end(programexample)
+
+@paragraph(Problem 4)
+Use FUNCTION to compute a sequence of values converging to e@+[1.5].
+Note, you may get more precision printed by your computer by incanting:
+@a[(set! *unparser-precision* '())]
+
+@paragraph(Problem 5)
+The code we have supplied allows you to add and subtract series by
+adding and subtracting the corresponding coefficients.  Define a
+procedure, @a[mul-series] that takes two series arguments and produces
+the stream of the coefficients of the power series expansion of the
+function which is the product of the functions are represented by the
+coefficient streams passed to it as arguments.  Test your procedure
+by computing the square of the exponential series and comparing its
+functional value with the value of the exponential series with twice
+the argument.
+
+
+The series for sine and cosine functions are closely related to the
+series for the exponential function (remember the rule that e@+[j*x] =
+cos(x) + j*sin(x)).  In fact the cosine function has the even terms of
+the exponential series with alternating signs and the sine function
+has the odd terms of the exponential series with alternating terms
+(Look them up in a calculus book!).
+
+Thus we should be able to define the series for sine and cosine as
+follows: 
+@begin(programexample)
+(define sin-series
+  (cons-stream 0
+	       (alternates 1 (tail expt-series))))
+
+(define cos-series
+  (alternates 1 expt-series))
+@end(programexample)
+
+@paragraph(Problem 6) 
+Define @a[alternates] such that the previous
+definitions work.  Test your procedure by using your series to
+evaluate sine and cosine at 1 and at 2 radians.
+
+
+@paragraph(Problem 7)
+Do exercise 3-50, on page 274, which asks you to implement 
+a procedure @a[RC] that
+models RC circuits.  @a[Scale-stream] and @a[add-streams] are provided
+in the problem-set code.  Note that @a[RC] should produce a
+@i[procedure] that takes as arguments a stream (of currents) and an
+initial voltage, and produces an output stream (of voltages).  Use
+@a[RC] to define the procedure @a[RC1] as described in the exercise.
+@a[RC1] models an RC circuit with resistance 5 ohms, capacitance 1 farad,
+and a 0.5 second time-step.
+
+Using, @a[RC1], @a[tty-stream], and @a[plot-stream], make plots of the
+voltage across the circuit given an initial capacitor voltage of -2
+volts and the following input stream of currents:
+
+@begin(itemize)
+3 seconds of .5 amp, followed by 1 second of @t[-]1 amp, followed by 3
+seconds of 0 amps, followed by 2 seconds of 1 amp, followed by
+1 second of @t[-]1 amp, followed by 2 seconds of 0 amps, ...
+@end(itemize)
+
+Remember that each time tick is 1/2 second.  Play with the scale on
+the plot until you get a reasonable picture.
+Turn in a sketch of the resulting graph.
+
+@paragraph(Problem 8)
+
+Redefine the @a[integral] procedure as on page 278, so that it takes a
+delayed stream as its first argument.  Using this new version of
+@a[integral], do exercise 3-56 on page 278, which asks you to generate
+solutions to second-order linear differential equations.  To check
+your procedure, see if you can compute a sine curve as the solution to
+the differential equation
+@begin(example)
+d@+[2]y/dt@+[2] + y = 0
+@end(example)
+with initial value 0 for @a[y] and 1 for @a[dy/dt].  You should be
+able to plot your curve by typing:
+@begin(programexample)
+(define sine-stream (2nd 0 -1 .01 0 1))
+
+(plot-stream sine-stream 2 1000)
+@end(programexample)
+As a hint, here is a sketch of the procedure @a[2nd], which you are to
+define:
+@begin(programexample)
+(define (2nd a b dt)
+  (lambda (y-init dy-init)
+    (define y
+      (integral ...))
+    (define dy
+      (integral ...))
+    y))
+@end(programexample)
+Watch out for the needed @a[delay]s!
+
+Also generate and sketch the solution to the differential equation
+@begin(example)
+d@+[2]y/dt@+[2] + dy/dt - 2y = 0
+@end(example)
+with initial value 0 for @a[y]  and 1 for @a[dy/dt].  Experiment to
+get a reasonable scale for your plot.
+
+You will notice that your sine curve plot is not perfect (the size of
+the bumps should increase) due to numerical error in the integration
+procedure.  Optional exercise @i[cum] Bachelor's Thesis:  Experiment
+with reformulating other methods of solving differential equations in
+terms of stream processes.
+
+@paragraph(Problem 9)
+
+Do exercise 3-58 on page 279.  Construct the model of the circuit for
+the parameters given, and plot the output streams I@-[L] and V@-[C].
+Sketch your plots.
+
+@newpage()
+@programexample[
+;;; This is the file PS7-CODE.SCM
+;;; Useful stream utility functions
+
+(define the-empty-stream '())
+(define empty-stream? null?)
+
+(define (singleton x)
+  (cons-stream x the-empty-stream))
+
+
+(define (nth-stream n s)
+  (cond ((empty-stream? s)
+	 (error "empty stream -- nth-stream" n))
+	((= n 0) (head s))
+	(else (nth-stream (- n 1) (tail s)))))
+
+(define (accumulate combiner initial-value stream)
+  (cond ((empty-stream? stream) initial-value)
+	(else
+	 (combiner (head stream)
+	      (accumulate combiner
+                          initial-value
+                          (tail stream))))))
+
+(define (filter pred stream)
+  (cond ((empty-stream? stream) the-empty-stream)
+	((pred (head stream))
+	 (cons-stream (head stream)
+		      (filter pred (tail stream))))
+	(else (filter pred (tail stream)))))
+
+
+;;; Mapping functions
+
+(define (map proc stream)
+  (cond ((empty-stream? stream) the-empty-stream)
+	(else (cons-stream (proc (head stream))
+			   (map proc (tail stream))))))
+
+(define (map-2 f s1 s2)
+  (cond ((or (empty-stream? s1) (empty-stream? s2))
+	 the-empty-stream)
+	(else
+	 (cons-stream (f (head s1) (head s2))
+		      (map-2 f (tail s1) (tail s2))))))
+
+
+
+;;; Iterating down a stream.
+
+(define (for-each proc stream)
+  (if (empty-stream? stream)
+      'done
+      (sequence (proc (head stream))
+		(for-each proc (tail stream)))))
+
+;;; Enumerators
+
+(define (enumerate-fringe tree)
+  (cond ((atom? tree)
+	 (cons-stream tree the-empty-stream))
+	(else
+	 (append-streams (enumerate-fringe (car tree))
+			 (enumerate-fringe (cdr tree))))))
+
+(define (enumerate-interval n1 n2)
+  (cond ((> n1 n2)
+	 the-empty-stream)
+	(else
+	 (cons-stream n1
+		      (enumerate-interval (1+ n1) n2)))))
+
+
+(define (append-streams s1 s2)
+  (cond ((empty-stream? s1) s2)
+	(else
+	 (cons-stream (head s1)
+		      (append-streams (tail s1) s2)))))
+
+
+
+
+;;; Streams of numbers
+
+(define (add-streams s1 s2)
+  (map-2 + s1 s2))
+
+(define (mul-streams s1 s2)
+  (map-2 * s1 s2))
+							
+(define (scale-stream c s)
+  (map (lambda (x) (* c x)) s))
+
+(define (integral integrand initial-value dt)
+  (define int
+    (cons-stream initial-value
+		 (add-streams (scale-stream dt integrand) int)))
+  int)
+
+
+(define (merge s1 s2)
+  (cond ((empty-stream? s1) s2)
+        ((empty-stream? s2) s1)
+        (else
+	 (let ((h1 (head s1))
+	       (h2 (head s2)))
+	   (cond ((< h1 h2)
+		  (cons-stream h1
+			       (merge (tail s1)
+				      s2)))
+		 ((> h1 h2)
+		  (cons-stream h2
+			       (merge s1
+				      (tail s2))))
+		 (else
+		  (cons-stream h1
+			       (merge (tail s1)
+				      (tail s2)))))))))
+
+;;; Stream I/O. 
+
+(define print-stream
+  (let ()
+    (define (iter s)
+      (cond ((empty-stream? s)
+	     (princ "}"))
+	    (else
+	     (princ (head s))
+	     (princ " ")
+	     (iter (tail s)))))
+    (lambda (s)
+      (princ "{")
+      (iter s))))
+
+;;; You may wonder why PRINT-STREAM has been written in such an obscure
+;;; way, When Ben Bitdiddle asked Alyssa P. Hacker about this, she thought
+;;; for a few hours and then said that, for printing a very long stream,
+;;; the more obvious implementation would result in large amounts of
+;;; storage being wasted due to the memoizing of the stream being printed.
+;;; Unfortunately, Ben has not yet learned about garbage collection, so
+;;; her comment doesn't do him much good.  Assign the explanation what is
+;;; going on as an extra credit exercise for your TA or recitation
+;;; instructor.
+
+
+
+(define (plot-stream s max-y num-vals)
+  (define (sign x) (if (< x 0) -1 1))
+  (define hp-screen-width 200)
+  (define hp-screen-height 180)
+  (define x-scale (* 2 (/ hp-screen-width num-vals)))
+  (define y-scale (/ hp-screen-height max-y))
+  (define (screen-x-point x)
+    (round (- (* x x-scale)
+              hp-screen-width)))
+  (define (screen-y-point y)
+    (let ((intended-y (round (* y-scale y))))
+       (if (> (abs intended-y) hp-screen-height)
+          (* (sign intended-y) hp-screen-height)
+          intended-y)))
+  (define (iter s count)
+    (if (> count num-vals)
+        'done
+        (sequence (draw-line-to (screen-x-point count)
+                                (screen-y-point (head s)))
+                  (iter (tail s) (1+ count)))))
+  (clear-graphics)
+  (position-pen (screen-x-point 0)
+                (screen-y-point (head s)))
+  (iter (tail s) 1))
+
+
+(define (tty-stream) (cons-stream (read) (tty-stream)))
+
+;;;; Power series arithmetic module.
+
+;;; A power series is represented by a stream of coefficients, {a0 a1 a2 ...}.
+
+(define (add-series s1 s2)
+  (map-2 + s1 s2))
+
+(define (sub-series s1 s2)
+  (map-2 - s1 s2))
+
+
+(define (function series)
+  (lambda (x)
+    (define (next power-x last-approximation terms)
+      (let ((approximation (+ last-approximation (* power-x (head terms))))) 
+	(cons-stream approximation
+		     (next (* x power-x)
+			   approximation
+			   (tail terms)))))
+    (next 1 0 series)))
+
+
+;;; EXPT is an interesting power series -- must have integers to run it.
+
+(define ones
+  (cons-stream 1 ones))
+
+(define integers
+  (cons-stream 1 (add-streams ones integers)))
+
+(define factorials
+  (cons-stream 1 (mul-streams factorials (tail integers))))
+
+(define (reciprocals stream)
+  (map (lambda (x) (/ 1 x)) stream))
+
+(define expt-series
+  (cons-stream 1 (reciprocals factorials)))
+
+(define expt-fun (function expt-series))
+
+]

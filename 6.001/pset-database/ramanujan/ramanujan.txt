@@ -1,0 +1,566 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+
+
+
+@comment(Edited by Julie -- from Spring '85 PS7-streams.txt
+  Created pairs with LIST instead of CONS; also minor wording changes)
+
+
+@device(dover)
+@make(6001)
+
+@modify(excounter, numbered [Exercise @1], referenced [@1])
+
+@PageHeading(left "6.001 -- Spring Semester 1986",
+             center "@Value(Page)",
+             right "Problem set 9")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+Spring Semester, 1986
+
+Problem Set 9
+@end(center)
+@blankspace(0.25 in)
+
+Issued: 8 April 1986
+
+Due:
+@begin(itemize)
+on Friday, 18 April 1986
+for recitations meeting at 9:00, 10:00, and 11:00
+
+on Wednesday, 16 April 1986,
+for recitations meeting at 12:00, 1:00, and 2:00
+@end(itemize)
+
+Reading Assignment: Finish Chapter 3
+
+@b[Reminder:] Exam #2 will be on Wednesday, 23 April 1986
+
+@section(Homework exercises)
+
+Write up and turn in the following exercises from the text:
+@begin(itemize)
+Exercise 3.27 -- memoization (and review of environment diagrams)
+
+Exercise 3.38 -- left vs. right accumulation
+
+Exercise 3.43 -- tortuous details about delayed evaluation.  Feel free
+to check your answer by running this on the computer.  But, in
+your answer, explain what is going on -- don't just say what the
+computer prints.
+
+Exercise 3.63 -- @a[stream-withdraw]
+@end(itemize)
+
+
+@section(Laboratory: Streams and Delayed Evaluation)
+
+The purpose of this assignment is to give you some experience with the
+use of streams and delayed evaluation as a mechanism for organizing
+systems.  Delayed evaluation is a powerful technique, so be careful.
+Some of the phenomena you will see here may be mind-boggling -- hold
+onto your chairs.  Many of the procedures you will need have
+been provided in the code attached, which will be loaded when you
+begin work on this problem set.  You should be familiar with their
+contents before starting work in the laboratory.  Most of the work in
+this laboratory assignment is conceptual.  There are no large programs
+to write, but lots of difficult ideas to understand.
+
+@paragraph(Some infinite streams)
+
+As explained in section 3.4.4, we can define an infinite stream of
+ones and use this to define the stream of positive integers.
+@begin(programexample)
+
+(define ones (cons-stream 1 ones))
+
+(define integers (cons-stream 1 (add-streams ones integers)))
+@end(programexample)
+
+@begin(exercise)
+Type in these definitions and verify that they work by using the
+@a[print-stream] procedure, which has been loaded with this problem
+set.@foot{The @a[print-stream] procedure loaded here differs from the
+one on page 251 of the text in two ways: (a) a clever hack (b) it
+doesn't start a new line for every stream element.  If you would
+rather see each element printed on a separate line, just do
+@a[(for-each print @i[<stream>])] as shown on page 251.} Show how to
+define the stream of all integers that are not divisible by either 2,
+3, or 5.  (Use @a[filter].)
+@end(exercise)
+
+The following procedure (included in the code for the problem set)
+takes two infinite streams and interleaves them, selecting elements
+alternately from each stream:
+@begin(programexample)
+(define (interleave s t)
+  (cons-stream (head s)
+               (interleave t (tail s))))
+@end(programexample)
+This is like the procedure on p. 282 of the text, but without the
+check for an empty stream, since we are assuming that both @a[s] and
+@a[t] are infinite streams.
+
+@begin(exercise)
+@tag(first-interleave)
+Test the procedure by interleaving the stream of integers that are not
+divisible by 7 with the stream of integers not divisible by 3.  What
+are the first few elements of the resulting stream?  What expression
+did you evaluate to find this result?
+@end(exercise)
+
+@begin(exercise)
+Define the following stream @a[alt]
+@begin(programexample)
+(define alt (cons-stream 0 (interleave integers alt)))
+@end(programexample)
+What can you say about the structure of this stream?  Do you notice
+any regularities, and can you explain how they arise? (For example,
+which elements are equal to 0?  Equal to 1?  Equal to 2?)
+@end(exercise)
+
+Interleaving is a somewhat ad hoc way to combine two streams.  Merging
+is an alternative combination method, which we can use when there is
+some way to compare the sizes of stream elements.  The
+@a[merge] operation takes two ordered streams (where the elements are
+arranged in increasing order) and produces an ordered stream as a
+result, omitting duplicates of elements that appear in both streams:
+@begin(programexample)
+(define (merge s1 s2)
+  (cond ((empty-stream? s1) s2)
+        ((empty-stream? s2) s1)
+        (else
+         (let ((h1 (head s1))
+               (h2 (head s2)))
+           (cond ((< h1 h2)
+                  (cons-stream h1 (merge (tail s1) s2)))
+                 ((> h1 h2)
+                  (cons-stream h2 (merge s1 (tail s2))))
+                 (else
+                  (cons-stream h1 (merge (tail s1)
+                                         (tail s2)))))))))
+@end(programexample)
+@begin(exercise)
+@tag(first-merge)
+Do exercise 3.46 on page 271 of the text.  The @a[merge] procedure has
+been predefined and loaded with the code for this problem set.  Use
+@a[print-stream] to print the first few elements of the stream @a[S].
+What are the 6 numbers immediately following 405 in the sequence?
+@end(exercise)
+
+@paragraph(Pairs of infinite streams)
+
+The discussion beginning on page 281 of the book talks about a method
+for generating pairs of integers @a[(i,j)].  This part of the problem
+set deals with another method for doing so.
+
+Consider the problem of generating the stream of all pairs of integers
+@a[(i,j)] with @a[i] less than or equal to @a[j].  More generally,
+suppose we have two streams @a[S={s1, s2, ....}] and @a[T={t1, t2,
+...}], and imagine the infinite rectangular array:
+@begin(smallfigurebody)
+(s1,t1)    (s1,t2)     (s1, t3)    ...
+(s2,t1)    (s2,t2)     (s2, t3)    ...
+(s3,t1)    (s3,t2)     (s3, t3)    ...
+   .          .           .        .
+   .          .           .        .
+   .          .           .        .
+@end(smallfigurebody)
+
+Suppose we wish to generate a stream that contains all the pairs in
+the diagram that lie on or above the diagonal, i.e., the pairs:
+@begin(smallfigurebody)
+(s1,t1)    (s1,t2)     (s1, t3)    ...
+           (s2,t2)     (s2, t3)    ...
+                       (s3, t3)    ...
+                                   ...
+                                          
+@end(smallfigurebody)
+(If we take @a[S] and @a[T] both to be the stream of integers, we get
+the stream of pairs of integers @a[(i,j)] with @a[i] less than or
+equal to @a[j].)
+
+Call the stream of pairs @a[(pairs S T)], and consider it to be
+composed of three sets of elements: the element @a[(s1,t1)]; the rest
+of the elements in the first row; and the remaining elements:
+@begin(smallfigurebody)
+(s1,t1) |  (s1,t2)     (s1, t3)    ...
+--------|------------------------------------
+        |  (s2,t2)     (s2, t3)    ...
+        |              (s3, t3)    ...
+        |                          ...
+        -----------------------------------------
+@end(smallfigurebody)
+
+Observe that the third part of this decomposition (elements not in the
+first row) is (recursively) @a[(pairs (tail s) (tail t))].  Also note
+that the rest of the first row is just
+@begin(programexample)
+
+(map (lambda (x) (list (head s) x))
+     (tail t))
+@end(programexample)
+assuming that we use @a[list] to construct the pairs
+@a[(s@-[i],t@-[j])].
+Thus we can form our stream of pairs as follows:
+@begin(programexample)
+(define (pairs s t)
+  (cons-stream (list (head s) (head t))
+               (@i[<combine-in-some-way>]
+                  (map (lambda (x) (list (head s) x))
+                       (tail t))
+                  (pairs (tail s) (tail t)))))
+@end(programexample)
+In order to complete the procedure, we must decide on some way to
+@i[combine] the two inner streams.
+
+@begin(exercise)
+Define a procedure @a[interleave-pairs] that uses the general method
+for forming pairs as above, using @a[interleave] -- as in
+exercise @ref[first-interleave] above -- to combine the two streams.
+Examine the stream
+@begin(programexample)
+(interleave-pairs integers integers)
+@end(programexample)
+Can you make any general comments about the order in which the pairs
+are placed into the stream?  For example, about how many pairs precede
+the pair (1,100)? the pair
+(99,100)? the pair (100,100)?@foot[If you can make precise mathematical statements here,
+all the better.  But feel free to give more qualitative answers if you
+find yourself getting bogged down.]
+@end(exercise)
+
+@paragraph(Ordered streams of pairs)
+
+Just as we did in exercise @ref(first-merge) above, it would be nice
+to be able to generate streams where the pairs appear in some
+useful order, rather than in the order that results from an ad hoc
+interleaving process.     We can use the strategy of the
+@a[merge] procedure of exercise @ref(first-merge) if we define
+an ordering on @i[pairs] of integers.  That is, we need some way to say
+that a pair @a[(i,j)] is ``less than'' a pair @a[(k,l)].  We could
+then hope to have a kind of @a[pairs] operation that would take two
+ordered streams of integers (ordered, that is, according to the usual
+@a[<] predicate) and produce an ordered stream of pairs (ordered, that
+is, in terms of the ``less than'' ordering on pairs of integers).
+
+One way to define an appropriate ``less than'' for pairs
+is to assume that we have a way of computing a positive integer
+@i[weight] for any pair and to order pairs by their weight.
+We assume that the weighting function is ``compatible'' with the
+ordering on integers, as follows:
+@begin(itemize)
+if @a[i<j] then for any @a[k], @a[(weight i k) < (weight j k)]; and
+
+if @a[m<n] then for any @a[i], @a[(weight i m) < (weight i n)]
+@end(itemize)
+In other words, referring to the array above, we insist that the
+weight of a pair should increase as we move outward along a row or
+downward along a column.
+
+There are many different ways to choose a compatible weighting
+function.  For instance, we could take the weight of @a[(i,j)] to be the sum
+@a[i+j], or the sum of the cubes @a[i@+[3]+j@+[3]].
+
+@begin(exercise)
+@tag(merge-weighted-exercise)
+Write a procedure @a[merge-weighted] that is like @a[merge] except
+for two differences:
+@begin(enumerate)
+@a[merge-weighted] takes an additional argument @a[weight], which is
+a procedure that computes the weight of a pair.  This is used to
+determine the order that elements should appear in the resulting stream.
+
+Unlike @a[merge], @a[merge-weighted] should not discard elements with
+duplicate weights.  Indeed, we may find two different pairs with the
+same weight, and this may be interesting, as we shall see below.
+(This stipulation makes the structure of @a[merge-weighted] simpler
+than that of @a[merge], since there is one less case to worry about.
+Also, you can leave out the @a[empty-stream?] test from @a[merge],
+since we will be concerned here only with infinite streams.)
+@end(enumerate)
+Hand in your definition of merge-weighted.
+@end(exercise)
+
+
+Now we can implement a @a[pairs] procedure that uses
+@a[merge-weighted] to combine the two streams.  The following version
+of the procedure takes an additional argument @a[pair-weight], which
+is a procedure of two parameters that will be used to compute the
+weights:
+@begin(programexample)
+(define (weighted-pairs s t pair-weight)
+  (cons-stream (list (head s) (head t))
+               (merge-weighted
+                  (map (lambda (x) (list (head s) x)) (tail t))
+                  (weighted-pairs (tail s) (tail t) pair-weight)
+                  (lambda (p) (pair-weight (car p) (cdr p))))))
+@end(programexample)
+Note how @a[lambda] is used to convert @a[pair-weight], which expects
+two arguments, into a procedure that expects a pair, as required by
+@a[merge-weighted].
+
+@begin(exercise)
+@tag(first-make-weighted-pairs)
+@a[Weighted-pairs], as listed above, is included in the code for this
+problem set.  Using this together with your procedure
+@a[merge-weighted] from exercise @ref(merge-weighted-exercise) define
+the following streams:
+@begin(alphaenumerate)
+all pairs of positive integers @a[(i,j)] ordered according to the sum
+@a[i+j]
+
+all pairs of positive integers @a[(i,j)] ordered according to the product
+@a[ij]
+
+all pairs of positive integers @a[(i,j)] ordered according to the sum
+@a[i@+[3]+j@+[3]]
+
+all pairs of positive integers @a[(i,j)], where neither @a[i] nor
+@a[j] is divisible by 2, 3, or 5, ordered according to the sum
+@a[2i+3j+5ij]
+@end(alphaenumerate)
+What are the first few pairs in each stream?  What expression(s) did
+you type in order to generate each stream?
+@end(exercise)
+
+@paragraph(Pairs with the same weight)
+
+Prof. Charles Leiserson suggested that ordered streams
+of pairs provide an elegant solution to the problem of computing the
+Ramanujan numbers -- numbers that can be written as the sum of two
+cubes in more than one way.  This problem is given in exercise 3.62 on
+page 285 of the text.  You should read that problem now.
+
+Leiserson's observation is that, to find a number that can
+be written as the sum of two cubes in two different ways, we need only
+generate the stream of pairs of integers @a[(i,j)] weighted according
+to the sum @i[i@+[3]+j@+[3]], then search the stream for two consecutive pairs
+with the same weight.
+
+To implement and generalize Leiserson's suggestion, we can use a
+procedure @a[combine-same-weights].  This takes a stream of pairs
+together with a weighting function @a[pair-weight], which is a
+procedure with two parameters, as in the @a[weighted-pairs] procedure.  We
+assume that the pairs appear in the stream according to increasing
+weight.  @a[Combine-same-weights] returns a stream of lists.  The
+@a[car] of each list is a weight, and the @a[cdr] is all the pairs
+that have that weight.  The lists appear in the stream in order of
+increasing weight.  For instance, if the input stream is the one that
+you should have obtained in exercise @ref(first-make-weighted-pairs)-a:
+@begin(programexample)
+
+(1 1) (1 2) (2 2) (1 3) (2 3) (1 4) (3 3) (2 4) (1 5)
+(3 4) (2 5) (1 6) (4 4) (3 5) (2 6) (1 7) ...
+@end(programexample)
+and @a[pair-weight] is @a[+], the the procedure should generate the stream
+@begin(programexample)
+
+(2 (1 1))
+(3 (1 2))
+(4 (1 3) (2 2)) 
+(5 (1 4) (2 3))
+(6 (1 5) (2 4) (3 3))
+(7 (1 6) (2 5) (3 4)) 
+(8 (1 7) (2 6) (3 5) (4 4)) 
+        .
+        .
+        .
+@end(programexample)
+
+@begin(exercise)
+Implement the procedure @a[combine-same-weights] as described above and
+turn in a listing of your procedure.
+@end(exercise)
+
+@begin(exercise)
+The following procedure is included in the code for this problem set:
+@begin(programexample)
+(define (same-weight-pairs s t pair-weight)
+  (combine-same-weights (weighted-pairs s t pair-weight)
+                        pair-weight))
+@end(programexample)
+Use this to generate streams to answer the following questions:
+@begin(alphaenumerate)
+What are all the ways in which you can write 12 as the sum of two
+positive integers?
+
+What are all the ways in which you can write 32 as the sum of two
+positive integers, neither of which is divisible by 3?
+@end(alphaenumerate)
+What expressions did you use to generate these streams?
+@end(exercise)
+
+@begin(exercise)
+@tag(ramanujan)
+You should now be able to generate the Ramanujan numbers by first
+generating
+@begin(programexample)
+(same-weight-pairs integers integers (lambda (i j) (+ (cube i) (cube j))))
+@end(programexample)
+then filtering the result for lists that contain more than one pair.
+Do this.  What are the first five Ramanujan numbers?
+@end(exercise)
+
+@begin(exercise)
+In a similar way to exercise @ref(ramanujan), generate streams of
+@begin(alphaenumerate)
+All numbers that can be written as the sum of two squares in three
+different ways (showing how they can be so written).  What are the
+five smallest such numbers?
+
+All numbers that can be written, in two different ways, in the form
+@a[i@+[3]+j@+[2]], where @a[i] is an odd positive integer and @a[j]
+is an even positive integer.  (Also give, for each number, the
+appropriate values for @a[i] and @a[j].)  What are the five smallest
+such numbers?
+@end(alphaenumerate)
+What expressions did you use to generate these streams?
+@end(exercise)
+
+@paragraph(Eliminating redundant computations)
+
+The program strategy used in @a[same-weight-pairs] is very ``clean.''
+But it is also inefficient, because the weight of each pair is
+computed more than once.  For instance, @a[merge-weighted] will
+generally compute the weight of a given pair at least twice -- once
+each time the pair is tested against other pairs.
+Moreover, @a[combine-same-weights] computes all the weights again.
+
+@begin(exercise)
+@i[(Program design problem)] Design an alternative implementation of
+@a[same-weight-pairs] that computes the weight of each pair only once.
+You do not need to implement your design, but, if you do not, be sure
+to give a careful description of how your program works and what the
+major procedures are.  If you do implement your design, turn in
+listings of the new procedures you wrote.  Also try some timing tests
+to see if your new implementation is faster than the previous one
+(for example, in finding the first Ramanujan number) and turn in the results of
+your tests.
+
+Hint: One way to avoid recomputing weights in @a[combine-same-weights]
+is to change @a[weighted-pairs] so that it generates a stream that
+contains the weights as well as the pairs.  You can use this same kind
+of idea to avoid weight recomputation in @a[merge-weighted] as well,
+provided you appropriately change the interface between
+@a[merge-weighted] and @a[weighted-pairs].
+@end(exercise)
+
+@paragraph(A more elegant method)
+
+We suggest you do the exercises below after you are done at the lab.
+
+Ben Bitdiddle has discovered a more elegant way to generate the
+Ramanujan numbers.  It is based upon a procedure @a[unique-pairs]
+that, given a stream @a[S] as argument, generates all the pairs
+@a[(S@-[a],S@-[b])] where @a[a<b].  (That is, the result is the stream
+of all pairs whose first item is an element of the stream and whose
+second item is an element that appears later in the stream.)
+
+Here is Ben's definition of the Ramanujan numbers:
+
+@begin(programexample)
+(define ben-ramanujan-numbers
+  (map car
+       (filter (lambda (pair)
+		 (= (car pair) (cadr pair)))
+	       (unique-pairs
+                (map (lambda (p) (+ (cube (car p)) (cube (cadr p))))
+                     (unique-pairs integers))))))
+@end(programexample)
+
+@begin(exercise)
+Explain the idea behind Ben's method.  Does it generate the
+same numbers as the program in exercise @ref(ramanujan)?
+(Answers to this question will be graded based on the clarity of
+expression in written English, as well as on technical competence.)
+@end(exercise)
+
+Here is Ben's definition of @a[unique-pairs], which uses
+@a[interleave-delayed] (see book, page 284):
+
+@begin(programexample)
+(define (unique-pairs s)
+  (interleave-delayed (map (lambda (y) (list (head s) y))
+                           (tail s))
+                      (delay (unique-pairs (tail s)))))
+
+(define (interleave-delayed s1 delayed-s2)
+  (if (empty-stream? s1)
+      (force delayed-s2)
+      (cons-stream (head s1)
+		   (interleave-delayed (force delayed-s2)
+                                       (delay (tail s1))))))
+@end(programexample)
+
+@begin(exercise)
+Louis Reasoner thinks that it is unnecessary to use
+@a[interleave-delayed] and suggests that Ben can just write:
+@begin(programexample)
+(define (unique-pairs s)
+  (interleave (map (lambda (y) (list (head s) y))
+                   (tail s))
+                   (unique-pairs (tail s))))
+@end(programexample)
+where @a[interleave] is the procedure defined earlier in this problem
+set.  Why is Louis wrong?  If Ben had followed Louis's suggestion, what
+would happen if he would try to print the stream
+@begin(programexample)
+(unique-pairs integers)
+@end(programexample)
+@end(exercise)
+
+@begin(exercise)
+Ben verifies that his original definition of @a[unique-pairs] works,
+and he is convinced that his method for generating the Ramanujan
+numbers is simple and elegant.  Unfortunately, when he tries to define
+the stream @a[ben-ramanujan-numbers], the computer grinds and grinds
+and Ben eventually gets tired of waiting and goes home.  Explain why
+Ben's definition, although elegant, takes so long to run.
+@end(exercise)
+
+
+@newpage()
+@begin(programexample)
+@include(STREAM-PAIRS.SCM)
+@end(programexample)

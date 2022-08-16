@@ -1,0 +1,337 @@
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+		     MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+	   Department of Electrical Engineering and Computer Science
+	   6.001---Structure and Interpretation of Computer Programs
+			      Fall Semester, 1989
+				 Problem Set 7
+
+
+
+  Issued: Tuesday, 31 October			  Due: Wednesday, 8 November
+
+
+Reading: SICP, section 3.4
+	 PS7.SCM (attached)
+
+
+			  PART 1: HOMEWORK EXERCISES
+
+Exercise 1: Do exercise 3.26 in the text.
+
+Exercise 2: Do exercise 3.43 in the text.
+
+Exercise 3: Do exercise 3.48 in the text.
+
+
+			       PART 2: LAB WORK
+
+	     Laboratory Assignment: Streams and Delayed Evaluation
+
+As opposed to the standard tools introduced so far in this course, streams
+provide a different way of reasoning about procedures and processes.  In
+particular, streams are useful for modeling infinite mathematical objects, such
+as a sequence of samples of a continuous-time signal, or the sequence of
+coefficients of an infinite power series.  In this problem set, we will mainly
+concern ourselves with the former, that is, modelling signals using streams.
+In particular, we are going to help Louis Reasoner to write an HRM System --
+Heart Rate Monitoring system.
+
+Use the "Load Problem Set" command to load the code in the appendix from the
+system onto your Chipmunk.  You will not need to modify any of the code, but
+you will add some new code.  This problem set also concentrates on the use of
+higher order procedures such as MAP, FILTER, and some others that you must to
+write.	You should be familiar with the attached code before starting to work
+in the lab.  There are no large programs to write, but lots of mind-boggling
+ideas to understand.
+
+		       A Short History on the HRM System
+
+Louis Reasoner, after being unsuccessful as a CIA employee, decided to team up
+with his friend Ben Bitdiddle, (M.D. Hahvahd, and Ph.D. in E.E., MIT) to open
+up their own business: Cambridge Medical Software Inc.	Soon after the opening,
+they were approached by the Mess-General Hospital for developing a piece of
+software to handle HRM (Heart Rate Monitoring).  The hospital has already
+acquired the necessary hardware.  The software must be able to take a patient's
+heartbeat signal, represented as a sequence of numbers, analyze it and
+determine whether the heart-beat of the patient is regular.  While Louis has no
+idea how to approach this problem, Ben has already accepted the offer of the
+project.
+
+"It shouldn't be too difficult if we use streams!!" suggests Ben.  "What are
+streams?" inquires Louis.  Ben, unfortunately, has to be away for a month due
+to some emergency, so he has handed the project to Louis and you.  In this
+problem set, your job is to help Louis complete the HRM project.
+
+
+Problem 1
+
+To begin, it is useful to review some basic things about streams.  Recall from
+the text that we could define an infinite stream of ones and integers using the
+following two expressions.  Type them in and use the PRINT-STREAM procedure to
+print them out:
+
+(define ones (cons-stream 1 ones))
+
+(define integers (cons-stream 1 (add-streams ones integers)))
+
+a. Using the same idea, define the stream of integers, starting with 1, where
+each element of the stream is the sum of all the elements before it.  Do you
+recognize the resulting stream?
+
+b. Define a procedure which takes two integers as arguments, a lower bound L
+and an upper bound U, and returns a stream of random integers such that each
+number is greater than or equal to L, but strictly less than U.
+
+Hand in a listing of your definitions and a transcript of what the streams
+look like when you print them out using PRINT-STREAM.
+
+Louis and you then interview the hospital to collect more data about the
+interface between the software and the patient's signal.  The patient's signal
+is represented by a stream of values, representing a sampling of the heartbeat
+at regular time intervals.  The procedure GET-PATIENT-HEART-SIGNAL in the given
+code simulates such a signal.  Take a look at what those streams look like by
+either printing them out, or using the PLOT-STREAM procedure to plot the stream
+(or signal) on your Chipmunk screen.  PLOT-STREAM takes three inputs -- a
+stream, a maximum y value YM and a number N, and plots the first N values of
+the stream.  The plot is scaled so that the vertical distance on the screen
+ranges from -YM to +YM, and the horizontal distance on the screen is the range
+0 through N.  (The procedure will truncate values so that they lie within the
+range of -YM and +YM, that is, values outside of this range will be plotted as
+points at the top and bottom edges of the screen.)
+
+To see how this works, try
+
+(define square-roots (map sqrt integers))
+
+(plot-stream square-roots 10 100)
+
+(plot-stream (get-patient-heart-signal) 20 100)
+
+
+Problem 2
+
+Now you are ready to design the software.  Louis, although not a very good
+programmer, is very good at wishful thinking.  He suggests that since the
+signals have a lot of noise (as shown by the ruggedness of the signals in the
+plots), one should do some more processing on the signal before feeding them
+into a regularity-detecting procedure.	His idea is to separate out the valid
+stream elements from the invalid ones.	He claims that the spikes in the plots
+are valid signals, and that in general the spikes have a value greater than a
+certain threshold value.  The idea is to construct a new signal consisting only
+of the digits 0 and 1, based on whether the value of a stream element is above
+or below the threshold.  In other words, whenever the original signal value is
+greater than the threshold, the new signal should contain a 1, and otherwise
+the new signal should contain a 0.  (This process is frequently called
+"binarization" in signal processing.)
+
+Write a procedure called BINARIZE that, when given a signal and a threshold,
+returns a new signal consisting of zeros and ones at the appropriate places.
+
+Hand in a listing of your procedure, and a transcript of its execution.
+
+
+Problem 3
+
+Next, Louis wants to transform a signal in 0's and 1's in the following way:
+
+input stream:	0 0 0 1 0 0 1 0 0 0 1 0 0 0 0 1 0.......
+
+output stream:	4 7 11 16 .....
+
+In other words, the output stream has the positions of all the 1's in the input
+stream, counting left to right, starting from 1.
+
+Write a procedure called PEAK-POSITIONS that returns such an output stream
+given such an input stream.
+
+Hand in a listing of your procedure(s) and a demonstration of how it works.
+(Hint: you might find it easier to write a supporting procedure for the main
+procedure.)
+
+
+Problem 4
+
+There is one more step of processing, according to Louis.  "If we take the
+output signal from PEAK-POSITIONS and somehow generate yet another new signal
+which consists of the difference between the adjacent elements in the stream,
+and if all numbers in this new signal are close to a constant, that means the
+patient's heart-beat is regular!"  To complete the pre-processing of a signal,
+write a procedure called PEAK-SPACING that takes a signal and returns a new
+signal whose elements are the differences between adjacent elements in the
+input signal.
+
+Hand in a listing of your procedure and a transcript of its execution.
+
+
+Problem 5
+
+"Now, we are done with writing all the basic building blocks, but we need a
+test which tells us whether a patient's heartbeat is regular," said
+Louis.	Write a procedure called CHECK-REGULARITY, which takes four arguments:
+a signal, a tolerance-margin, and a number N, and a procedure called RECEIVER.
+CHECK-REGULARITY should assume that its input signal has already been passed
+through PEAK-SPACING (problem 4).  It should examine the first N elements in
+the signal and call the procedure RECEIVER with two arguments:
+
+  (RECEIVER <boolean-value> <stream>)
+
+where <boolean-value> is false iff (if and only if) the heartbeat is NOT
+regular, and <stream> is the stream of signals not tested by CHECK-REGULARITY
+(in other words, the elements of the input stream starting with the (N+1)-st).
+CHECK-REGULARITY should consider a heartbeat regular iff the difference between
+any two adjacent elements of the input signal is less than the value of the
+tolerance-margin.  Remember that we are assuming that the signal has already
+been processed by the procedure PEAK-SPACING.  (Notice how the RECEIVER
+argument can be used just as a method of returning more than one argument to
+the caller.  This is how we would like you to use it in Problem 6, and later in
+problem 8.)
+
+Hand in a listing of CHECK-REGULARITY and a transcript showing it working.  For
+testing your procedure, use 1 as the argument for the tolerance-margin and 7 as
+the argument for the number N.
+
+Problem 6
+
+Now, Mess-General states that since the hardware for processing the signals is
+very expensive, they intend to have only one machine, and therefore the HRM
+system must be time-shared among all the patients in the hospital.  To deal
+with multiple signals, one from each patient, Louis and you decide to write the
+sequence of patients' signals again as a stream, i.e., the software will be
+processing a stream of streams.
+
+a. Write a FINITE stream called the PATIENT-STREAM, which is simply a stream of
+signals from all the patients.  Use the GET-PATIENT-HEART-SIGNAL procedure to
+simulate the signals for the patients.
+
+b. Write a procedure called the MONITOR, which takes three arguments: the
+PATIENT-STREAM, a tolerance-margin, and a number N.  This procedure should
+time-share in the following way:
+
+  For each patient, first plot the original signal of his/her heartbeat on the
+  screen.  Then, check whether the heartbeat of the patient is regular, using
+  the tolerance-margin and N as arguments to the CHECK-REGULARITY procedure.
+  If the patient's heartbeat is irregular, print a message of the form
+
+    Heartbeat of patient number N is irregular!
+
+  When the last patient has been checked, go back to the first patient and go
+  through the whole process again, now with MONITOR starting at the (N+1)-st
+  element of the heartbeat signal of every patient, and so on.
+
+Hand in a listing of your MONITOR procedure and a transcript showing it being
+run on test cases.  (Hint: You may find it useful to define some higher order
+procedures similar to MAP or FORALL, and any additional procedures to
+modularize your code.	Inelegant solutions will be given only partial credit.)
+
+
+Problem 7
+
+Describe in a short paragraph what would have to be changed if the patient
+stream is an infinite stream.  (This is perhaps not realistic, but interesting
+to think about.)
+
+
+Problem 8
+
+After your system has been in use for a while, Mess General asks for an
+extension to the system.  The present system can only detect whether a heart
+beat signal is regular or irregular.  We would also like the system to sense
+whether the heartbeat of a patient is slowing or speeding up when it is
+irregular.  Suppose we take the kind of output signals produced by PEAK-SPACING
+(the procedure you wrote in problem 4), that is:
+
+Original input: 	s   = 0 0 0 1 0 0 1 0 0 0 1 0 0 0 0 1 0 .....
+
+PEAK-POSITIONS output:	s'  = 4 7 11 16 ....
+
+PEAK-SPACING output:	s'' = 3 4 5 ....
+
+Mess General wants to detect when spacing between beats begins to deviate from
+the normal spacing.  We can measure this by finding the average spacing of s'',
+call it
+	     n
+	    ---
+___	1   \
+s'' =  ---  /	 s''
+	n   ---	  i
+	    i=1
+
+where s'' represents the i-th element of the stream, and we are taking the
+       i
+
+first n elements of the stream.
+                   n
+                  ---  -       ___ -  2
+             1    \   | s'' -  s''  |
+variance = -----  /   |  i          |
+           n - 1  ---  -           -
+                  i=1
+
+Write a procedure called TEST-SIGNAL which takes three arguments, a signal
+stream of the form returned by PEAK-SPACING, a number N, and a procedure
+RECEIVER.  The procedure should scan the stream, keeping track of the mean M
+and variance of those values.
+
+  If it has seen fewer than 3 samples, it should continue processing the stream.
+
+  If it has processed at least 3 samples, and the next stream value is greater
+  than M+(3*variance), it should call RECEIVER with the symbol SLOWING and the
+  remaining stream.
+
+  If it has processed at least 3 samples, and the next stream value is less
+  than M-(3*variance), it should call RECEIVER with the symbol SPEEDING-UP and
+  the remaining stream.
+
+  If it has processed N samples with no slowing or speeding up, it should call
+  RECEIVER with the symbol STEADY and the remaining stream.
+
+"Remaining stream" above means the input stream beginning with the (N+1)-st
+element, as above for CHECK-REGULARITY (Problem 5).  (Notice that we are again
+using RECEIVER to return multiple arguments to the caller.)
+
+Watch out for signals that speed up or slow down gradually, or in which the
+mean decreases as the variance increases, or vice versa, because this makes the
+net result of M+(3*variance) and M-(3*variance) increase or decrease steadily
+with the value of the elements of the stream.  The procedure we outlined above
+will not detect slowing or speeding up when this happens.  One way to remedy
+this problem is to check the value of the variance.  Usually, a value greater
+than 2 indicates significant lack of regularity in the signal.	 Write
+TEST-SIGNAL with this fact in mind.
+
+Hand in a listing of your TEST-SIGNAL procedure.
+
+
+Problem 9
+
+Describe the changes you would have to make to the MONITOR procedure you wrote
+for Problem 6 in order make it use your TEST-SIGNAL procedure.

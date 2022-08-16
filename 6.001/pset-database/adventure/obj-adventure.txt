@@ -1,0 +1,566 @@
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+		     MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+	   Department of Electrical Engineering and Computer Science
+	   6.001---Structure and Interpretation of Computer Programs
+			      Fall Semester, 1989
+				 Problem Set 6
+
+
+
+  Issued: Tuesday,  24 October                    Due: Wednesday, 1 November
+
+
+Reading: SICP Section 3.3, PS6-ADV.SCM, PS6-WORLD.SCM, attached.
+
+
+			  PART 1: HOMEWORK EXERCISES
+
+Exercise 6.1: Do Exercise 3.11 of Abelson and Sussman.
+Exercise 6.2: Do Exercise 3.12 of Abelson and Sussman.
+
+
+		       PART 2: THE 6.001 ADVENTURE GAME
+
+In the programming assignment for this week, we will be exploring two ideas:
+the simulation of a world in which objects are characterized by a set of state
+variables, and the use of message passing as a programming technique for
+modularizing worlds in which objects interact.  We will do this in the context
+of a simple simulation game like the ones available on many computers.  Such
+games have provided an interesting waste of time for many computer lovers.  In
+order to not waste too much of your own time, you should read the description
+of the system carefully, and plan your work in advance.  Note in particular
+that you should do the problems in part 2 of this problem set before you come
+to the lab to do part 3.
+
+
+	      The essential system---places,  persons, and things
+
+The basic idea of simulation games is that the user plays a character in an
+imaginary world inhabited by other characters. The user plays the game by
+issuing commands to the computer that have the effect of moving the character
+about and performing acts in the imaginary world, such as picking up objects.
+The computer simulates the legal moves and rejects illegal ones.  For example,
+it is illegal to move between places that are not connected (unless you have
+special powers).  If a move is legal, the computer updates its model of the
+world and allows the next move to be considered.
+
+Our game takes place in an an imaginary world called MIT, with imaginary places
+such as a computer lab, Building 36, and Tech Square.  In order to get going,
+we need to establish the structure of this imaginary world: the objects that
+exist and the ways in which they relate to each other.
+
+Initially, there are three procedures for creating objects:
+
+  (make-thing name)
+  (make-place name)
+  (make-person name place threshold)
+
+Each time we make a place or a thing, we give it a name.  In addition, a person
+is created at some initial place, and with a threshold that determines how
+often the person moves.  For example, the procedure MAKE-PERSON may be used to
+create the two imaginary characters, GERRY and NIKHIL.  (Note that persons have
+to be installed, to bring them to life.)
+
+  (define gerry-office (make-place 'gerry-office))
+  (define nikhil-office (make-place 'nikhil-office))
+
+  (define gerry (make-person 'gerry gerry-office 2))
+  (install-person gerry)
+
+  (define nikhil (make-person 'nikhil nikhil-office 3))
+  (install-person nikhil)
+
+All objects in the system are implemented as message-accepting procedures.
+Once you load the system in the laboratory, you will be able to control GERRY
+and NIKHIL by sending them appropriate messages.  As you enter each command,
+the computer reports what happens and where it is happening:
+
+==> (ask GERRY 'look-around)
+At GERRY-OFFICE : GERRY says -- I see nothing 
+==> (ask GERRY 'exits)
+(DOWN)
+==> (ask GERRY 'go 'down)
+GERRY moves from GERRY-OFFICE to TECH-SQUARE 
+MOVED
+==> (ask GERRY 'go 'south)
+GERRY moves from TECH-SQUARE to BLDG-36 
+MOVED
+==> (ask GERRY 'go 'up)
+GERRY moves from BLDG-36 to COMPUTER-LAB 
+MOVED
+
+==> (ask NIKHIL 'look-around)
+At NIKHIL-OFFICE : NIKHIL says -- I see nothing 
+==> (ask NIKHIL 'exits)
+(DOWN)
+==> (ask NIKHIL 'go 'down)
+NIKHIL moves from NIKHIL-OFFICE to COMPUTER-LAB 
+At COMPUTER-LAB : NIKHIL says -- Hi GERRY 
+MOVED
+
+In principle, you could run the system by issuing specific commands to each of
+the creatures in the world.  But this defeats the notion of the game, since
+that would give you explicit control over all the characters.  Instead, we will
+structure our system so that any character can be manipulated in some fashion
+by the computer.  We do this by creating a list of all the characters to be
+moved by the computer, and by simulating the passage of time by a special
+procedure, CLOCK, that sends a MOVE message to each creature in the list.  A
+MOVE message does not automatically imply that the creature receiving it will
+perform an action.  Rather, like all of us, a creature hangs about idly until
+he or she (or it) gets bored enough to do something.  To account for this, the
+third argument to MAKE-PERSON specifies the number of clock intervals that the
+person will wait before doing something.
+
+Before we trigger the clock to simulate a game, let's explore the properties of
+our world a bit more.
+
+First, let's create a COMPUTER-MANUAL and place it in the COMPUTER-LAB (where
+GERRY and NIKHIL now are).
+
+==> (define computer-manual (make-thing 'computer-manual))
+COMPUTER-MANUAL
+(ask computer-lab 'appear computer-manual)
+APPEARED
+
+Next, we'll have GERRY look around.  He sees the manual and NIKHIL.  The manual
+looks useful, so GERRY takes it and leaves.
+
+==> (ask GERRY 'look-around)
+At COMPUTER-LAB : GERRY says -- I see COMPUTER-MANUAL NIKHIL 
+==> (ask GERRY 'take computer-manual)
+At COMPUTER-LAB : GERRY says -- I take COMPUTER-MANUAL 
+==> (ask GERRY 'go 'down)
+GERRY moves from COMPUTER-LAB to BLDG-36 
+
+NIKHIL had also noticed the manual; he follows GERRY and snatches the manual
+away.  Angrily, GERRY sulks off to the EGG-Atrium:
+
+==> (ask NIKHIL 'go 'down)
+NIKHIL moves from COMPUTER-LAB to BLDG-36 
+At BLDG-36 : NIKHIL says -- Hi GERRY 
+==> (ask NIKHIL 'take computer-manual)
+At BLDG-36 : GERRY says -- I lose COMPUTER-MANUAL 
+At BLDG-36 : GERRY says -- Yaaaah! I am upset! 
+At BLDG-36 : NIKHIL says -- I take COMPUTER-MANUAL 
+==> (ask GERRY 'go 'west)
+GERRY moves from BLDG-36 to EGG-ATRIUM
+ 
+Unfortunately for GERRY, beneath the EGG-Atrium is an inaccessible dungeon,
+inhabited by a troll named GRENDEL.  (Rumors that GRENDEL is a disgruntled
+ex-6.001 instructor are absolutely unfounded!)  A troll is a kind of person; it
+can move around, take things, and so on.  When a troll gets a MOVE message from
+the clock, it acts just like an ordinary person---unless someone else is in the
+room.  When GRENDEL decides to act, it's bad news for GERRY:
+
+==> (ask GRENDEL 'move)
+GRENDEL moves from DUNGEON to EGG-ATRIUM 
+At EGG-ATRIUM : GRENDEL says -- Hi GERRY
+ 
+after a few more moves, until GRENDEL acts again
+
+==> (ask GRENDEL 'move)
+At EGG-ATRIUM : GRENDEL says -- Growl.... I'm going to eat you, GERRY 
+At EGG-ATRIUM : GERRY says -- It is a far, far, better place I go to! 
+GERRY moves from EGG-ATRIUM to HEAVEN 
+At EGG-ATRIUM : GRENDEL says -- Chomp chomp. GERRY tastes yummy! 
+
+		       The object system -- inheritance
+
+Because a troll is a kind of person, he has the capabilities of a person.
+However, he may have additional capabilities which are explicitly part of his
+troll-ness.  In order to support this kind of description, we need to allow
+objects to inherit properties of the larger classes they are part of.
+
+In this problem set, we expand on the idea of a message-passing implementation
+of an object system so we can say things like, "A troll (object) is a special
+type of person (object)."  In other words, we would like one type of object to
+be able to "inherit" the "methods" used by the objects which are the more
+general form of the same object.
+
+The beginning of our language for describing these concepts is simply a set of
+conventions for using computational objects.  (The structure of this system
+follows that given by J.  Rees and N.  Adams, "Object-oriented programming in
+Scheme," in the 1988 ACM Conference on Lisp and Functional Programming.)
+
+An object in our system is a procedure which, given a message as an argument,
+returns another procedure called a method.  A method is a procedure which,
+given the appropriate arguments, will perform the action requested by the
+message.  For example, the following procedure creates a simple object called a
+speaker whose only method is that it can say something (a list), which it does
+by printing the list:
+
+(define (make-speaker)
+  (lambda (message)
+    (cond ((eq? message 'say)
+	   (lambda (self stuff) (print stuff)))
+	  (else (no-method "SPEAKER")))))
+
+
+
+The speaker object, like all objects in our system, is represented as a
+procedure which takes a message.  It returns a method that takes two arguments,
+the identity of the object that is using the method (this argument, named SELF,
+is not used here, but it will be important later), and a second argument,
+STUFF, which is what is to be said.
+
+We will get a method from an object by asking for it:
+
+(define (get-method object message)
+  (object message))
+
+
+We make the convention that if an object does not recognize the message it is
+given, it will signal this fact by using the procedure NO-METHOD, which returns
+something that our object system will recognize.
+
+(define (no-method name)
+  (list 'no-method name))
+
+(define (no-method? x)
+  (if (pair? x)
+      (eq? (car x) 'no-method)
+      false))
+
+(define (method? x)
+  (not (no-method? x)))
+
+
+To ASK an object to apply one of its methods to some arguments, we pass the
+object a message asking for the appropriate method, and apply the method to the
+object and its arguments.  If the object has no method for this message, ASK
+will produce an error.  (The procedure APPLY takes a procedure and a list of
+arguments and applies the procedure to the arguments.  Note: We used dot
+notation in the formal parameters of ASK, so that ARGS will be a list of the
+arguments we wish to pass along.  This is explained at the end of section 4.3.4
+of the Chipmunk user's guide.)
+
+(define (ask object message . args)
+  (let ((method (get-method object message)))
+    (if (method? method)
+	(apply method (cons object args))
+	(error "No method" message (cadr method)))))
+
+
+Now we can make a speaker object and ask it to say something:
+
+==> (define george (make-speaker))
+GEORGE
+
+==> (ask george 'say '(the sky is blue))
+(THE SKY IS BLUE)
+
+One thing we may want to do is define an object type to be a kind of some other
+object type.  For instance, we could say that a lecturer is a kind of speaker,
+expecting that the lecturer also has a method called lecture.  To lecture
+something, the lecturer says it and then says "You should not be taking notes":
+
+(define (make-lecturer)
+  (let ((speaker (make-speaker)))
+    (lambda (message)
+      (cond ((eq? message 'lecture)
+	     (lambda (self stuff)
+	       (ask self 'say stuff)
+	       (ask self 'say '(you should not be taking notes))))
+	    (else (get-method speaker message))))))
+
+Observe that we accomplish this by giving the lecturer an internal speaker of
+its own.  If the message is not recognized, LECTURER passes it on to the
+internal speaker.  Thus, a lecturer can do anything a speaker can (i.e., say
+things), and also lecture.  In the object-oriented programming jargon, one says
+that LECTURER inherits the SAY method from SPEAKER, or that SPEAKER is a
+superclass of LECTURER.
+
+==> (define nikhil (make-lecturer))
+==> (ask nikhil 'say '(the sky is blue))
+(THE SKY IS BLUE)
+
+==> (ask nikhil 'lecture '(the sky is blue))
+(THE SKY IS BLUE)
+(YOU SHOULD NOT BE TAKING NOTES)
+
+Every method takes SELF, the actual object, as its first parameter.  To
+understand why, consider this:
+
+Suppose we wanted to define an arrogant-lecturer to be a kind of lecturer.  But
+whenever an arrogant lecturer says anything, he prefaces his statement with "It
+is obvious that ...":
+
+(define (make-arrogant-lecturer)
+  (let ((lecturer (make-lecturer)))
+    (lambda (message)
+      (cond ((eq? message 'say)
+	     (lambda (self stuff)
+	       (ask lecturer 'say (append '(it is obvious that) stuff))))
+	    (else (get-method lecturer message))))))
+
+(define gerry (make-arrogant-lecturer))
+
+(ask gerry 'say '(the sky is blue))
+(IT IS OBVIOUS THAT THE SKY IS BLUE)
+
+Now consider what happens when the following ASK happens:
+
+==> (ask gerry 'lecture '(the sky is blue))
+(IT IS OBVIOUS THAT THE SKY IS BLUE)
+(IT IS OBVIOUS THAT YOU SHOULD NOT BE TAKING NOTES)
+
+Because an arrogant-lecturer has no direct method for handling the LECTURE
+message, Gerry asks his internal lecturer to handle the LECTURE message; he
+does this by returning (GET-METHOD LECTURER MESSAGE).  When ASK applies the
+method, it passes GERRY and the arguments to the method.  Thus, SELF will be
+bound to GERRY in the body of the method.  This ensures that, even though we
+are using the LECTURE message from LECTURER, the SAY message from GERRY, not
+from LECTURER, will be used to handle the lecture message.
+
+				Implementation
+
+The simulator for the world is contained in the file PS6-ADV.SCM, listed at the
+end of the problem set.  The file contains procedures to create people, places,
+things, and trolls, and code to initialize the imaginary world and its
+characters GERRY, NIKHIL, and GRENDEL the troll.
+
+
+Problem 1
+
+  Suppose we execute the following expressions.
+
+  ==> (define pizza (make-thing 'pizza))
+  ==> (ask pizza 'change-owner gerry)
+
+  At some point in the evaluation of the second expression, the expression
+
+  (set! owner new-owner)
+
+  will be evaluated in some environment.  Draw an environment diagram, showing
+  the full structure of PIZZA at the point where this expression is evaluated.
+  Don't show the details of GERRY---just assume that GERRY is a symbol defined in
+  the global environment that points off to some object that you draw as a blob.
+
+Problem 2
+
+  Suppose that, in addition to PIZZA in problem 1, we define
+
+  ==> (define bertucci-special (make-named-object 'pizza))
+
+  Are PIZZA and BERTUCCI-SPECIAL the same object (i.e., are they EQ?)?  If GERRY
+  wanders to a place where they both are and looks around, what message will he
+  print?
+
+Problem 3
+
+  Examine the code for GO-TO-HEAVEN, which the troll uses to dispatch a hapless
+  victim.  GO-TO-HEAVEN is a procedure that takes the victim as argument.  That
+  is, we write
+
+  (go-to-heaven GERRY)
+
+  to get rid of GERRY.  Alternatively, we could have implemented GO-TO-HEAVEN as
+  a method that a person knows about, so that one would say, for example,
+
+  (ask GERRY 'go-to-heaven)
+
+  Give the method clause to add to the MAKE-PERSON message dispatcher to implement
+  this.  When implementing a new behavior for an object, you generally have the
+  choice of implementing it as a procedure or as new method.  Write a few
+  sentences explaining what considerations you would bring to bear in deciding
+  which technique to use.  (Hint: What part of the object's state must the new
+  behavior have access to?)
+
+Problem 4
+
+  List all the messages in the form (ASK TROLL <message> ...) that the troll
+  will recognize without producing an error.  In other words, list all the
+  messages (method names) that a troll understands.
+
+
+			       MOVE and ACT
+
+Note how MOVE is implemented as a method defined as part of PERSON.  If the
+number of clock ticks elapsed since the previous action has not passed the
+person's threshold, nothing happens.  But if enough time has gone by, the
+response to MOVE is to send oneself an ACT message.  Special characters such
+as trolls have a threshold like ordinary people.  Thus they use the same MOVE
+method.  But when they actually do something, they do something special
+because their ACT method is different from ordinary people's.  For example,
+here is the troll's ACT method, reprinted from the code:
+
+(lambda (self)
+  (let ((others (other-people-at-place self (ask self 'place))))
+    (if (not (null? others))
+	(ask self 'eat-person (pick-random others))
+	((get-method p 'act) self))))
+
+The effect of the last line is that if there are no other people where the
+troll is located, the troll will behave like an ordinary person.
+
+Problem 5
+
+  Louis Reasoner suggests that it would be simpler if we changed the last
+  line of the method to read:
+
+  (ask p 'act)
+
+  Alyssa P. Hacker points out that this would be a bug.  "In fact," she says,
+  "if you did that, then when Grendel moves to a new place, you might see him
+  eat himself."  What does Alyssa mean?  You may need to draw an appropriate
+  environment diagram to explain.
+
+
+
+			       PART 3: LAB WORK
+
+When you load the code for problem set 6, the system will load PS6-ADV.SCM and
+place it in a buffer for you.  You will not need to reload or modify this code,
+except possibly for the open-ended design problem at the end.
+
+The system will also set up a buffer with PS6-WORLD.SCM, which initializes the
+world and defines the characters.  Since the simulation model works by data
+mutation, it is possible to get your Scheme into an inconsistent state while
+debugging.  If this happens, you can re-initialize by reloading PS6-WORLD.SCM.
+Also, when you define new characters or objects, you may want to place into
+this file the commands that create and install them, to save you the trouble of
+recreating them by hand each time.
+
+For the actual new procedures we ask you to write, you should work in a buffer
+separate from all of these, in which you can write and debug new code
+separately from the pieces that we have written.
+
+After loading the system, make GERRY and NIKHIL move around by repeatedly calling
+CLOCK (with no arguments).  Which person is more restless?  How often do both
+of them move at the same time?
+
+Problem 6
+
+  Install a new character, yourself, with a high enough threshold (say, 100) so
+  that you have ``free will'' and will not be moved by the clock.  Place
+  yourself initially in the DORMITORY.  Create a new thing, LATE-HOMEWORK, and
+  also place it in the DORMITORY.  Pick up the LATE-HOMEWORK, find out where
+  NIKHIL is, go there, and try to get NIKHIL to take the homework even though it's
+  late.  Can you find a way to do this that does not leave YOU upset?  Turn in
+  a list of your definitions and actions.  If you wish, you can intersperse
+  your moves with call to the clock to make things more interesting.  (Watch
+  out for GRENDEL!)
+
+Problem 7
+
+  Define a procedure TAKE-ALL, that accepts a person as argument and causes
+  that person to take all the things at the current location that are not already
+  owned.  Test this by moving GERRY around and evaluating (TAKE-ALL GERRY).  Turn
+  in a listing of TAKE-ALL.
+
+Problem 8
+
+  Define a new kind of thing called a BEER, constructed by a procedure (of no
+  arguments) MAKE-BEER.  A BEER is a special kind of THING, whose name is BEER,
+  and has a method called BEER? (of no arguments) that returns TRUE.  Thus, you
+  can use (IS-A X 'BEER?) to test if some object X is a BEER.  (Compare how a
+  person's TAKE method tests if something is OWNABLE?. Scatter some beers at
+  various places around the world, e.g.,
+
+  (ask computer-lab 'appear (make-beer))
+
+  (Note that if you create a beer in this way without assigning a variable to
+  it, then no one will be able to TAKE the beer directly, since they will have
+  no way to refer to it explicitly.  However, someone will be able to take it
+  by using TAKE-ALL.)
+
+  Turn in a listing of MAKE-BEER.
+
+Problem 9
+
+  Let's add another character: a dean who is deeply concerned about beer on
+  campus.  Define a procedure MAKE-DEAN of three arguments---a name, an initial
+  place, and a threshold---that constructs a dean as a special kind of person.
+  When the dean moves to a place, he smashes any beer he finds at the place.
+  For example, suppose CHARLES and dean SHIRLEY are in the computer lab, and
+  CHARLES has a beer.  When SHIRLEY acts, we should see something like:
+
+  At COMPUTER-LAB : SHIRLEY says -- I will not tolerate beer on campus! 
+  At COMPUTER-LAB : CHARLES says -- I lose BEER 
+  At COMPUTER-LAB : CHARLES says -- Yaaaah! I am upset! 
+  At COMPUTER-LAB : SHIRLEY says -- I have smashed the beer. 
+
+  You will need to devise a way to smash beers.  When a beer gets smashed, it
+  disappears from the place it is at, and anyone who owns the beer should lose
+  it.  Test your procedure by making a DEAN, who lives initially in the
+  DEAN-OFFICE, and walk her around in search of beer.  Turn in a listing of
+  MAKE-DEAN and any auxiliary procedures you wrote to implement this.
+
+Problem 10
+
+  A PARTY-TROLL is a special kind of TROLL, except, like all party animals, the
+  PARTY-TROLL prefers beer to anything else.  When the PARTY-TROLL goes to eat
+  a person, he first checks if the person has any beer, and if so, he drinks
+  the beer instead, giving the person a chance to escape.  Implement a
+  MAKE-PARTY-TROLL procedure that builds trolls with a special EAT-PERSON
+  method.  To test it, make a PARTY-TROLL named SPUDS and have him interact
+  with some of your characters.  Turn in listings of your procedure(s) and a
+  brief example to demonstrate how they work.
+
+			    Putting it all together
+
+
+Now you have the elements of a simple game: try to walk around MIT without
+getting eaten by trolls.  You can pick up beers along the way to distract
+threatening trolls, but try to avoid deans who will smash your beer.  Set up
+some characters and objects and run the clock for awhile and watch what
+happens.  By modifying the number of characters and their thresholds, you can
+vary the difficulty of the game.
+
+Simulations like this can become arbitrarily complex.  Here are some possible
+extensions:
+
+  Devise a new kind of thing.  A magic wand could give its owner special
+  powers, such as the ability to move to a distant place, or to immobilize a
+  hostile troll.  A beer truck could move around, dispensing beer.
+
+  Make a new kind of place where special things happen.
+
+  Add a new kind of character, or a new behavior for a character.  For
+  instance, saying ``Look, there goes Paul Gray'' in the presence of a dean
+  might distract the dean and give you a chance to get away with your beer
+  intact.
+
+But don't be constrained by our suggestions.
+
+Problem 11
+
+  Define some modification(s) to the game.  Turn in a description (in English)
+  of your modifications, the code you wrote to implement them, and a brief
+  demonstration scenario.  For this problem, you may need to modify the
+  procedures in PS6-ADV.SCM.
+
+Problem 12 (Optional humanities extra credit)
+
+  When our characters go to heaven, they make a brief speech.  What is the source
+  of this (misquoted) speech and what is the actual quotation?

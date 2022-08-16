@@ -1,0 +1,513 @@
+% -*- LaTex -*-
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+\input ../formatting/6001mac.tex
+
+% \special{twoside}
+
+\evensidemargin 35pt
+
+\begin{document}
+
+\psetheader{Fall Semester, 1989}{Problem set 3}
+
+\medskip
+
+\begin{tabular}{ll}
+Issued: & Tuesday 26 September \\
+Due: & Wednesday 4 October \\
+Reading: & Text, Chapter 2, sections 2.1 and 2.2.
+\end{tabular}
+
+\noindent
+{\small Problem sets should always be handed in at recitation.  Late work will
+not be accepted.}
+
+\section{Homework exercises}
+
+Write up and turn in the following exercises from the text:
+
+\begin{itemize}
+\item Exercise 2.3, page 84.
+\item Exercise 2.6, page 86.
+\item Exercise 2.7, page 86.
+\item Exercise 2.11, page 87.
+\end{itemize}
+
+\section{Programming Assignment: Star Gazing}
+
+One of Louis Reasoner's frequent habits is taking walks in the countryside late
+at night -- to help him ``clear his head,'' he claims.  Unfortunately, Louis
+often loses his orientation, and has some difficulty in returning to his car.
+He decides he needs help in orienting himself, and plans to invent a device to
+help him use the stars as a guide.
+
+Suppose that Louis wants to know what part of the sky he is seeing.
+This can be accomplished by recognizing some familiar pattern of
+stars.  There are two parts to the process of using the stars for
+orientation:
+
+\begin{itemize}
+
+\item Recognizing spots of light in the sky as known groups of stars.  
+Here we match the bright spots in an image of the sky against star
+charts representing traditional configurations, called constellations.
+
+\item Determining how a recognized group is oriented with respect to
+the matching chart.  Such a relation is called a transformation of
+coordinates.
+
+\end{itemize}
+
+These two tasks are closely interrelated: it is hard to do one without
+the other -- in other words, if we have solved either of the two
+problems we have solved the other.
+
+In this problem set, we are going to help Louis develop a method for
+recognizing constellations, given charts of those constellations and images of
+the stars.  The methods developed here actually have less ``blue sky''
+applications: We can think of the ``spots'' as feature points in an image of
+something other than the sky.  These feature points are places in the image
+that are especially easy to identify, such as the corners of polygonal regions
+of constant brightness.  The images might be of a flat industrial part on a
+conveyor belt, for example, taken with a camera that is oriented with its
+optical axis perpendicular to the belt.  In fact, the methods we are going to
+explore in this problem set are a simple version of a general purpose object
+recognition system called RAF, developed by Eric Grimson and Tom\'as
+Lozano-P\'erez.
+
+Louis begins by trying to understand his data.  He calls the points of
+light in an image of the sky ``spots'' to distinguish them from the
+``stars'' on a chart.  Each star on a chart has a name, and Louis chooses
+to give each spot on an image an identifying number.
+
+To simplify the algebra, Louis pretends that the sky is flat.  He
+describes the position of each spot in the sky and each representation
+of a star on a chart using two coordinates.
+
+In addition, every point of light in an image and every star on a chart
+has a brightness, measured in magnitudes (to be explained later).
+
+For example, a simple star chart might contain the following entries:
+\[
+\begin{array}{llll}
+Name&X&Y&Magnitude\\
+alpha&0.0&1.0&0.0\\
+beta&0.0&0.0&0.5\\
+gamma&1.5&1.0&1.0\\
+delta&1.0&2.0&2.0
+\end{array}
+\]
+and a simple image might look as follows:
+\[
+\begin{array}{llll}
+Number&X&Y&Brightness\\
+1&1.03&1.97&0.2\\
+2&1.32&3.75&1.2\\
+3&0.25&2.75&0.3
+\end{array}
+\]
+
+Louis begins by defining constructors for these abstractions:
+
+\beginlisp
+(define make-star
+  (lambda (star-name star-position star-magnitude)
+    (list star-name star-position star-magnitude)))
+\null 
+(define make-spot
+  (lambda (spot-number spot-position spot-brightness)
+    (list spot-number spot-position spot-brightness)))
+\null
+(define make-position
+   (lambda (x y) (list x y)))
+\endlisp
+
+{\bf Exercise 1:}  Louis represents a star chart as a list of stars.
+Louis makes a simple test chart, called {\tt trial-stars-1}, follows:
+\beginlisp
+(define trial-stars-1
+  (list (make-star 'alpha (make-position 0.0 1.0) 0.0)
+        (make-star 'beta (make-position 0.0 0.0) 0.5)
+        (make-star 'gamma (make-position 1.5 1.0) 1.0)))
+\endlisp
+Draw a box-and-pointer diagram for the list structure
+corresponding to {\tt trial-stars-1}.
+
+\vskip .5in
+
+{\bf Exercise 2} Given these constructors, we need to define
+appropriate selectors for each of the components of the compound data
+items.  Complete the definitions for the selectors below:
+
+\beginlisp
+;;; Given a star, we should be able to get its components
+\null
+(define star-name ...)                               ;should get star's name
+% (lambda (star) (car star)))
+\null
+(define star-position ...)                           ;should get star's position vector
+% (lambda (star) (cadr star)))
+\null
+(define star-magnitude ...)                          ;should get star's magnitude
+% (lambda (star) (caddr star))
+\null
+\endlisp
+
+\beginlisp
+;;; Given a spot, we should be able to get its components
+\null
+(define spot-number ...)                             ;should get spot's number
+% (lambda (spot) (car spot)))
+\null
+(define spot-position ...)                           ;should get spot's position vector
+% (lambda (star) (cadr star)))
+\null
+(define spot-brightness ...)                         ;should get spot's v coord
+% (lambda (spot) (caddr spot)))
+\endlisp
+
+\null
+
+Louis now attacks the problem of matching a list of spots to a list of stars.
+Louis calls a particular matching, mapping every spot observed to a star (from
+his chart), an {\it interpretation}.  Louis's idea is that he can first develop
+all possible assignments of spots to stars, and later filter them for
+reasonableness.  His first draft of a matcher is thus nothing more than a
+program that makes (a list of) all possible interpretations of an image (a list
+of spots) relative to a chart (a list of stars), without taking into account
+any of the constraints implied by positions and brightnesses.  Below we find
+Louis's first draft:
+
+\beginlisp
+(define (all-interpretations image chart)
+  (if (null? image)
+      (list the-empty-interpretation)   ;Note1
+      (let ((spot-to-match (first image))
+            (spots (rest image)))
+        (define (match-all stars)
+          (if (null? stars)
+              the-empty-list            ;Note2
+              (append (extend-interpretations
+                        (pair-up spot-to-match (car stars))
+                        (all-interpretations spots
+                                             (delete (car stars) chart)))
+                      (match-all (cdr stars)))))
+        (match-all chart))))
+\null
+(define (extend-interpretations pair interpretations)
+  (define (extend-all interps)
+    (if (null? interps)
+        the-empty-list
+        (cons (augment-interpretation pair (car interps))
+              (extend-all (cdr interps)))))
+  (extend-all interpretations))
+\null
+;;; My data abstraction implementations are below this line.
+\null
+(define the-empty-list '())     ;Ben B. says this is good magic.
+(define first car)
+(define rest cdr)
+\null
+(define the-empty-interpretation the-empty-list)
+(define augment-interpretation cons)
+\null
+(define pair-up list)
+(define pair-spot car)
+(define pair-star cadr)
+\endlisp
+
+The set of interpretations of a set of spots relative to a set of stars is
+formed as follows.  The first spot can be assigned to any star.  This
+can be the beginning of any interpretation that matches the rest of
+the spots to the stars not yet used.
+
+Louis has marked a few subtle points: Note1 reminds us that there is
+one interpretation of no spots, the empty interpretation!  Note2
+reminds us that if there are spots to be matched but no stars left on
+the chart there are no consistent interpretations.
+
+When you load problem set 3 into your Chipmunk, copies of these procedures are
+also loaded into your editor, for your convenience, as are some utility
+procedures for printing out interpretations, {\tt print-match} and {\tt
+print-matches}.  In addition, an example list of stars, called {\tt
+trial-stars-1}, and an example list of image spots, called {\tt trial-spots-1},
+are also loaded.  You may also find the procedure {\tt print-matches} useful
+for printing out the results of finding the matches in a readable form.
+
+You can try it out:
+\beginlisp
+(all-interpretations trial-spots-1 trial-stars-1)
+\endlisp
+You will see that Louis's procedures will find all possible ways of
+matching stars with spots, without any constraint on the matches.  So
+if there are $m$ stars and $n$ spots (with $m\geq n$), we will
+generate $\frac{m!}{(m-n)!}$ interpretations.  These are all the ways
+of picking spots to pair up with stars.  When $m=n$, this procedure
+provides us with a convenient way of generating all $m!$ permutations
+of $m$ elements.
+
+Louis needs to pick out the right matching.  He could do this by
+checking all of the possible interpretations for the best one, but
+because factorials grow very fast he needs some way of reducing the
+number of interpretations that will be generated.
+
+One way that Louis can reduce the number of possible interpretations
+is to take brightness into account when matching stars and spots.
+Stars have different magnitudes (note that in astronomy, the magnitude
+of a star is a measure of its brightness, and is measured on a
+logarithmic scale, where a difference of five magnitudes corresponds
+to a ratio of 100 in brightness).  Correspondingly, spots in the image
+will have different brightnesses.  Measurements of brightness cannot
+be made with perfect accuracy, so we have to allow for the possibility
+of a small difference when we test whether a spot could match a star.
+
+{\bf Exercise 3:} Write a procedure called {\tt similar-magnitudes?},
+which takes as arguments a star and a spot, and which evaluates to
+true if the absolute difference between the magnitude of the star and
+the brightness of the spot is less than the value of a global
+variable, {\tt magnitude-tolerance}, (which we have defined initially
+to be 1.0 in the code file).  Be sure to use appropriate abstractions
+and their relevant selectors and/or constructors.
+
+%(define similar-magnitudes?
+%  (lambda (star spot)
+%    (let ((star-m (star-magnitude star))
+%          (spot-m (spot-brightness spot)))
+%      (< (abs (- star-m spot-m)) magnitude-tolerance))))
+%
+%(define magnitude-tolerance 1.0)
+
+\null
+
+To use this information requires modification of the first-draft
+interpretation generator.  The current code assumes that any pairing
+is acceptable.  
+
+{\bf Exercise 4:}
+
+You are to change Louis's code to require that for a spot to be paired
+with a star, they must have similar magnitudes.  The change required
+is very simple, only requiring the addition of a few lines of code to the
+procedure {\tt all-interpretations}.  
+
+Try out your new matcher using the lists of stars and spots you
+created in Exercise 1.  You should notice that adding the constraint
+of similar magnitude can decrease the number of matches explored,
+provided that the error in brightness measurements is small enough.
+In fact, if brightness could be measured with unlimited accuracy,
+Louis's job would be done, since a star's magnitude would then be a
+unique identifying characteristic.  In practice, however, measurements
+of brightness have limited accuracy and the procedure may find several
+potential matches that each pass the brightness comparison tests.
+
+Hand in your modified code and demonstrate, using appropriate
+examples, that it does ``the right thing''.
+
+%(define (all-interpretations image chart)
+%  (if (null? image)
+%      (list the-empty-interpretation)  ;here it is!
+%      (let ((spot-to-match (first image))
+%            (spots (rest image)))
+%       (define (match-all stars)
+%         (if (null? stars)
+%             the-empty-list            ;There are no interpretations consistent with no stars.
+%             (if (not (similar-magnitudes? spot-to-match (car stars))))
+%                 (match-all (cdr stars))
+%                 (append (extend-interpretations (pair-up spot-to-match (car stars))
+%                                                 (all-interpretations spots
+%                                                                      (delete (car stars) chart)))
+%                         (match-all (cdr stars))))))
+%        (match-all chart))))
+
+\null
+
+We need to further prune the number of possible interpretations, and we can do
+so by considering information about the spatial relationship between the stars
+in a constellation.  So far, we have only used a unary test, one that applies
+to a single star and a single spot.  Now let use consider a binary test.  The
+distance between stars is not changed by rotation or translation in the image
+plane.  So distance is independent of the coordinate transformation we are
+seeking, and thus comparison of distances between stars and corresponding spots
+gives us a convenient additional filtering test for proposed partial matches.
+Note that this binary test is more expensive than the unary brightness test,
+since we have to compare the distances between the proposed new star and all of
+the stars already included in the partial match with the corresponding
+distances between the proposed new spot and all of the spots already included
+in the partial match.  If these distances can be measured with high accuracy,
+however, then this test will remove almost all erroneous partial matches.
+
+{\bf Exercise 5:}
+We need procedures for computing distances between spots and between
+stars.  Write a procedure, {\tt distance}, that computes the distance
+between two two-dimensional points on a plane.  Also
+write a procedure, {\tt similar-distances}, which takes as arguments two
+pairs, each of which is a pairing of a spot and a star, and which tests
+whether the absolute difference in distances between the respective
+stars and spots is less than a globally specified {\tt
+distance-tolerance} defined as follows:
+
+\beginlisp
+(define distance-tolerance 0.5)
+\endlisp
+
+%\beginlisp
+%(define distance 
+%  (lambda (pos1 pos2)
+%     (let ((dx (- (position-x pos1) (position-x pos2)))
+%           (dy (- (position-y pos1) (position-y pos2))))
+%       (sqrt (+ (* dx dx) (* dy dy))))))
+%\pbrk
+%(define similar-distances
+%  (lambda (pair-a pair-b)
+%     (let ((star-a (pair-star pair-a))
+%           (spot-a (pair-spot pair-a))
+%           (star-b (pair-star pair-b))
+%           (spot-b (pair-spot pair-b)))
+%       (let ((dstars (distance (star-position star-a)
+%                               (star-position star-b)))
+%             (dspots (distance (spot-position spot-a)
+%                               (spot-position spot-b))))
+%         (< (abs (- dstars dspots)) distance-tolerance)))))
+%\endlisp
+
+\null
+
+{\bf Exercise 6:} We now want to use the distances between pairs of
+stars and the corresponding pairs of spots to prevent the generation
+of impossible matches.  Given a partial (or current) interpretation
+and a new pairing of a star and a spot, we want to ensure that the
+distance between the new star and each of the stars in the
+interpretation is consistent with the distance between the new spot
+and each of the spots in the interpretation.  Write a procedure called
+{\tt distances-check}, that takes a new pair (consisting of a new star
+and a new spot) and a current interpretation, (consisting of a list of
+such pairs), and returns true if the new pair has similar distances
+with all the pairs in the interpretation, and false otherwise.
+
+%(define distances-check
+%  (lambda (current-pair interp)
+%     (cond ((null? interp) true)
+%           ((similar-distances current-pair (first interp))
+%            (distances-check current-pair (rest interp)))
+%           (else false))))
+
+\null
+
+{\bf Exercise 7:} Using these procedures, we need to modify Louis's
+code to incorporate this distance constraint.  The change required is
+very simple, only requiring the addition of a few lines of code to the
+procedure {\tt extend-interpretations}.  You may also find it
+instructive to see how the number of matches changes with the amount
+of error allowed in the match.  Try varying the global parameter {\tt
+distance-tolerance}, which initially has the value $0.5$, making this
+value smaller until only one match of stars to spots is possible.
+What is the actual match in this case?
+
+\null
+
+If the accuracy of image position measurement is high, the procedures we have
+built will typically find the correct match, and only the correct match, unless
+the constellation has an unusually symmetric spatial pattern.  If, on the other
+hand, the accuracy is limited, there may be several different matches between
+stars and spots that pass the pairwise distance test.  Also, some of the
+matches that pass the pairwise distance test may not make sense globally.
+Consider, for example, a match between a constellation and some spots arranged
+in a pattern that is a mirror-image of the constellation.  There is in general
+no rotation and translation that will bring the constellation and the set of
+spots into alignment, yet all of the pairwise distances will match.  
+
+We use $u$ and $v$ as coordinates in an image, while $x$ and $y$ are
+coordinates in some global coordinate system in which all of the
+constellation models are described.  In our flat sky model, the
+transformation from one to the other involves a rotation and a
+translation:
+\[
+\begin{array}{lll}
+x & = & c\, u - s\, v + x_0 \\
+y & = & s\, u + c\, v + y_0
+\end{array}
+\]
+where $c= \cos \theta$ and $s = \sin \theta$ where $\theta$ is the
+angle between corresponding axes in the two coordinate systems.
+Further, $x_0$ and $y_0$ are the offsets of the origin of the image
+coordinate system in the model coordinate system.  This transformation
+is illustrated in Figure 1. Part of our matching task is the recovery
+of the transformation parameters, $c, s, x_0$ and $y_0$.
+
+\begin{figure}
+\vspace{2.5 in}
+%\illustratefile{3.27in}{1.02in}{/ab/welg/ps3-fig1.ps}
+\caption{To transform a set of points in image coordinates into
+model coordinates, we first rotate the points by an angle $\theta$, and
+then translate the result.}
+\end{figure}
+
+This means
+that when we have a possible matching of all the stars to spots, we should
+estimate the transformation from the image to the model and then verify that
+this transformation maps all of the spots to positions near the stars that they
+have been matched with.  A transformation returns $c, s, x_0$ and $y_0$.
+
+We have provided a procedure called {\tt compute-transformation}, that will
+compute such a transformation, given as arguments {\tt xa ya xb yb ua va ub
+vb}, where {\tt xa, ya} are the x and y coordinates of one star, {\tt ua, va}
+are the u and v coordinates of the matching spot, and {\tt xb, yb, ub, vb} are
+the coordinates for a second matching star and spot.  {\tt
+Compute-transformation} returns a list of {\tt c, s, x0, y0} corresponding to
+the components of the computed transform.
+
+Further we have provided a procedure called {\tt map-uv-to-xy} that,
+given as arguments {\tt u} and {\tt v} as the coordinates of a point
+in an image, plus a transform (as returned by {\tt compute-transformation}), 
+returns a pair (the result of using a {\tt cons}) giving the
+coordinates
+for the transformed point in the sky's
+coordinate system, obtained by transforming the image point by the
+transform.
+
+{\bf Exercise 8:} To guarantee that the matching of spots to stars is correct,
+we need to use the computed transform to test that each image spot, when
+transformed by the transformation, is close to its matching star.  Write
+a procedure called {\tt check-matched-pairs}, which takes as arguments an
+interpretation (i.e. a list of matches of star and spot) and a transformation,
+and returns true if for all of the matches, the transformed image spot is
+within {\tt distance-tolerance} of its corresponding model star.
+
+\null
+
+{\bf Exercise 9:} Change your matcher to include the procedures {\tt
+compute-transformation} and {\tt check-matched-pairs} to filter
+the list of proposed interpretations so that any that are returned are
+in fact globally correct.
+
+\end{document}

@@ -1,0 +1,524 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+@make(6001)
+@set(chapter=1)
+@set(page=1)
+@modify(excounter, numbered [Exercise @1], referenced [@1])
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001 -- Fall Semester 1984")
+
+@PageHeading(odd,
+             Left "Problem Set 2",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+Fall Semester, 1984
+
+Problem Set 2
+@end(center)
+
+@begin(flushleft)
+
+Issued: Tuesday, September 18, 1984
+
+Due: 
+@begin(itemize)
+on Wednesday, September 26, 1984 for recitations meeting at 9:00, 10:00, and 11:00
+
+on Friday, September 28, 1984 for recitations meeting at 12:00, 1:00, and 2:00
+@end(itemize)
+Reading Assignment: Finish Chapter 1.
+
+Video tape: Video tapes are available as an optional service for people who 
+want to review course material.  Tapes are available in Barker library.
+
+@begin(programexample)
+Tape number        Corresponding book section         Corresponding Lecture
+
+ 1                            1.1                           Sept. 13
+ 2                            1.2                           Sept. 18
+ 3 and 4                      1.3                           Sept. 20
+@end(programexample)
+
+@end(flushleft)
+@blankspace(0.25 in)
+
+@begin(center)
+@b[Exercises]
+@end(center)
+
+@blankspace(0.25 in)
+
+Write up and turn in the following exercises from Chapter 1 of
+Abelson and Sussman.
+
+@begin(itemize)
+Exercise 1-7
+
+Exercise 1-12
+
+Exercise 1-13
+
+Exercise 1-25
+
+Exercise 1-26
+
+Exercise 1-27
+
+Exercise 1-28
+
+Exercise 1-32
+
+Exercise 1-33
+@end(itemize)
+
+@newpage()
+
+@begin(center)
+@b[Programming assignment -- Lunar Lander]
+@end(center)
+
+@blankspace(0.25 in)
+
+Louis Reasoner, appalled by this semester's tuition bill, has decided
+to put his education to work and reap a fortune in the home video
+games business.  His first best-selling game, he decides, is to be
+called ``Lunar Lander.''  The object is to land a spaceship on a
+planet, firing the ship's rockets in order to reach the surface at a
+small enough velocity, and without running out of fuel.
+
+In implementing the game, Louis assumes that the user will, at each
+instant, specify a @i[rate] at which fuel is to be burned.  The rate
+is a number between 0 (no burn) and 1 (maximum burn).  In his model of
+the rocket motor, burning fuel at a given rate will provide a force of
+magnitude
+@begin(verbatim)
+strength * rate
+@end(verbatim)
+where @a[strength] is some constant that determines the strength of the
+rocket engine.
+
+Louis creates a data structure called @a[ship-state] which consists of
+the parts of the ship's state relevant to his program: the @a[height]
+above the planet, the @a[velocity], and the amount of @a[fuel] that
+ship has.  He defines this data structure by a constructor
+@a[make-ship-state] and three selectors: @a[height], @a[velocity], and
+@a[fuel].
+
+The heart of Louis' program is a procedure that updates the ship's
+position and velocity.  Louis knows that if @a[h] is the height of the
+ship and @a[v] is the velocity, then
+@begin(example)
+dh            dv
+-- = v  and   -- = total force = strength * rate - gravity
+dt            dt
+@end(example)
+where @a[gravity] measures the gravitational attraction of the planet.  (The
+above equations assume that the ship has unit mass.) Louis embodies
+these equations in a procedure that takes as arguments a ship-state and
+the rate at which fuel should be burned
+and returns the new state of the ship after a time interval @a[dt]:
+@begin(example)
+(define (update ship-state fuel-burn-rate)
+    (make-ship-state
+     (+ (height ship-state) (* (velocity ship-state) dt))
+     (+ (velocity ship-state)
+        (* (- (* engine-strength fuel-burn-rate) gravity)
+           dt))
+     (- (fuel ship-state) (* fuel-burn-rate dt))))
+@end(example)
+(Besides the two equations above, the procedure also reflects the fact
+that the amount of fuel remaining will be the original amount of fuel
+diminished by the rate times @a[dt].)
+
+Here is the main loop of Louis' program:
+@begin(example)
+(define (lander-loop ship-state)
+  (show-ship-state ship-state)
+  (if (landed? ship-state)
+      (end-game ship-state)
+      (lander-loop (update ship-state (get-burn-rate)))))
+@end(example)
+The procedure first displays the ship's state, then checks to see if
+the ship has landed.  If so, it ends the game.  Otherwise, it
+continues with the updated state.  The procedure @a[show-ship-state]
+simply prints the state at the terminal:@foot{Louis is planning to buy
+a graphics terminal, at which point he will replace this step by
+something that draws a picture of the ship's instrument panel,
+together with a view of the uprushing planet.}
+@begin(example)
+(define (show-ship-state ship-state)
+  (print (list
+          'height (height ship-state)
+          'velocity (velocity ship-state)
+          'fuel (fuel ship-state))))
+@end(example)
+
+Louis considers the ship to have landed if the height is less than or
+equal to 0:
+@begin(example)
+(define (landed? ship-state)
+  (<= (height ship-state) 0))
+@end(example)
+
+To end the game, Louis checks that the velocity is at least as large
+as some (downward) safe velocity.  This determines whether or not the
+ship has crashed:
+@begin(example)
+(define (end-game ship-state)
+  (let ((final-velocity (velocity ship-state)))
+    (print final-velocity)
+    (cond ((>= final-velocity safe-velocity)
+           (print "good landing")
+           'game-over)
+          (else
+           (print "you crashed!")
+           'game-over))))
+@end(example)
+
+The burn rate is determined by asking the user to type a character at
+the keyboard.  In this initial implementation, the only choices are
+maximum burn or zero burn.  Typing a particular key will signal
+maximum burn, hitting any other key will signal zero burn:@foot{The
+procedure uses the Scheme primitive @a[tyi], which waits for the user
+to hit a key and then returns the ASCII code of the key that was hit.
+(If you want to extend the game to add other keys, you can find the
+right code by simply evaluating @a[(tyi)] in Scheme (followed by
+@c[execute]), hitting a key, and seeing what number was returned.)
+In later implementations, Louis will not make the procedure wait for
+the user, so that his game will be ``real time.''}
+@begin(example)
+(define (get-burn-rate)
+  (if (= (tyi) burn-key)
+      1
+      0))
+@end(example)
+
+The final procedure simply sets the game in motion by calling
+@a[lander-loop] with some initial values:
+@begin(example)
+(define (play) (lander-loop (initial-ship-state)))
+
+(define (initial-ship-state)
+  (make-ship-state 50
+               0
+               20))
+@end(example)
+
+Now all that remains is to define some constants:
+@begin(example)
+(define dt 1)
+
+(define gravity .5)
+
+(define safe-velocity -2)
+
+(define engine-strength 1)
+
+(define burn-key 32)
+@end(example)
+(The final definition sets up the space bar as the key
+to hit to signal a burn.  It does this by prescribing the ASCII code
+for space as the value against which to check the keyboard input.
+Hitting a space will signal a burn, and hitting any other key
+will signal not to burn.)
+
+@begin(exercise)
+All the procedures listed above are installed on the Chipmunk shared
+resource manager, and can be loaded onto your floppy disk.  To do
+this, follow the instructions given in the Chipmunk manual in the
+section on ``Loading Problem Set Files,'' to load the code for problem
+set 2.  Louis' program is not quite complete, because he has forgotten
+to write the constructor @a[make-ship-state] and the selectors
+@a[height], @a[velocity], and @a[fuel] that define the @a[ship-state]
+data structure.  Define these procedures appropriately.@foot{In doing
+this, it may be helpful to have a look at the first few pages of
+section 2.2.1 of the text.} Now you should be able to run the
+game by typing @a[play].  Try landing the ship a few times.  For this
+exercise, you should turn in a listing of the four procedures that you
+defined.
+@end(exercise)
+
+Louis rushes to show his game to his friend Alyssa P. Hacker, who is
+not the least bit impressed.
+
+``Oh, Louis! That game is older than Moses.  I'm sure that half the
+kids in the country have programmed it for themselves on their home
+computers.  Besides,'' she adds as he slinks away, ``your program has
+a bug.''
+
+@begin(exercise)
+Alyssa has noticed that Louis has forgotten to take account of the
+fact that the ship might run out of fuel.  If there is @a[x] amount of
+fuel left, then, no matter what rate is specified, the maximum
+(average) rate at which fuel can be burned during the next time
+interval is @a[x/dt].  Show how to install this constraint as a simple
+modification to the @a[update] procedure.  (@a[Update] is the only
+procedure that should be changed.)  As a check, run the program and
+respond by typing space each time the program asks how much fuel to burn.
+Describe the behavior of the ship in response to this strategy, Also
+turn in a listing of your modified @a[update] procedure.
+@tag(full-burn)
+@end(exercise)
+
+Louis is dejected, but not defeated, for he has a new idea.  In his
+new game, the object will be to come up with a @i[general strategy]
+for landing the ship.  Since Louis' game will be played using Scheme,
+a strategy can be represented as a @i[procedure].  One plays the new
+game by supplying a procedure that takes a ship state as input and
+returns a burn rate between 0 and 1.  Two very simple
+strategies are
+@begin(example)
+(define (full-burn ship-state) 1)
+
+(define (no-burn ship-state) 0)
+@end(example)
+The new game reduces to the original one if we use a strategy that
+says in effect to ``ask the user'':
+@begin(example)
+(define (ask-user ship-state) (get-burn-rate))
+@end(example)
+where @a[get-burn-rate] is the procedure used in the original game
+above.
+
+@begin(exercise)
+Modify Louis' @a[play] and @a[lander-loop] procedures so that @a[play]
+now takes an input -- the strategy procedure to use to get the new state.
+To test your modification, define the three simple procedures above,
+and check that
+@begin(example)
+(play ask-user)
+@end(example)
+has the same behavior as before, and that
+@begin(example)
+(play full-burn)
+@end(example)
+makes the rocket behave as you saw in exercise @ref(full-burn).  Turn
+in a listing of your modified procedures.
+@end(exercise)
+
+Alyssa likes this new idea much better, and comes up with a twist of
+her own by suggesting that one can create new strategies by combining
+old ones.  For example, we could have make a new strategy
+by, at each instant, choosing between two
+given strategies.  If the two strategies were, say, @a[full-burn] and
+@a[no-burn], we could express this new strategy as
+@begin(example)
+(lambda (ship-state)
+  (if (= (random 2) 0)
+      (full-burn ship-state)
+      (no-burn ship-state)))
+@end(example)
+The Scheme primitive @a[random] is used to return either 0 or 1 with
+equal odds.  Testing whether the result is zero determines whether to
+apply @a[full-burn] or @a[no-burn].
+
+Note the important point that since the combined strategy is a
+@i[strategy], it must itself be  a procedure that takes a ship-state
+as argument, hence the use of @a[lambda].
+
+@begin(exercise)
+Generalize this idea further by defining a ``higher level'' strategy
+called @a[random-choice].  This takes as arguments two @i[strategies]
+and returns the compound @i[strategy] whose behavior is, at each
+instant, to apply at random one or the other of the two component
+strategies. In other words, running
+@begin(example)
+(random-choice full-burn no-burn)
+@end(example)
+should generate the compound strategy shown above.  Test your
+procedure by running
+@begin(example)
+(play (random-choice full-burn no-burn))
+@end(example)
+Turn in a listing of your procedure.
+@end(exercise)
+
+@begin(exercise)
+Define a new compound strategy called @a[height-choice] that chooses
+between two strategies depending on the height of the
+rocket.  @a[Height-choice] itself should be implemented as a procedure that
+takes as arguments two strategies and a height at which to change from
+one strategy to the other.  For example, running
+@begin(example)
+(play (height-choice no-burn full-burn 30))
+@end(example)
+should result in a strategy that does not burn the rockets when the
+ship's height is above 30 and does a full-burn when the height is
+below 30.  Try this.  You should find that, with the initial values provided
+in Louis' program, this strategy actually lands the ship safely.  Turn
+in a listing of @a[height-choice].
+@end(exercise)
+
+@begin(exercise)
+@a[Random-choice] and @a[height-choice] are special cases of
+a more general compound strategy called @a[choice], which takes as
+arguments two strategies together with a @i[predicate] used to select
+between them.  The predicate should take a ship-state as argument.
+For example, @a[random-choice] could alternatively be defined as
+@begin(example)
+(define (random-choice strategy-1 strategy-2)
+  (choice strategy-1
+          strategy-2
+          (lambda (ship-state)
+            (= (random 2) 0))))
+@end(example)
+Define @a[choice] and show how to define @a[height-choice] in terms of
+@a[choice].  Turn in listings of @a[choice] and the new definition of
+@a[height-choice].
+@end(exercise)
+
+@begin(exercise)
+Using your procedures, give an expression that represents the compound
+strategy: ``If the height is above 40 then do nothing.  Otherwise
+randomly choose between doing a full burn and asking the user.''
+@end(exercise)
+
+Louis and Alyssa explain their idea to Eva Lu Ator, who says that the
+game would be more interesting if they provided some way to specify
+burn rates other than 0 or 1.
+
+``In fact,'' says Eva, who, despite the fact that she is a sophomore,
+still has some dim recollection of freshman physics, ``you can compute a
+burn rate that will bring the ship to a safe landing.''  Eva asserts
+that, if a body at height @a[h] is moving downward with velocity
+@a[-v], then applying a constant acceleration
+@begin(example)
+               v@+[2]
+          a =  --
+               2h
+@end(example)
+will bring the body to rest at the surface.
+
+@begin(exercise)
+Show that Eva is correct.@foot{Don't gripe about us assigning a
+physics problem in this course.  Computer scientists should know some
+physics.}
+@end(exercise)
+
+Eva's observation translates into a strategy: At each instant, burn
+enough fuel so that the acceleration on the ship will be as given by
+the formula above.  In other words, @i[force] the rocket to fall at
+the right constant acceleration.  (Observe that this reasoning
+implies that even though @a[v] and @a[h] change as the ship falls,
+@a[a], as computed by the formula, will remain approximately constant.)
+
+@begin(exercise)
+Implement Eva's idea as a strategy, called @a[constant-acc].  (You
+must compute what burn rate to use in order to apply the correct
+acceleration.  Don't forget about gravity!)  Try your procedure and
+show that it lands the ship safely.  Turn in a listing.
+@end(exercise)
+
+One minor problem with Eva's strategy is that it only works if the
+ship is moving, while the game starts with the ship at zero velocity.
+This is easily fixed by letting the ship fall for a bit before using
+the strategy.  Louis, Eva, and Alyssa experiment and find that
+@begin(example)
+(play (height-choice no-burn constant-acc 40))
+@end(example)
+gives good results.
+
+Continuing to experiment, they observe a curious phenomenon: the
+longer they allow the ship to fall before turning on the rockets, the
+less fuel is consumed during the landing.
+
+@begin(exercise)
+By running your program, show that
+@begin(example)
+(height-choice no-burn constant-acc 30))
+@end(example)
+lands the ship using less fuel than
+@begin(example)
+(height-choice no-burn constant-acc 40))
+@end(example)
+@end(exercise)
+
+This suggests that one can land the ship using the least amount of
+fuel by waiting until the very end, when the ship has almost hit the
+surface, before turning on the rockets.  But this is unrealistic
+because it ignores the fact that the ship cannot burn fuel at an
+arbitrarily high rate.
+
+@begin(exercise)
+This uncovers another bug in the @a[update] procedure.  Change the
+procedure so that, no matter what rate is specified, the actual burn
+rate will never be greater than 1.
+@tag(limit)
+@end(exercise)
+
+A realistic modification to the ``wait until the very end'' strategy
+is to let the ship fall as long as the desired burn rate, as computed
+by Eva's formula, is sufficiently less than 1, and then follow
+the @a[constant-acc] strategy.
+
+@begin(exercise)
+Implement this strategy as a procedure, called
+@a[optimal-constant-acc].  (You may have to experiment to determine an
+operational definition of ``sufficiently less than 1.'')  Try your
+procedure.  How much fuel does it use?  Turn in a listing.
+@end(exercise)
+
+@begin(exercise)
+Optional: Suppose the ship begins at height @a[h] with 0 velocity,
+falls under gravity through a height @g[D]@a[h] and then uses
+the constant-acc strategy.  Derive a formula that tells how much fuel
+will be used during the landing.  The formula should be in terms of
+@a[h],  @g[D]@a[h], gravity, and engine strength.  Check that
+your formula predicts that the amount of fuel used decreases as
+@g[D]@a[h] increases.  In doing this exercise, assume that time
+runs continuously.  That is, ignore the effect in the simulation
+caused by @a[dt].  Thus your formula will not give exactly the same
+results as your simulation unless you make @a[dt] very small.  Also
+ignore any limits on burn rate such as the one you implemented in
+exercise @ref(limit).
+@tag(formula)
+@end(exercise)
+
+@begin(exercise)
+Optional:  What amount of fuel does your formula of exercise
+13 predict will be used when you ``wait until the last
+minute,'' i.e., when @g[D]@a[h]=@a[h]?  Can you think of a way
+to show that this is the @i[minimum] amount of fuel that
+@i[any] method of landing the ship (i.e., making it reach the ground with
+0 velocity) could use?
+@end(exercise)
+

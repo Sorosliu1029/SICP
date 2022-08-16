@@ -1,0 +1,410 @@
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+***WARNING***
+***THIS IS NOT A SCRIBE FILE***
+***BUT I HAVE PLACED SOME SCRIBE @INCLUDE COMMANDS AT THE END***
+
+
+                MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+
+      Department of Electrical Engineering and Computer Science
+
+       6.001 Structure and Interpretation of Computer Programs
+
+                            Problem Set 4
+
+           Issued: 1 March 1983           Due: 9 March 1983
+
+
+Readings:
+  Environments:
+        In chapter 4, sections 4.1, 4.2
+  Assignment and Side Effects:
+        In chapter 3, sections 3.1, 3.2, 3.3, 3.4
+  Programs: (attached)
+        nbody-3vector.scm
+        nbody-iterators.scm
+        nbody-gravity.scm
+        nbody-feyn.scm
+
+
+Warm-up Exercises:
+
+        Exercise 3.16
+
+        Exercise 3.23
+
+	    Note: You may simplify this exercise by setting up the
+	    deque so that all but one of the operations upon it --
+	    specifically the rear-delete-deque! operation -- should
+	    require time of O(1).  On the other hand it is a good
+	    challenge to do the more difficult task of setting up the
+	    deque in such a way that ALL the operations mentioned can
+	    be handled in O(1) time.
+
+
+Discussion:
+        In this problem set we will get a feeling for the use of
+assignments and data mutations in constructing programs which simulate
+some aspect of physical reality.  We will do this in the context of a
+simple simulator for point masses acting under the influence of
+Newtonian gravitation.  More complex such simulators are useful for
+constructing an ephemeris or planning a space mission.  In our
+simulator each body is represented as a data structure containing the
+state variables for the body (its vector position and its vector
+velocity constitute one common set of state variables).  At each
+instant in time the simulator proceeds by computing the total force
+acting on each body and then updating the state of each body, as it
+evolves from the old state and the force acting on it.  The change of
+state of a body is modeled by a data mutation of the state variables
+of the body.
+
+Our Simulator:
+        The simulator is composed of several sections.  Because of the
+importance of 3-dimensional vector operations in the problem we start
+by preparing a package of routines for manipulating 3-vectors
+represented as lists.  The file NBODY-3VECTOR.SCM contains
+these utilities.  The vector routines are defined in terms of an
+abstract constructor and abstract selectors for vectors.  For example,
+the sum of vectors is computed componentwise, as follows:
+
+(define (add v1 v2)
+  (make-3vector (+ (xcoord v1) (xcoord v2))
+                (+ (ycoord v1) (ycoord v2))
+                (+ (zcoord v1) (zcoord v2))))
+
+        Other utilities useful in constructing a simulator are
+iterators useful for applying procedures to lists of particles.
+Particularly, we often want to perform the same operation to every
+element of a list of particles, or we want to perform some operation
+to every pair of particles which can be chosen from a list.  These are
+available in the file NBODY-ITERATORS.SCM and are implemented
+as follows:
+
+(define (for-each objects action)
+  (define (iter objects)
+    (if (not (null? objects))
+        (sequence (action (car objects))
+                  (iter (cdr objects)))))
+  (iter objects))
+
+(define (for-pairs objects action)
+  (define (iter objects)
+    (if (not (null? (cdr objects)))
+        (sequence (for-each (cdr objects)
+                            (lambda (obj)
+                              (action (car objects) obj)))
+                  (iter (cdr objects)))))
+  (iter objects))
+
+        The guts of the simulator are concerned with the dynamics of
+particles.  It is in the file NBODY-GRAVITY.SCM.  The force
+(vector) on body i (of mass mi at vector position Xi) due to body j
+(of mass mj at vector position Xj) is:
+
+                       -G mi mj 
+                Fij = ------------- (Xi - Xj) 
+                      (|Xi - Xj|)^3
+
+This is an inverse-square force law with the force directed along the
+line connecting the two bodies.  Note that the denominator contains
+the length of the vector displacement from i to j cubed.  This is
+because the unit vector from j to i is (Xi - Xj)/|Xi - Xj|.  The
+center of this computation is performed by ROR3, described below: We
+do not choose to scale by -G, mi, or mj here -- this will be taken
+care of later.
+
+(define (ror3 x1 x2)
+  (let ((dx (sub x1 x2)))
+    (let ((r (magnitude dx)))
+      (scale (/ 1 r r r) dx))))
+
+
+        Given a list of bodies, ACCUMULATE-FIELDS is a simple
+procedure which computes and accumulates the fields (force per unit
+mass) acting on each body.  The bodies interact pairwise, and a
+resultant is accumulated vectorially.  The fields accumulated are not
+yet scaled by G.  This will be done in the state update phase.  The
+fields accumulated are associated with each particle.  We start off by
+clearing out all of the accumulated fields.  We then add in the field
+contributed to each particle by the other.  We are collecting fields
+rather than forces because we will use them to compute accelerations
+which are scaled by mass to get force.  Thus we can avoid multiplying
+and dividing by mi over and over again.  In addition, this allows us
+to deal with test particles of zero mass.  In fact, the acceleration
+of a particle is independent of its mass, and depends only on the mass
+of the other particles attracting it.  This is the esscnce of the idea
+of a field.
+
+	Note the use of FOR-PAIRS here.  This is precisely the right
+abstraction to use.  The other thing to note is the use of the mutator
+SET-FIELD! to modify the value of the accumulated field in a body.
+
+(define (accumulate-fields bodies)
+  ;; Clear out fields accumulated on last cycle of computation.
+  (for-each bodies
+            (lambda (body)
+              (set-field! body zero)))
+  ;; For each pair of bodies, each body is accelerated by the other
+  ;;by an amount proportional to the mass of the other.
+  (for-pairs bodies
+             (lambda (pi pj)
+               (let ((u (ror3 (position pj) (position pi))))
+                 (set-field! pi
+                             (add (field pi)
+                                  (scale (mass pj) u)))
+                 (set-field! pj
+                             (sub (field pj)
+                                  (scale (mass pi) u)))))))
+
+        In UPDATE-STATE, defined below, we use the accumulated field
+to extrapolate the velocity then we use the extrapolated velocity to
+extrapolate the position for each body.  We assume here that the state
+is defined with the velocity lagging the position by 1/2 dt.  This
+leads to good numerical properties for orbital problems.  Note that
+here is where we scale the field by G.
+
+(define (update-state bodies dt)
+  (for-each bodies
+            (lambda (body)
+              (set-velocity! body
+                             (add (velocity body)
+                                  (scale (* G dt)
+                                         (field body))))
+              (set-position! body
+                             (add (position body)
+                                  (scale dt
+                                         (velocity body)))))))
+
+
+        Finally, a UNIVERSE is a collection of BODIES with an
+associated time.  It is simulated by alternately accumulating fields
+and updating the state.  Because our state update algorithm assumes
+that the velocities and positions are not simultaneous, but rather
+offset by dt/2, and we are usually given a universe with initial
+conditions at a particular time, we must initialize the velocities the
+first time we run a universe to set the velocities back one half step.
+This is accomplished using VELOCITY-OFFSET.  Note that the fields must
+be already accumulated to generate the offset velocities.  In
+addition, the simulation terminates after a field accumulation phase.
+
+(define (run universe dt endtime)
+  (let ((bodies (bodies universe))
+        (e (- endtime (/ dt 2))))
+    (define (loop)
+      (if (> e (time universe))
+          (sequence (update-state bodies dt)
+                    (accumulate-fields bodies)
+		    (set-time! universe
+                               (+ (time universe)
+                                  dt))
+                    (loop))
+          'done))
+    (accumulate-fields bodies)
+    (offset-velocities universe (* -0.5 dt))
+    (loop)))
+
+
+        The following code is used to set up the offset in the phase
+of the velocity computation from the position computation.  For
+example, to make the phase of the velocities lag the phase of the
+positions by 1/2 step, we say (OFFSET-VELOCITIES U (* -0.5 DT)).  The
+universe may already be in an offset state, thus the offset change
+must be computed relative to the existing offset.
+
+(define (offset-velocities universe target-offset)
+  (let ((change-in-offset (- target-offset
+                             (velocity-offset universe))))
+    (for-each (bodies universe)
+              (lambda (body)
+                (set-velocity! body
+                               (add (velocity body)
+                                    (scale (* G change-in-offset)
+                                           (field body)))))))
+  (set-velocity-offset! universe target-offset))
+
+The details of the simulation can be found in the listings attached.
+
+
+
+                              Exercises
+
+Environments and Scoping:
+
+[Problem 1] 
+        Consider the iterator, FOR-PAIRS, shown above.
+
+    For each name which occurs in the definition, describe the scope
+of that name (which subexpressions is it defined in and which is it
+not defined in.  Which variables are free, in which subexpressions?
+If they are bound in FOR-PAIRS, where are they bound?
+
+    The action procedure which is passed in, to be applied to all
+pairs of objects in the objects list, is the value of the variable
+ACTION.  Draw an environment diagram, using the notation introduced in
+the Chapter 4 readings, showing the evaluation environment in effect
+when the ACTION variable is evaluated in the explicit LAMBDA
+expression passed in FOR-PAIRS.
+
+
+
+Running the program:
+        The file NBODY-FEYN.SCM contains a simple test case
+for our program.  This test case comes from Chap 9 of the Feynman
+Lectures on Physics.  It consists of a massive central body (of mass
+1/G -- the gravitational constant -- to simplify matters) and a
+massless point in orbit around it.  We will only deal with such simple
+configurations in this problem set because of the extremely expensive
+computations which would be entailed by running more than two bodies.
+(How much more expensive is it to run n bodies than only 2?  Just
+consider the computation of the fields.)
+
+[Problem 2]
+        Load up the program, consisting of the files enumerated in the
+reading assignment.  Start a photo file and print out the Feynman test
+universe. (Just type "feyn " at the interpreter.)  Initialize the test
+universe by RUNning it until time = 0.  Print out the initialized test
+universe.  Continue running the test universe until time = 1 and also
+show that state.  Now close your photo file.  
+
+Note: Because running a universe changes the state of that universe,
+to run it again requires that we load up a new copy.  This is a
+side-effect of the assignments and data mutations used in changing the
+state. 
+
+[Problem 3]
+        We would like not to have to reload a universe every time we
+want to run a test on it.  This means that we should not be modifying
+our universe, but rather a fresh copy of it, when we make our tests.
+Write a procedure, COPY-UNIVERSE, which when given a universe produces
+a new copy of it which can be RUN without changing the state of the
+original one.  Write your COPY-UNIVERSE in terms of the abstract
+constructors and selectors for a universe and its parts.  Demonstrate
+that your copier works correctly by copying the Feynman universe,
+running the copy, and showing that the original was unchanged.
+
+
+        At this moment we have no idea how accurate our simulator is
+for any particular value of dt or how fast error builds up in the
+solution.  One idea is to compare the result of a computation with a
+very accurate version of the same computation.  We have provided, in
+NBODY-FEYN.SCM, a few versions of the Feynman universe,
+evolved with small step size (dt = .001) with our simulator.  For
+example, FEYN-1 is a version which was evolved to time = 1.  We will
+use these for comparisons with the results of less accurate
+computations.
+
+[Problem 4]
+        You are to write a procedure, called D, which, given two
+versions of the same universe, produces a measure of how close they
+are to each other.  For example, one I like is to compute the maximum
+of the distances between corresponding bodies in the two universes.
+For example, if I evolve a copy of the Feynman universe to 1 using a
+dt of .1, I can compare the result to the FEYN-1 universe by
+giving the maximum of the distances of bodies in my copy from the
+places they ought to be as shown in FEYN-1.  Use your D procedure
+to fill in the following table, for evolution to time = 1 of copies of
+FEYN using various values of dt:
+
+        For dt = .025, D =
+        For dt = .05,  D =
+        For dt = .1,   D =
+        For dt = .2,   D =
+
+Can you find a pattern here?  Perhaps it would help to plot your
+results on log-log paper...
+
+[Problem 5]
+        Now that you know how the error grows with the size of the
+increment, another interesting question is how the error grows with
+longer simulations.  Use your D procedure to compare a universe
+evolved with dt = .1 for end times .5, 1, and 2 against FEYN-05,
+FEYN-1, and FEYN-2.  Can you induce a rule?
+
+
+        Another possible way to measure the accuracy is based on the
+realization that the universe being simulated is reversible -- running
+the system backwards after running it forwards for a while should get
+it back into the initial state.  We can perform this experiment
+easily, using the distance between the initial state and the state
+derived from running backwards after forwards as a measure of the
+error in the computation.
+
+        Running the simulation backwards is simple too.  We just
+arrange to reverse the velocities, after adjusting the velocities to
+keep the correct phase between the velocity and position computations.
+If the system has already been initialized then the velocities lag the
+positions by dt/2.  Thus, to reverse the system so that the reverse is
+also set up with the velocities lagging, the program first advances
+the velocities by dt, before reversing the velocities.  Then the
+reversed system will have the velocities lag by dt/2.  Time is
+inverted, so running the reversed system until endtime = 0 should
+restore the initial state if there were no errors:
+
+(define (reverse-system universe)
+  (let ((old-offset (velocity-offset universe)))
+    (offset-velocities universe (* -1 old-offset))
+    (set-velocity-offset! universe old-offset)
+    (for-each (bodies universe)
+              (lambda (body)
+                (set-velocity! body
+                               (sub zero (velocity body)))))
+    (set-time! universe (- 0 (time universe))))
+  (time universe))
+
+
+[Problem 6]
+        Write a simple program, called MASSAGE, which will run a given
+universe with a given dt until a given endtime, then reverse that
+system and run it back to its initial time.  Be careful -- If we want
+the universe to be in a consistent state to continue running after
+your program finishes with it how many reversals are required?  Copy
+your Feynman universe, and MASSAGE it with dt = .1 for endtime = 2.
+Show the MASSAGEd universe.
+
+[Problem 7]
+        We now can write a program to give us a feel for how
+reversible our simulation is.  What the program will do is copy a
+universe, MASSAGE it, and then compare the massaged copy with the
+original.  Use your D procedure to make the comparison.  Write the
+program and show a comparison between the Feynman universe and a
+MASSAGEd version of it for endtimes .5, 1 and 2 with dt = .1.  Do you
+notice anything peculiar about these results?
+
+@comment(???The ps4.txt file in spring83 had a claim here that the
+ actual code is "compiled", so that this listing is just documentation)
+@include(NBODY-3VECTOR.SCM)
+
+@include(NBODY-ITERATORS.SCM)
+
+@include(NBODY-GRAVITY.SCM)
+
+@include(NBODY-FEYN.SCM)

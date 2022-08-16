@@ -1,0 +1,179 @@
+% -*- LaTex -*-
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+\input ../formatting/6001mac.tex
+
+% \special{twoside}
+
+\evensidemargin 35pt
+
+\begin{document}
+
+\psetheader{Spring Semester, 1988}{Problem set 11}
+
+\medskip
+
+\begin{tabular}{ll}
+Issued: & May 3, 1988 \\
+Due: & Optional \\
+Reading: & Text, Chapter 4, Sections 4.4 and 4.5.
+\end{tabular}
+
+\section{The Query Language}
+
+The code for the query language is taken from the text, pp. 362 -- 380.  The
+code for the IBM Co. database is attached for your reference.  Instructions
+relevant to the loading and editing of code (as required for the exercises)
+will be posted in lab.
+
+Once you have installed the query system by means of the {\tt load problem set}
+command, you should be able to start the system by evaluating
+
+\beginlisp
+(query-driver-loop)
+\endlisp
+
+This starts the query system evaluator, which has its own driver loop for 
+reading expressions from the terminal and evaluating them.  You will notice
+that it provides you with its own prompt, {\tt query->}.  As with the normal
+Scheme {\tt ==>} prompt, you should end anything you type to the {\tt query->}
+prompt with the \fbox{EXECUTE} key.
+
+In order to make it easier to type complicated queries, we have added
+a command to the query language that will let you use the editor.  If
+you type {\tt (edit)} to the {\tt query->} prompt, it will return you
+to the editor. You can use the editor to compose a query and {\em zap}
+one query down at a time.  Use the \fbox{ZAP DEFINE} key to mark
+exactly one query to be executed; then use the \fbox{SCHEME} key to
+get back to the query language.  Do not use the \fbox{EDIT} key on the
+terminal; that is like typing ctrl-G and then {\tt (edit)}, which will
+get you out of the query language (back into Scheme) and then into the
+editor.
+
+\exercise Work text exercises 4.28, 4.30, and 4.31.  The first exercise
+requires you only to enter queries.  For the second and third exercises,
+you will need to define rules.  Test your rules on the IBM Co. database.
+
+\medskip
+
+In the following exercises you are to write rules for the Query Language
+that can generate and test simple English sentences.  Consider only 
+sentences that consist of the word ``the'' followed by a {\em noun phrase}
+and a {\em verb phrase}.
+
+\begin{itemize}
+
+\item A noun phrase consists of either a noun, or an adjective followed by 
+a noun phrase.
+
+\item A verb phrase consists of either a verb or a verb followed by an adverb.
+
+\end{itemize}
+
+First, install a set of assertions into the database to define the words in the
+vocabulary:
+
+\beginsmalllisp
+(noun dog)
+(noun cat)
+(noun professor)
+(noun student)
+(noun rat)
+(adjective red)
+(adjective slow)
+(adjective dead)
+(verb ate)
+(verb ran)
+(verb slept)
+(verb drank)
+(adverb quickly)
+(adverb happily)
+(adverb well)
+\endsmalllisp
+
+\exercise Given these assertions, it is straightforward to write a pair
+of rules for inferring verb phrases.  Complete the rules below by 
+filling in the missing expressions.
+
+\beginlisp
+(rule (verb-phrase (?x))
+  \fillin{exp1})
+\null
+(rule (verb-phrase (?x ?y))
+  \fillin{exp2})
+\endlisp
+
+Test your rules by determining what verb phrases can be inferred from
+the database.  Does it matter what order you enter these rules into
+the database?  To check these rules on a Chipmunk, you will have to
+define a database for sentences analogous to the IBM database.
+
+\exercise Now write rules for inferring noun phrases by filling in the
+missing expressions below:
+
+\beginlisp
+(rule (noun-phrase (?x))
+  \fillin{exp3})
+\null
+(rule (noun-phrase (?x . ?y))
+  \fillin{exp4})
+\endlisp
+
+Test your rules by determining what noun phrases can be inferred from the database.
+Does it matter what order you enter these rules into the database?
+
+\exercise Finally, create a rule for inferring sentences from noun and verb phrases.
+Enter the rules for {\tt append-to-form} (p. 347 of the text) into the database.
+{\tt append-to-form} can be used to split a list of words into two parts.  A sentence
+consists of the word ``the'' followed by a noun phrase followed by a verb phrase.
+Complete the following rule to infer sentences:
+
+\beginlisp
+(rule (sentence (the . ?s))
+  (and (append-to-form \fillin{exp5})
+        \fillin{exp6}
+        \fillin{exp7}))
+       
+\endlisp
+
+Verify that ``The slow dog ran well'' is an acceptable sentence.  Under what reorderings
+of the {\tt and} clauses is this sentence not accepted?  Explain.
+
+\exercise What sentences of the form ``The red \ldots slept \ldots'' satisfy 
+the rules?
+
+\exercise What sentences of the form ``The \ldots rat \ldots slowly'' satisfy
+the rules?
+
+\exercise What query would you use to generate sentences?
+
+\end{document}

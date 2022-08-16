@@ -1,0 +1,400 @@
+% for yTeX
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\vskip .25truein
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1986}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1986}
+\rectorightheader={Problem Set 7}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 7}
+
+\vskip 0.25truein
+
+\vpar
+Issued:  28 October 1986
+
+
+\vpar
+Due: in recitation on 5 November 1986
+
+\vpar
+Reading:
+\beginbullets
+\bpar
+Textbook: section 3.4
+
+\bpar
+Code files: {\tt PS7-PS.SCM, PS7-PSUTIL.SCM, PS7-RATNUM.SCM} (attached)
+\endbullets
+
+
+\chapter{1. Homework Exercises}
+
+\vpar
+Write up and turn in the following exercies from the text:
+
+\beginbullets
+
+\bpar Exercise 3.38 -- Left vs. right accumulation
+
+\bpar Exercise 3.43 -- Tortuous details about delayed evaluation.  Feel
+free to check your answer by running this on the computer.  But, in your
+answer, explain what is going on -- don't just say what the computer
+prints.
+
+\bpar Exercise 3.62 -- Ramanujan numbers
+
+\endbullets
+
+\chapter{2. Laboratory:  Streams}
+
+Streams are useful for modeling infinite mathematical objects, such as
+the sequence of samples of a continuous-time signal or the sequence of
+coefficients of an infinite power series.
+
+For example, in the text (pp. 273-280) we use streams of values to model samples of
+continuous-time signals.  The successive values of a signal stream are
+just the successive samples of the signal; the $N$th element of the
+stream is identified with the value of the signal at a time $N*DT$
+(where $DT$ is the size of the time interval between samples).  We
+define stream operations, such as {\tt add-streams}, {\tt scale-stream}, and
+{\tt integral} that model the normal mathematical manipulations of such
+signals.  Given these operations we can construct streams of samples
+that approximate the solutions of differential equations---we just
+translate the signal-flow diagram for the differential equation into a
+set of equations involving streams.  The key to the usefulness of
+streams in this application is the fact that the sequence of values
+can be developed incrementally and causally---stream values depend
+only on previously developed values.
+
+Another powerful application of streams to this kind of mathematics is
+to identify the $N$th element in a stream with the $N$th coefficient of an
+infinite power series.  Such series can be used for all sorts of
+applications, including the representation of a local solution of a
+differential equation.  As with the time sequences discussed above,
+the coefficients of a power series can be developed incrementally.  To
+compute the $N$th coefficient of a power series from power series
+ingredients (say by addition or multiplication) requires no more than
+$N$ coefficients of the ingredients.
+
+In the file {\tt ps7-ps.scm} we represent the series
+$a_0 + a_1*x + a_2*x^2 + a_3*x^3 + ..$.
+
+by the stream {\tt a0 a1 a2 a3 ...}.
+
+Thus, as explained in section 3.4.4 of the book, we can define an
+infinite stream of ones:
+
+\beginlisp
+(define ones (cons-stream 1 ones))
+\endlisp
+
+\vpar
+We can then use this to represent a geometric series:
+
+{\tt ones} represents $1 + x + x^2 + x^3 + ...$
+
+We can form the sequence of partial sums of a series evaluated at a
+given point by the following procedure (supplied in the file {\tt ps7-ps.scm}).
+The sequence of partial sums is represented by an infinite stream whose first 
+element is 0 and whose $N$th element is the sum of the first $N-1$ terms of the
+given series.
+
+\beginlisp
+(define partial-sums
+  (let ((partial-sums-helper
+         (lambda (x)
+           (define loop
+             (lambda (series sum xn)
+               (cons-stream sum
+                            (loop (tail series)
+                                  (add sum (mul xn (head series)))
+                                  (mul xn x)))))
+           loop)))
+    (lambda (series x)
+      ((partial-sums-helper x) series 0 1))))
+\endlisp
+
+Note that in our series operations the coefficients are manipulated
+with our procedures {\tt add}, {\tt mul}, {\tt sub}, {\tt div},
+rather than the system
+procecures {\tt +}, {\tt *}, {\tt -}, {\tt /}.
+This allows us to define generic arithmetic
+operations for the coefficients in terms of the standard operations.
+It is often useful to use rational number arithmetic for the
+coefficients of series, as we shall see.  The file {\tt ps7-ratnum.scm}
+contains
+the definitions of {\tt add}, {\tt mul}, {\tt sub}, {\tt div},
+etc., forming a generic
+extension to Scheme arithmetic for rational numbers.
+
+\section{Exercise 1.}
+Start up a Scheme and load the files {\tt ps7-ratnum.scm},
+{\tt ps7-psutil.scm}, and
+{\tt ps7-ps.scm}.  Type in the definition of {\tt ones}, given above.  Use the
+{\tt print-stream} procedure, defined in the file {\tt ps7-psutil.scm},
+to print out
+the sequence of partial sums of the series {\tt ones} evaluated at $1\over2$ 
+(as a rational number). Is
+the answer what you would expect from what you learned about geometric
+series in high school?
+
+
+As with time sequences, we may add two series together or scale a
+series by a constant.  Because these operations may be performed one
+coefficient at a time, we may define them as mapping operations:
+
+\beginlisp
+;;; $c*(a_0 + a_1*x + a_2*x^2 + a_3*x^3 + ...)$
+;;;  $= c*a_0 + c*a_1*x + c*a_2*x^2 + c*a_3*x^3 + ...$
+
+(define scale-series
+  (lambda (c s)
+    (map-stream (lambda (x) (mul c x))
+                s)))
+\endlisp
+
+\beginlisp
+;;; $(a_0 + a_1*x + a_2*x^2 + ...) + (b_0 + b_1*x + b_2*x^2 + ...)$
+;;;  $= (a_0+b_0) + (a_1+b_1)*x + (a_2+b_2)*x^2 + ...$
+
+(define add-series
+  (lambda (s1 s2)
+    (map-2-streams add s1 s2)))
+\endlisp
+
+\vpar
+where the mappers (and other useful utilities) are defined in the file
+{\tt ps7-psutil.scm}.  We are restricting ourselves to infinite series, so the
+mappers need no end tests:
+
+\beginlisp
+(define (map-stream f s)
+  (cons-stream (f (head s))
+               (map-stream f (tail s))))
+
+\pbrk
+(define (map-2-streams f s1 s2)
+  (cons-stream (f (head s1) (head s2))
+               (map-2-streams f (tail s1) (tail s2))))
+\endlisp
+
+\section{Exercise 2.}
+Define {\tt sub-series}, by analogy to {\tt add-series}.  Demonstrate that your
+procedure works.
+
+
+Given a stream representing an infinite series we can produce a stream
+representing the indefinite integral of that series.  The indefinite
+integral of a series
+
+$$a_0 + a_1*x + a_2*x^2 + a_3*x^3 + ...$$
+is
+$$a_0*x + a_1*x^2/2 + a_2*x^3/3 + ...$$
+
+We return the stream {\tt a0 a1/2 a2/3 a3/4 ...} to represent this.  Note:
+this is not a legitimate representation of the correct series because
+all series must begin with a constant term to make evaluation (partial
+sums) start up right.  This choice means that definite integrals (such
+as the examples in {\tt cos-series} and {\tt sin-series},
+below) must be started
+up with {\tt cons-stream} to add in the constant of integration.
+
+\beginlisp
+(define indefinite-integral
+  (let ()
+    (define integrate-helper
+      (lambda (s n)
+        (cons-stream (div (head s) n)
+                     (integrate-helper (tail s)
+                                       (+ n 1)))))
+    (lambda (series)
+      (integrate-helper series 1))))
+\endlisp
+
+\section{Exercise 3.}
+    Define a procedure, {\tt derivative}, that takes a stream representing a
+series as input and produces the stream representing the derivative of
+that series.
+
+
+Given addition, scaling, and integration of series, one can write some
+remarkably concise definitions.  For example, the series expansions
+for the cosine and sine functions around zero are just that they start
+up with $1$ and $0$ and that each is an integral of the other (with a
+random scale factor of $-1$ in one case.)
+
+\beginlisp
+(define cos-series
+  (cons-stream 1
+               (indefinite-integral (scale-series -1
+                                                  sin-series))))
+\pbrk
+(define sin-series
+  (cons-stream 0
+               (indefinite-integral cos-series)))
+\endlisp
+
+\section{Exercise 4.}
+By analogy to the construction of the sine and cosine series, above,
+construct the series for $e^x$.  Remember that the key is that $de^x/dx$
+is $e^x$.  Demonstrate that your series works by printing out the series
+you get and by using {\tt partial-sums} to obtain the value of $e$.
+
+
+
+
+\vskip 20pt
+
+In section 3.4.5 of the text we develop methods of translating a
+signal flow diagram into a procedure that returns the solution of a
+differential equation.  Such a procedure returns a stream of
+successive values of the function that is the solution to the
+differential equation. In
+fact, this gets rather complex, involving extra, unintuitive {\tt delay}s.
+These problems do not show up when using streams to model the
+coefficients of the power-series solution.  
+
+By a power-series solution, we mean that given a differential equation
+in $y$ (as a function of $t$), we will consider $y$ to be represented by
+a power series in $t$, say
+
+\math{y(t) = a_0 + a_1*t + a_2*t^2 + a_3*t^3 + ...}
+
+\vpar
+Then, we need to determine for what values of the coefficients the
+differential equation is satisfied.
+
+
+For example, consider the differential equation, $dy/dt+y=0$.  This is
+equivalent to 
+
+\math{\eqalign{\int dy&=\int -y\,dt\cr
+y(t) &= y_0 - \int y(t)\,dt\cr}}
+where $y_0$ is some constant initial value.  If $y$ is represented as a
+power series, we may write the solution of this differential equation as:
+
+\beginlisp
+(define (decay y-init)
+  (define y
+    (cons-stream y-init
+                 (indefinite-integral (scale-series -1 y))))
+  y)
+\endlisp
+
+This procedure works (you may try it).
+
+\section{Exercise 5.}
+The analogous procedure on page 277, using streams to model
+successive values of {\tt y} rather than successive coefficients of {\tt y},
+has
+problems that require introductions of {\tt delay} to solve.  The procedure
+shown above does not have these problems.  Why?  Write a short essay
+explaining this situation.  Can we do something to fix our problem on
+page 277 using the ideas shown here?
+
+
+\section{Exercise 6.}
+In Exercise 3.56 (page 278) we consider the problem of modeling
+the signal-processing system for the equation $y''-a*y'-b*y=0$.  Let us
+do this with series solutions.  Write the procedure, {\tt 2nd}, that takes
+as arguments the constants {\tt a}, {\tt b}, and the initial values {\tt y0} 
+and {\tt dy0} and
+generates the stream for the series solution for $y$.
+
+
+In the file {\tt ps7-ps.scm} there is a procedure {\tt mul-series}
+that produces the
+product of two series.  If we have two power series, $U(z)$ and $V(z)$
+
+$$U(z) = U_0 + U_1*z + U_2*z^2 + ...$$
+$$V(z) = V_0 + V_1*z + V_2*z^2 + ...$$
+
+\vpar
+then $W(z) = U(z)*V(z)$ can be computed by Cauchy's product rule:
+
+$$W(z) = W_0 + W_1*z + W_2*z^2 + ...$$
+where
+$$W_n = U_0*V_n + U_1*V_{n-1} + ... + U_n*V_0$$
+
+Surely we could solve this for $U(z) = W(z)/V(z)$ equally well:
+
+$$U_n = ( W_n - U_0*V_n - ... - U_{n-1}*V_1 )/V_0$$
+
+\section{Exercise 7.}
+Use this idea to write the procedure {\tt div-series} that takes two
+series and produces the series expansion of the function that is the
+quotient of the functions represented by the arguments.
+
+
+The series solution to the simple equation, $dy/dt=f(y)$, with the
+signal-flow diagram of figure 3.32 (page 277) is just
+
+\beginlisp
+(define (solve f y-init)
+  (define y (cons-stream y-init (indefinite-integral dy)))
+  (define dy (compose-series f y))
+  y)
+\endlisp
+
+\vpar
+assuming that {\tt f} is given as a power series and {\tt compose-series}
+produces
+the series that is the result of substituting the series that is its
+second argument for the independent variable in the series that is its
+first argument.
+
+\section{Exercise 8.}
+Write the procedure, {\tt compose-series}, required to make the
+procedure above work.  Demonstrate that your procedure is sensible.
+Explain how you derived it and illustrate its use with an example.
+
+
+You may have noticed that in this problem set we have written some of
+our procedures in a rather weird style.  For example, consider the
+{\tt indefinite-integral} procedure above.  Surely it is equivalent to
+write: 
+
+\beginlisp
+(define indefinite-integral
+  (lambda (series)
+    (define integrate-helper
+      (lambda (s n)
+        (cons-stream (div (head s) n)
+                     (integrate-helper (tail s)
+                                       (+ n 1)))))
+    (integrate-helper series 1)))
+\endlisp
+
+Or is it?
+
+\section{Exercise 9.}
+Write a short essay explaining why we have chosen to write some of
+our procedures in an obscure way.  Please do not be sarcastic -- the
+answer is rather sensible.  Hint: think about space taken up by the
+computation.  Use the environment model to try to understand what is
+going on.
+\end

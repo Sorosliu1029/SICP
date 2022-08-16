@@ -1,0 +1,579 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+% -*- LaTeX -*-
+
+\input /zu/6001/6001mac
+
+\def\resistor{$\wedge\wedge\wedge\wedge$}
+
+\begin{document}
+
+\psetheader{Fall Semester, 1989}{Problem Set 5}
+
+\medskip
+
+\begin{flushleft}
+Due: In recitation, Wednesday 25 October
+
+Reading: Finish chapter 2, then read through section 3.1.
+\end{flushleft}
+
+\mbox{}\hrulefill\mbox{}
+
+\begin{center}
+{\bf Quiz I Reminder}
+\end{center}
+
+Quiz I is on Thursday, October 19, in 50-340 (Walker Memorial Gymnasium), from
+5-7 PM xor 7-9 PM.  You may take the quiz during either of the two sessions,
+but students taking it in the first session must stay until 7 PM.  The quiz is
+open book.
+
+The quiz covers everything up to and including recitation Friday, October 6
+(symbols and quotation).
+
+\mbox{}\hrulefill\mbox{}
+
+\section{Series-Parallel Resistive Networks}
+
+Louis Reasoner, appalled by his tuition bill, is trying to put his computer
+background to good use by writing an electrical circuit analyzer program that
+he will rent out to 6.002 students.  Louis's partner in this scheme is his
+roommate, Lem E. Tweakit, a 6-1 major with a flair for hardware.  Lem suggests
+that they begin with a program that computes resistances of simple ``linear
+resistive networks.''\footnote{In this problem set, we use the words
+``network'' and ``circuit'' interchangeably.  In the context of Louis's
+program, there is no distinction.} These are constructed from primitive
+elements called {\it resistors}.  A resistor is characterized by a number {\it
+R} called the {\it resistance} of the resistor.  It can be depicted as follows:
+
+$$\vbox{\halign{#\cr $_o$\vbox{\hrule width5em} \resistor \vbox{\hrule
+width5em} $_o$\cr
+\hfil R\hfil\cr}}$$
+
+For computational purposes, it is also convenient to consider the
+{\it conductance} of a resistor, which is defined to be the reciprocal of
+the resistance. (Conductance is traditionally denoted by the letter
+{\it G}.)
+
+$$\vbox{\halign{#\cr
+$_o$\vbox{\hrule width5em} \resistor \vbox{\hrule width5em} $_o$\cr
+\hfil G = 1/R\hfil\cr}}$$
+
+A resistor is the simplest example of a kind of element called a
+{\it two-terminal network}, i.e., a network that has exactly two terminals to
+which other objects can be connected:
+
+$$\vbox{\halign{#&#&#&#&#\cr
+&&\vbox{\hrule width5em}&&\cr
+&\vrule height11pt depth11pt& &\vrule height11pt depth11pt&\cr
+$_o$\vbox{\hrule width5em}&\vrule height11pt depth11pt&\hfil N\hfil &\vrule height11pt depth11pt&\vbox{\hrule width5em} $_o$\cr
+&\vrule height11pt depth11pt& &\vrule height11pt depth11pt&\cr
+&&\vbox{\hrule width5em}&&\cr}}$$
+
+
+Networks can be combined by attaching their terminals together.  A
+network has a resistance (and conductance) that is determined by the
+resistances of its parts and the ways in which they are
+interconnected.  Louis's and Lem's initial system will provide two
+basic methods of combination for constructing two-terminal networks
+from simpler two-terminal networks.  The first method is called {\it series}
+combination:
+
+$$\vbox{\halign{#&#&#&#&#\cr
+&\vbox{\hrule width5em}& &\vbox{\hrule width5em}& \cr
+&\vrule height11pt depth11pt\hfil\vrule height11pt depth11pt& &\vrule height11pt depth11pt\hfil\vrule height11pt depth11pt& \cr
+$_o$\vbox{\hrule width5em}&\vrule height11pt depth11pt\hfil A\hfil \vrule height11pt depth11pt&\vbox{\hrule width5em} &\vrule height11pt depth11pt\hfil B \hfil\vrule height11pt depth11pt&\vbox{\hrule width5em}$_o$ \cr
+&\vrule height11pt depth11pt\hfil\vrule height11pt depth11pt& &\vrule height11pt depth11pt\hfil\vrule height11pt depth11pt& \cr
+&\vbox{\hrule width5em}& &\vbox{\hrule width5em}& \cr}}$$
+
+\centerline{$R = R_A + R_B$}
+
+The combined resistance of two networks connected in series is the sum
+of the resistances.
+
+The second method is {\it parallel} combination: 
+
+\begin{minipage}[t]{\linewidth}
+\vspace{3in}
+
+\centerline{$G = G_A + G_B$}
+\end{minipage}
+
+The combined conductance of two networks joined in parallel is the sum
+of the conductances of the pieces.
+
+After a few hours of work, Louis and Lem have quite an
+elegant program that handles such series and parallel
+combinations.\footnote{Networks that can be constructed as series and
+parallel combinations of primitive two-terminal elements are called
+{\it series-parallel networks}.} The program is provided in the first
+appendix to this handout, labeled {\it ps5-res.scm}.
+
+You should read through this code now to get some idea of how it
+works.  There are constructors {\it make-resistor}, {\it make-series}, and
+{\it make-parallel}, and an operation called {\it resistance} that
+computes the resistance of a network by finding the resistances of the
+parts of a network and combining them appropriately.
+
+Louis and Lem test their program by computing the resistance of the
+following network:
+
+\vspace{3in}
+
+They type:
+
+\beginlisp
+(define r1 (make-resistor  5))
+(define r2 (make-resistor 15))
+(define r3 (make-resistor 10))
+(define r4 (make-resistor 10))
+
+(define N
+  (make-parallel (make-series r1 r2)
+                 (make-series r3 r4)))
+
+-->(resistance N)
+10.000
+\endlisp
+Indeed, the answer is correct (as Lem verifies).
+
+{\bf Exercise 1:}
+Consider the data structure representing the network {\it N}.
+
+{a.}
+Draw the box-and-pointer structure that represents the object {\it N}.
+
+{b.}
+How many times was {\it resistance} called in computing the resistance of
+{\it N}?  What were the arguments to {\it resistance} for each call?  (To
+specify the arguments, you can sketch the part of the network that
+each argument represents, or you can give a description in English,
+e.g., ``{\it R3} in parallel with {\it R4}''.)
+
+\begin{minipage}[t]{\linewidth}
+\section{L-extensions}
+
+Given a 2-terminal network {\it B}, we can form a new two-terminal
+network by attaching an ``L-section,'' which is itself constructed
+from two two-terminal networks {\it S} and {\it P} as follows:
+
+\vspace{3.5in}
+\end{minipage}
+
+This operation is called ``L-extension'' of a base {\it B} by a ``series
+part'' {\it S} and a ``parallel part'' {\it P}.
+
+{\bf Exercise 2:}
+Write a procedure {\it L-extend} that takes three two-terminal networks --
+{\it base}, {\it series-part}, and {\it parallel-part} -- and combines them
+using {\it make-series} and {\it make-parallel} to produce the extended
+network as shown above.
+
+
+{\bf Exercise 3:}
+Use your {\it L-extend} procedure to make a new network that extends the
+network {\it N} from Exercise 1 (as the base) by a 5-ohm resistor (the
+series part) and a 10-ohm resistor (the parallel part).
+
+Verify that the resulting network has a resistance of 10 ohms.  Show
+the expressions that you typed in order to generate the network and to
+check its resistance.
+
+
+
+By repeatedly L-extending a base by a given series and parallel
+part, we obtain a circuit called a ``ladder.''  The following diagram
+shows a 4-stage ladder.
+
+\vspace{3in}
+
+Louis decides that he can easily implement a ladder by making use of
+his {\it L-extend} procedure, together with the {\it repeated} procedure
+below.  Note that {\it identity} is a procedure that simply returns its
+argument, and {\it compose} is a procedure that, given two procedures
+{\it f} and {\it g} as arguments, creates a new procedure that applies
+the composition of {\it f} and {\it g} to its argument.
+
+\beginlisp
+(define identity (lambda (x) x))
+
+(define compose (lambda (f g)
+                  (lambda (x) (f (g x)))))
+
+(define (repeated f n)
+  (if (= n 0)
+      identity
+      (compose f (repeated f (- n 1)))))
+\endlisp
+
+He defines the following procedure to construct a ladder with a
+given number of stages:
+
+\beginlisp
+(define (ladder-extension stages base series-part parallel-part)
+  ((repeated {\it $<$EXP-1$>$} stages) {\it $<$EXP-2$>$}))
+\endlisp
+
+{\bf Exercise 4:}
+Complete the {\it ladder-extension} procedure.  What are the missing
+expressions
+{\it $<$EXP-1$>$} and {\it $<$EXP-2$>$}?
+
+{\bf Exercise 5:}
+A classical network-theory problem used to plague 6.002 students is to
+compute the resistance of an infinitely long ladder of 1-ohm
+resistors:  
+
+\vspace{3in}
+
+The procedure {\tt make-tolerance-check} below creates a procedure of two
+parameters which checks whether those parameters are within {\tt tolerance}:
+
+\beginlisp
+(define make-tolerance-check
+  (lambda (tolerance)
+    (lambda (number1 number2)
+      (< (abs (- number1 number2)) tolerance))))
+\endlisp
+
+Now, fill in the missing parts of the procedure {\tt solve-infinite-ladder}
+below, which takes a {\tt tolerance} and calculates the resistance of longer
+and longer ladders until it finds two answers within {\tt tolerance} of each
+other.  The missing parts are labaled {\tt <exp1>} and {\tt <exp2>}.
+
+\beginlisp
+(define (solve-infinite-ladder tolerance)
+  (let ((close-enough? (make-tolerance-check <exp1>))
+        (one-ohm-resistor (make-resistor 1)))
+    (define (loop circuit circuit-resistance)
+      (let ((new-circuit (l-extend circuit
+                                   one-ohm-resistor
+                                   one-ohm-resistor)))
+        (let ((new-resistance (resistance new-circuit)))
+          (if <exp2>
+              new-resistance
+              (loop new-circuit new-resistance)))))
+    (loop one-ohm-resistor (resistance one-ohm-resistor))))
+\endlisp
+
+Include the expressions you used for {\tt <exp1>} and {\tt <exp2>} in your
+problem set solutions.
+
+Using your completed {\tt solve-infinite-ladder}, calculate the resistance of
+an infinite ladder of one-ohm resistors within a tolerance of 0.0001.  To what
+value does the resistance appear to converge?  Have you seen this number
+before?
+
+{\bf Exercise 6:}
+Louis and Lem demonstrate their system to Ben Bitdiddle.  As an
+example, they try to compute the resistance of a long ladder.  To
+their surprise, they find that although the program gets correct
+answers, it seems to run more slowly than before.
+
+Taking a careful look at the code, they find that Louis has changed
+the definition of {\it resistance-parallel} so that it now reads:
+\beginlisp
+(define (resistance-parallel ckt)
+  (/ (* (resistance (left-branch ckt))
+        (resistance (right-branch ckt)))
+     (+ (resistance (left-branch ckt))
+        (resistance (right-branch ckt)))))
+\endlisp
+Explain why this change makes the program run so slowly.  As an
+example, consider a ladder where each of the series, parallel, and
+base pieces is a simple resistor.  If the ladder has {\it N} stages:
+
+(a) How many resistors are contained in the ladder?
+
+(b) In computing the resistance of the ladder, how many times will the
+procedure {\it resistance-resistor} be run if the system uses the
+original version of the {\it resistance-parallel} procedure?
+
+(c) After Louis installs the new version of {\it resistance-parallel}, how
+many times will {\it resistance-resistor} be run in computing the resistance
+of the {\it N}-stage ladder?  (You should be able to obtain an exact answer
+in terms of {\it N}.  However, partial credit will be given for good partial
+answers.  Show your work.)
+
+(d) How has Louis's change affected the running time of the system?
+(E.g., slowed it down by a constant factor?  slowed it down
+quadratically? slowed it down exponentially?)
+
+
+\section{General Series-Parallel Circuits}
+
+Louis goes off to try to rent out the system in the 6.002 lab in
+building 38.  His first potential customer is Anna Logg, a sophomore
+who is busily doing her 6.002 problem set.  ``Foo,'' says Anna, ``this
+is useless unless it can handle capacitors and inductors as well as
+resistors.''
+
+Louis goes back home and asks Lem for a short course on circuit
+theory.  Lem says that indeed, interesting circuits have elements
+called capacitors and inductors, and solving such circuits involves
+(ugh!) differential equations, and Lem is too tired to
+give a course in circuit theory (Louis has to take 6.002 next semester
+anyway).  But luckily, Lem explains, it is unnecessary to understand
+this in order to make a useful system.  In particular, explains Lem,
+capacitors and inductors can be thought of as ``resistors'' whose
+``resistance'' (actually called {\it impedance}) is a complex number that
+varies with a parameter {\it s}, called the ``complex frequency.''
+
+Lem says that for a capacitor of capacitance {\it C} (measured in farads)
+the ``resistance'' is 1/{\it sC}.  For an inductor of inductance {\it L} (measured
+in henrys) the ``resistance'' is {\it sL}:
+
+
+\vspace{2in}
+
+For example, a so-called ``parallel resonant circuit'' can be thought
+of as a network of 3 ``resistors'' and analyzed in the same way as
+before.  Only this time, the ``resistance'' of the network will be a
+function of {\it s}.
+
+\vspace{2in}
+
+Louis meditates on this for a few days and turns for help to the great
+wizard Alyssa P. Hacker.  Alyssa suggests a clever scheme that allows
+Louis to handle these things without greatly changing his program.
+The idea is that the ``resistance'' of a circuit (or a circuit
+element), instead of being a simple number,
+will now be a procedure that takes some {\it s} as argument.
+For instance, the ``resistance'' of a
+(real) resistor of declared resistance {\it R} is represented by a
+procedure that computes a constant function whose value is {\it R}, for
+any {\it s}.  For a capacitor of capacitance {\it C}, the ``resistance''
+is the procedure that takes {\it s} as argument and returns 1/{\it sC}.
+
+The data structure that Alyssa suggests for representing a primitive
+electrical element is a list of three elements
+
+\beginlisp
+($<$type$>$ ($<$parameter name$>$ $<$value$>$) $<$procedure$>$)
+\endlisp
+
+This includes a {\it type} as in Louis's original program, a
+``documentation field'' that makes printouts of circuits easier to
+interpret, and the actual ``resistance'' procedure of the element.
+
+Thus, a (real) resistor is constructed by
+
+\beginlisp
+(define (make-resistor resistance)
+  (attach-type 'resistor
+               (list (list 'resistance resistance)
+                     (lambda (s) resistance)))))
+\endlisp
+
+A capacitor is constructed by
+
+\beginlisp
+(define (make-capacitor capacitance)
+  (attach-type 'resistor
+               (list (list 'capacitance capacitance)
+                     (lambda (s)
+                       (/ 1 (* capacitance s))))))
+\endlisp
+
+(Note that, as far as the {\it type} is concerned, a capacitor is a type
+of resistor, although we can tell the difference by looking at the
+documentation field.)  Inductors are constructed similarly.
+
+Then, for example, the ``resistance'' of a series combination should
+be a procedure that, given an argument {\it s}, computes the
+resistances of the branches for that {\it s}, and returns their sum:
+
+\beginlisp
+(define (resistance-series ckt)
+  (lambda (s)
+    (+ ((resistance (left-branch ckt)) s)
+       ((resistance (right-branch ckt)) s))))
+\endlisp
+
+Actually the procedures given above are not quite correct, because in
+order to use this idea to get information about circuits, one needs to
+use inputs {\it s} that are complex numbers.  (Ask Lem if you want to
+know why, or take 6.002.)
+
+So Louis has to make a further modification: All arithmetic must be
+changed so that it works with complex numbers.  He builds a
+representation for complex numbers and complex number operations and
+modifies the code accordingly.  The result of his labors (which works,
+amazingly!) is in the file {\it ps5-imp.scm}.  This is attached as the
+second appendix to this problem set.  You should study the code and
+use it to do the following exercises.
+
+{\bf Exercise 7} Load Louis's new program into Scheme.\footnote{A version of
+this file should have been copied to your disk and into an Edwin buffer when
+you invoked the ``load problem set'' command.} Build a parallel resonant
+circuit (as shown above) using a 2-ohm resistor, a 1-farad capacitor, and a
+1-henry inductor.  Call the circuit {\it N2}.  What
+is the impedance (``resistance'') of {\it N2} at $s=2+0j$?, at $s=0+2j$?  (Note
+that Louis's code contains a constructor that makes complex numbers of the form
+$A+Bj$, where $j$ is the square root of -1.)  Show the expressions you
+evaluated in order to generate the circuit and to find the impedance.
+
+Lem has suggested that it is very useful to look at a plot of the
+magnitude of the impedance of a circuit as a function of imaginary
+values of the complex frequency {\it s} (i.e., values of {\it s} for which
+the real part is 0).  Such a plot is called a {\it frequency response}
+plot of the circuit.
+
+We have supplied a program that plots functions on the Chipmunk screen.  To get
+an idea of how the program works, type {\it (line-plot square -2 2 .1)}.  This
+plots values of {\it square} in the interval from -2 to 2 with an increment of
+0.1.  Notice that {\it line-plot} prints the {\it x} and {\it y} bounds of the
+plot, in the format {\it (xmin xmax ymin ymax)}.  (The file {\it
+ps5-graph.scm}, automatically loaded when you load the problem set, implements
+the {\it line-plot} procedure.  You need not read or understand the code in the
+file in order to use {\it line-plot}.)
+
+\begin{minipage}[t]{\linewidth}
+{\bf Exercise 8}
+Make a plot of the frequency response of the circuit {\it N2} from
+$s=0+.001j$ to $s=0+2j$, stepping $s$ by $.05j$.  (Note that
+the {\it ps5-imp} file contains a {\it magnitude} procedure for computing
+magnitudes of complex numbers.)  You should get a curve like the one
+shown in the figure.  The sharp peak is characteristic of a ``resonant
+circuit,'' and the value of $s$ where the peak occurs is called the
+{\it resonant frequency}.  Where is the resonant frequency for the
+circuit {\it N2}?  What expressions(s) did you type to Scheme to
+generate the plot?
+
+\vspace{4.5in}
+\end{minipage}
+
+{\bf Exercise 9}
+Use Louis's program to determine how the frequency response changes
+if you change the resistance of the resistor from 2 to 10 ohms.
+Sketch the new frequency-response curve, indicating how it differs
+from the original curve.
+Does the resonant frequency change?  Does the height of the peak
+change?
+
+\fbox{\huge NOTE: Everything after this point is OPTIONAL.}
+
+\section{Generating Circuits}
+
+Louis's program is so successful that it becomes standardly used by
+almost all students taking 6.002.  Eventually, the Course 6 faculty
+realizes that students are doing circuit-analysis homework simply by
+using the program, resulting in the shocking state of affairs that
+most students are able to spend less than 30 hours per week doing
+6.002 problem sets!  At an emergency meeting of the Course 6
+Undergraduate Educational Policy Committee, Prof. Gould suggests that
+the 6.002 staff can increase the difficulty of the problem sets by
+asking students to {\it design} circuits rather than simply to analyze
+them: Students will be given a list of parts (resistors, capacitors,
+and inductors) and asked to use these to build a circuit that has some
+desired behavior, such as resonance in a given frequency range.
+
+When Louis hears of this plan, he decides to augment his program so
+that it can do this kind of problem as well.  His idea is to write a
+program that will randomly generate series-parallel circuits using the
+specified parts, then analyze the circuits to find ones with the desired
+behavior.  (Each of the specified parts will be used exactly once in
+each circuit.)
+
+We can generate a random circuit as follows: Suppose that {\it S} is the
+set of parts we are supposed to use.  We split {\it S} (randomly) into
+two subsets {\it A} and {\it B}.  Then, recursively, we generate a random
+circuit {\it CA} using the parts in {\it A} and a random circuit {\it CB}
+using the parts in {\it B}.  Finally, we return either the series
+combination of {\it CA} and {\it CB} or the parallel combination of {\it CA}
+and {\it CB} (each with probability 1/2).
+
+{\bf Exercise 10:}
+Write a procedure {\it random-circuit} that uses this strategy to
+generate random series-parallel circuit.  {\it Random-circuit} should
+take as argument a set of parts, represented as a list.  You should
+use a separate procedure called {\it split-list}, which takes as
+argument a list {\it S} and returns a pair of lists {\it A} and {\it B},
+such that each item in {\it S} appears either in {\it A} or in {\it B} (with
+equal probability).  {\it Random-circuit} is then a recursive procedure
+that uses {\it split-list}.  (Think about how to stop the recursion:
+What do you do if one of the lists {\it A} or {\it B} is empty, or has
+only one element?)  Turn in a listing of your procedure(s).
+
+{\bf Exercise 11:}
+Use your program to generate five different circuits whose parts are a
+1-farad capacitor, a 2-farad capacitor, a 1-henry inductor, a 1-ohm
+resistor, and a 2-ohm resistor.  Turn in the (pretty-printed) results.
+
+
+{\bf Exercise 12:}
+Using the plotter, determine which (if any) of the circuits you made has a
+resonant frequency between $s=0$ and $s=0+2j$.  (Resonant behavior
+is characterized by a sharp peak or a sharp dip at one or more
+frequencies.)
+
+{\bf Program design:} Do either one of the next two exercises.
+
+{\bf Exercise 13:}
+Describe carefully how you would write a program that automatically
+tests circuits for resonant behavior.  You needn't actually implement
+the program, but if you do, and have a lot of time, search for
+series-parallel circuits with four components to find those with
+resonant behavior.  Take the four components to be a 10-ohm resistor,
+a 2-farad capacitor, a 1-farad capacitor, and a 2-henry inductor.
+Search the region from $s=0$ to $s=0+2j$, as before.
+
+{\bf Exercise 14:}
+One problem with the random method of generating circuits is that the
+same circuit might be generated many times, and some circuits might
+not be tried at all.  How would you write a program to generate
+{\it all} the circuits that can be constructed from a given list of
+parts (with each part used exactly once)?  Notice that there are
+really two problems here: one is to make sure that each circuit is
+generated, and the other is to eliminate duplicates.  Eliminating
+duplicates can be tricky: for instance, given parts {\it p1}, {\it p2},
+and {\it p3}, the combination
+\beginlisp
+(make-series p1 (make-series p2 p3))
+\endlisp
+represents the same circuit as
+\beginlisp
+(make-series p2 (make-series p1 p3))
+\endlisp
+You needn't write any code for this exercise, but be sure to give a
+good description of how you would go about solving the problem.
+
+
+Warning/Hint: There is a clever way to eliminate the duplicates, but a
+straightforward approach can become extremely complicated.  Don't be
+afraid to turn in a partial solution if you don't discover a complete
+method.  Also, if you actually implement a program and want to test
+it, you should know that there are 8 distinct circuits that can be
+constructed with 3 parts, 52 with 4 four parts, and 472 with 5 parts.
+
+\end{document}

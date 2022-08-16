@@ -1,0 +1,500 @@
+% -*- Mode: TeX -*-
+% for yTeX
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+
+\def\fbox#1{%
+  \vtop{\vbox{\hrule%
+              \hbox{\vrule\kern3pt%
+                    \vtop{\vbox{\kern3pt#1}\kern3pt}%
+                    \kern3pt\vrule}}%
+        \hrule}}
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1988}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1988}
+\rectorightheader={Problem Set 2}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 2}
+
+\vskip 0.25truein
+
+\vpar
+Issued:  September 20, 1988
+
+
+\vpar
+Due: in recitation on September 30, 1988 {\it for all sections}
+
+\vpar
+Reading: From text, reminder of Chapter 1.
+
+
+\vpar 
+{\bf Reminder:}  There will be a mini-quiz in recitation on Wednesday,
+September 28.
+
+\chapter{1. Homework exercises}
+
+Work the following exercises.  Write up your
+solutions and submit them as part of your homework to your TA in
+recitation.
+
+\beginbullets
+
+\bpar
+Exercise 2.1: Do Exercise 1.25 in Abelson and Sussman, p. 56.
+
+\bpar
+Exercise 2.2: Do Exercise 1.26 in Abelson and Sussman, p. 56.
+
+\bpar
+Exercise 2.3: Do Exercise 1.32 in Abelson and Sussman, p. 69.
+
+\bpar
+Exercise 2.4: Do Exercise 1.33 in Abelson and Sussman, p. 70.
+
+\bpar
+Exercise 2.5:  Using the RSM (revised substitution model), show how the
+following expressions evolve when being evaluated.  Indicate which rule
+you used to get from one step to another.  You may assume that {\tt
+square} has been defined by 
+
+\beginlisp
+(define square (lambda (x) (* x x)))
+\endlisp
+
+\atpar{a.} {\tt (define pass (lambda (m) (lambda (z) (m z))))}
+
+\atpar{b.} {\tt ((lambda (x) ((pass x) 3)) square)}
+
+\atpar{c.} {\tt (define use-pass (pass (lambda (a) (square (+ a 1)))))}
+
+\atpar{d.} {\tt (use-pass 2)}
+
+
+
+\endbullets
+
+\chapter{2. Programming Assignment:  Big Bucks for Stuck Trucks}
+
+Ben Bitdiddle has been spending some of his spare time working for
+WMBR (Walker Memorial Basement Radio).  Concerned that the size
+of station's listenership is declining (it used to be bigger when the station was
+WTBS, before the call letters were ``sold'' to  Ted Turner), Ben
+reasons that holding a promotional event is a good way to increase
+listenership.  He decides to run a contest in which, at particular times
+during the day, listeners can call in for the opportunity to be selected
+as a contestant.  Each contestant has a limited time period (10 seconds)
+in which to guess an integer known to the radio station.  If the
+contestant correctly guesses the hidden integer, she wins a cash prize,
+if not she wins an MIT tee shirt.
+
+To add some spice to the contest, Louis decides that the number to be
+guessed by the participants will be the amount of money spent by
+You-Hall to repair all of its rental trucks that become stuck under the
+bridges on Memorial and Storrow Drive during the fall term, taken to the
+nearest dollar.  To make the contest a little easier, the radio station
+announces that this hidden amount is bounded between a given upper and
+lower limit, whose values the station also announces.  Since contestants
+will only have 10 seconds to guess the amount, it is important to guess
+the hidden sum in as few guesses as possible.
+
+When he hears about the contest, Louis Reasoner becomes very excited.
+``What a great chance to earn some serious bucks!'' he exclaims.  ``In
+fact, I can use the computer to help me figure out the best way to guess
+the hidden number.''
+
+Louis decides to write a procedure that will count the number of guesses
+it takes to guess a hidden number.  His idea is that by trying this
+procedure out on a number of different examples of hidden numbers, he
+can determine how many guesses, on average, are needed to guess the
+number, and from this he can determine how quickly he must be able to
+enunciate guesses in order to get in that many guesses in 10 seconds.
+
+We have helped Louis a little by providing a procedure called {\tt
+setup}.  {\tt Setup} takes two arguments, a lower limit and an upper
+limit in that order, and generates two global variables, {\tt
+high-limit} which is bound to the value of the argument supplied as an
+upper limit to {\tt setup}, and {\tt low-limit} which is bound to the
+value of the argument upplied as a lower limit to {\tt setup}.  It also
+chooses a random integer between the two limits, and creates three
+special procedures, {\tt =-hidden}, {\tt <-hidden} and {\tt >-hidden},
+each of which takes a single argument and evaluates to {\bf true} if the
+value of the argument is equal to, less than, or greater than the value
+of the random integer, respectively.
+
+Louis' first idea is to simply guess integers at random between the
+given limits until the correct answer is found.  Below is a procedure,
+called {\tt strategy-random}, that guesses integers between {\tt
+low-limit} and {\tt high-limit} until it guesses the integer represented
+by {\tt hidden}, at which point it returns the number of guesses it made
+in order to find that value.
+
+\beginlisp
+(define strategy-random
+  (lambda ()
+    (define helper                             ; internal helper procedure
+      (lambda (n)                              ; argument is no. of trials
+        (if (=-hidden (+ low-limit
+                         (random (+ (- high-limit low-limit)
+                                 1))))         ; to get random number in range
+                                               ; have found right number
+            n                                  ; return no. of trials
+            (helper (+ n 1)))))                ; else do again with new guess
+    (helper 1)))                               ; start off with first try
+\endlisp
+
+
+To load these procedures, and
+to set up a file in which you can put your solutions to this problem
+set, follow the directions for ``loading problem sets'' in the System
+Manual, to load the code for Problem Set 2. 
+
+To test out the procedures, evaluate {\tt setup}  applied to some simple
+arguments, e.g. {\tt (setup 1 10)}, to initialize
+the global variables, including the hidden number.  Then evaluate
+{\tt (strategy-random)} to count the number of guesses needed to find the hidden number.
+
+{\bf Exercise 1.}  Is {\tt helper}, as defined above, a recursive
+procedure?  Clearly state why or why not.  Does it give rise to a
+recursive or an iterative process?  Again, clearly state why.
+
+
+{\bf Exercise 2.}
+After playing  with his procedure for awhile, Louis decides that random
+guessing is not very useful, especially when the radio station announces
+that the upper and lower limits on their hidden value are $10000$ and
+$1$ respectively.  Instead, he decides to be a bit more reasoned about
+his approach.  In particular, he decides that a better way to guess the
+hidden number is to start at the given lower limit, and increment by one
+until the correct value is reached.
+
+Write a procedure, called {\tt strategy-increment}, 
+that starts at {\tt
+low-limit} and increments by 1 until it reaches the hiddeen integer, at
+which point it returns the number of guesses it made 
+in order to find that value.
+
+%{\bf following code is one solution, will go away in pset}
+%
+%\beginlisp
+%(define strategy-increment
+%  (lambda ()
+%    (define helper 
+%      (lambda (n g)
+%        (if (= g hidden)
+%            n
+%            (helper (+ n 1) (+ g 1)))))
+%    (helper 1 low-limit)))
+%\endlisp
+
+To test out your procedure, evaluate {\tt setup} applied to some simple arguments
+to initialize
+the global variables, including the hidden number, and then evaluate
+{\tt strategy-increment} applied to whatever arguments are appropriate to
+count the number of guesses needed to find the hidden number.
+
+
+{\bf Exercise 3:}  What is the order of growth of {\tt
+strategy-increment} measured in terms of the range of possible values
+for the hidden number, $[\hbox{\rm high-limit} - \hbox{\rm lower-limit}
++ 1]$.  Please justify your answer, clearly and concisely.
+
+{\bf Exercise 4:}
+As Louis is experimenting with his code, Alyssa P. Hacker wanders by.
+She looks over his shoulder, and suggests that his approach can be
+improved upon considerably, using the idea of binary search.  In
+particular, she suggests that a better way of narrowing down the range
+of possibilities for the hidden value is to choose a number in the
+middle of the range of possibilities.  After glancing at Alyssa's
+favorite bed-time reading -- {\bf Struggle and Intimidation of Computer
+Programming} --  Louis sets down the following rules for designing such
+a procedure.
+
+
+\atpar{1.} Begin by choosing a number halfway (to the nearest integer)
+between the low and high limit.
+
+\atpar{2.} If the correct number is guessed, stop, and return the number
+of guesses made.
+
+\atpar{3.} Otherwise, test to see if the guess is too high.  If it is,
+then choose a new guess that is halfway between the previous guess and the
+low limit given by the radio station.  If it is too low, then choose a new
+guess that is halfway between the previous guess and the high limit
+given by the radio station.
+
+\atpar{4.} Continue at 2 until the correct number is found.
+
+Write a procedure called {\tt strategy-bin-1}, which implements the
+above rules.  Since we want our guesses to be integers, and finding the
+midpoints of ranges may involve fractions, you may use the procedure
+{\tt flip}, defined below, and which has been loaded into the
+system.
+
+\beginlisp
+(define flip
+   (lambda (n)
+     (cond ((integer? n) n)
+           ((= (random 2) 1) (floor n))
+           (else (ceiling n)))))
+\endlisp
+
+%{\bf following code is one solution, will go away in pset}
+%
+%\beginlisp
+%(define strategy-bin-1
+%  (lambda ()
+%    (define helper 
+%      (lambda (n g)
+%        (cond ((= g hidden) n)
+%              ((< g hidden)
+%               (helper (+ n 1)
+%                       (flip (/ (+ g high-limit) 2))))
+%              (else
+%               (helper (+ n 1)
+%                       (flip (/ (+ g low-limit) 2)))))))
+%    (helper 1 (flip (/ (+ low-limit high-limit) 2)))))
+%\endlisp
+
+{\bf Exercise 5.}  Louis experiments with his new strategy by evaluating
+{\tt setup} applied to some arguments, and then evaluating his procedure, but
+notices
+that for some hidden values, his procedure seems to be taking forever to
+return a value, and that he has to abort the evaluation of his procedure
+application in those case.  He asks Alyssa about it.  She looks at his
+rules, given above, and the procedure he has generated and exclaims,
+``Of course, you silly nit, you've set up a procedure that loops
+infinitely.''  To show this, she suggests that Louis examine the case in
+which the hidden value is 6, his initial guess is 5 and the limits are 1
+and 10.  Using this example and the rules Louis listed, explain why Alyssa is
+correct. 
+
+{\bf Exercise 6.}  Alyssa explains to Louis that the correct way to use
+binary search is to keep track of the highest number known to be smaller
+than the hidden value (called the {\bf glb} for greatest lower bound)
+and the lowest number known to be larger than the hidden value (called
+the {\bf lub} for least upper bound).  In this way, if the
+current guess is too small, one can take the average (using {\tt flip}
+to get an integer)
+of the guess and the current value for the lub as the new guess, while
+updating the lub and glb.  If the current guess is too high, one can
+take the average of the guess and the current value for the glb as the
+new guess, while updating the lub and the glb.  Write a procedure called
+{\tt strategy-bin-2} that implements this idea.
+
+%{\bf following code is one solution, will go away in pset}
+%
+%\beginlisp
+%(define strategy-bin-2
+%  (lambda ()
+%    (define helper 
+%      (lambda (n g u l)
+%        (cond ((= g hidden) n)
+%              ((< g hidden)
+%               (helper (+ n 1)
+%                       (flip (/ (+ g u) 2))
+%                       u
+%                       g))
+%              (else
+%               (helper (+ n 1)
+%                       (flip (/ (+ g l) 2))
+%                       g
+%                       l)))))
+%    (helper 1 (flip (/ (+ low-limit high-limit) 2)) high-limit low-limit))) 
+%\endlisp
+
+
+{\bf Exercise 7:}  What is the order of growth of {\tt
+strategy-bin-2} measured in terms of the range of possible values
+for the hidden number, $[\hbox{\rm high-limit} - \hbox{\rm lower-limit}
++1]$.  Please justify your answer, clearly and concisely.
+
+
+{\bf Exercise 8:}  Louis decides that since he is trying out so many
+different strategies that it would be helpful to capture the commonality
+of the procedures in a higher order procedure, that encompassed all of
+them.  He begins by writing the following fragment:
+
+\beginlisp
+(define general-strategy
+  (lambda (next-guess next-lub next-glb trial guess lub glb)
+    (if (=-hidden guess)
+        trial
+        (general-strategy .........))))
+\endlisp
+
+You need to help Louis out by completing this code fragment.  Louis'
+idea is that {\tt next-guess} should be a procedure for generating the
+next guess, and {\tt next-lub} and {\tt next-glb} should be
+procedures for generating the new lub and glb, respectively, if those
+values are actually used by the strategy. {\tt Trial} is the number of
+the current guess, {\tt guess} is the value of the guess itself, and
+{\tt lub} and {\tt glb} are the appropriate bounds.  Please complete the
+fragment for Louis.
+
+%{\bf one solution, remove from pset}
+%
+%\beginlisp
+%(general-strategy next-guess next-lub next-glb
+%                  (+ 1 trial) (next-guess guess lub glb)
+%                  (next-lub lub guess)
+%                  (next-glb glb guess))
+%\endlisp
+
+Once you have completed {\tt general-strategy}, show how you would
+rewrite {\tt strategy-random}, {\tt strategy-increment} and {\tt
+strategy-bin-2} in terms of {\tt general-strategy}.
+
+{\bf Exercise 9:}  Finally, Louis is ready to test out the different
+procedures, in order to find the best one.  His idea is to have a
+procedure that will run $n$ trials of a strategy and return information
+about the number of guesses needed to find the correct solution, such as
+the average number of guesses or the maximum number of guesses.  He writes the 
+following code fragment:   
+
+\beginlisp
+(define tester
+  (lambda (no-of-trials strategy type)
+    (define final-stats (make-statistic type))
+    (define updater (make-updater type))
+    (define run-it
+      (lambda (n stat)
+        (if (= n no-of-trials)
+            \fbox{\hbox{1}}
+            (sequence (setup 1 1000)
+                      \fbox{\hbox{2}}))))
+    (run-it 0 0)))
+\endlisp
+
+
+Louis idea is that {\tt make-updater} is to be a procedure that returns
+a procedure for updating the statistic to be computed.  If we want to
+compute the average number of guesses, then this procedure should take
+as argument the {\tt strategy} and the current {\tt stat} (in this case
+the sum of the number of guesses taken on all the previous trials) and
+return the sum of that previous sum and the number of guesses required
+on the current application of the strategy.  If we want to compute the
+maximum number of guesses taken on a trial, then this procedure should
+take as argument the {\tt strategy} and the current {\tt stat} (in this
+case the maximum number of guesses used on any of the previous trials)
+and return the new maximum after another application of the {\tt
+strategy}.  Similarly, {\tt make-statistic} is to be a procedure that
+returns a procedure for computing the final statistic.  If we want to
+compute the average number of guesses, this procedure should take as
+arguments the total number of guesses over all the trials and the number
+of trials, and return the average.  If we want to compute the maximum
+number of guesses, this procedure should return that value.
+
+You need to help poor Louis out.   In particular, you need to fill in
+the appropriate code for \fbox{\hbox{1}} and \fbox{\hbox{2}}.  Note that
+a version of this code fragment has been loaded into your problem set
+file. You also need to write the procedures {\tt make-updater} and {\tt
+make-statistic}.
+
+Since both {\tt make-updater} and {\tt make-statistic} are to return
+different procedures, based on the type of statistic we want to collect,
+we need a convention for specifying which type.  Louis decides to use
+numbers to tell the procedures which type he wants.  You may do the same
+thing, although later in the term we will see much cleaner methods for
+specifying arguments such as which type to use.
+
+Turn in copies of your code.  Also, using {\tt tester}, fill out a
+small chart, in which
+you indicate the average and maximum number of guesses observed for 10
+trials , using {\tt strategy-increment} and {\tt strategy-bin-2}.
+Finally, 
+answer the following questions. 
+
+Does {\tt run-it} give rise to an iterative or a recursive process?
+Why?
+
+\end
+
+
+\beginlisp
+(define tester
+  (lambda (no-of-trials strategy type)
+    (define final-stats (make-statistic type))
+    (define updater (make-updater type))
+    (define run-it
+      (lambda (n stat)
+        (if (= n no-of-trials)
+            (final-stats stat n)
+            (sequence (setup 1 1000)
+                      (run-it (+ 1 n) (updater stat strategy))))))
+    (run-it 0 0)))
+\pbrk
+(define make-statistic 
+  (lambda (type)
+    (cond ((= type 1)
+           (lambda (stat strat)
+             (+ stat (strat))))
+          ((= type 2)
+           (lambda (stat strat)
+             (max stat (strat)))))))
+\pbrk
+(define make-updater
+  (lambda (type)
+    (cond ((= type 1)
+           (lambda (stat trials)
+             (/ stat trials)))
+          ((= type 2)
+           (lambda (stat trials)
+             stat)))))
+\endlisp
+

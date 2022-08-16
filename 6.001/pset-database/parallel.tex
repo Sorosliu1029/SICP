@@ -1,0 +1,2118 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+% Structure and Interpretation of Parallel Computer Programs
+% Nikhil, January 1989
+% Based on Nikhil's parallelism notes for 6.001, Fall 1988
+% Revised, November 19-20, 1989
+
+\documentstyle[12pt]{article}
+
+% HORIZONTAL MARGINS
+% Left margin 1 inch (0 + 1)
+\setlength{\oddsidemargin}{0in}
+% Text width 6.5 inch (so right margin 1 inch).
+\setlength{\textwidth}{6.5in}
+% ----------------
+% VERTICAL MARGINS
+% Top margin 0.5 inch (-0.5 + 1)
+\setlength{\topmargin}{-0.5in}
+% Head height 0.25 inch (where page headers go)
+\setlength{\headheight}{0.25in}
+% Head separation 0.25 inch (between header and top line of text)
+\setlength{\headsep}{0.25in}
+% Text height 9 inch (so bottom margin 1 in)
+\setlength{\textheight}{9in}
+% ----------------
+% PARAGRAPH INDENTATION
+\setlength{\parindent}{0in}
+% SPACE BETWEEN PARAGRAPHS
+\setlength{\parskip}{\medskipamount}
+% ----------------
+% STRUTS
+% HORIZONTAL STRUT.  One argument (width).
+\newcommand{\hstrut}[1]{\hspace*{#1}}
+% VERTICAL STRUT. Two arguments (offset from baseline, height).
+\newcommand{\vstrut}[2]{\rule[#1]{0in}{#2}}
+% ----------------
+% EMPTY BOXES OF VARIOUS WIDTHS, FOR INDENTATION
+\newcommand{\hm}{\hspace*{1em}}
+\newcommand{\hmm}{\hspace*{2em}}
+\newcommand{\hmmm}{\hspace*{3em}}
+\newcommand{\hmmmm}{\hspace*{4em}}
+% ----------------
+% VARIOUS CONVENIENT WIDTHS RELATIVE TO THE TEXT WIDTH, FOR BOXES.
+\newlength{\hlessmm}
+\setlength{\hlessmm}{\textwidth}
+\addtolength{\hlessmm}{-2em}
+
+\newlength{\hlessmmmm}
+\setlength{\hlessmmmm}{\textwidth}
+\addtolength{\hlessmmmm}{-4em}
+% ----------------
+% ``TIGHTLIST'' ENVIRONMENT (no para space betwee items, small indent)
+\newenvironment{tightlist}%
+{\begin{list}{$\bullet$}{%
+    \setlength{\topsep}{0in}
+    \setlength{\partopsep}{0in}
+    \setlength{\itemsep}{0in}
+    \setlength{\parsep}{0in}
+    \setlength{\leftmargin}{1.5em}
+    \setlength{\rightmargin}{0in}
+    \setlength{\itemindent}{0in}
+}
+}%
+{\end{list}
+}
+% ----------------
+% CODE FONT (e.g. {\cf x := 0}).
+\newcommand{\cf}{\footnotesize\tt}
+% ----------------
+% INSTRUCTION POINTER
+\newcommand{\IP}{$\bullet$}
+\newcommand{\goesto}{$\longrightarrow$}
+% ----------------------------------------------------------------
+% LISP CODE DISPLAYS.
+% Lisp code displays are enclosed between \bid and \eid.
+% Most characters are taken verbatim, in typewriter font,
+% Except:
+%  Commands are still available (beginning with \)
+%  Math mode is still available (beginning with $)
+
+\outer\def\beginlisp{%
+  \begin{list}{$\bullet$}{%
+    \setlength{\topsep}{0in}
+    \setlength{\partopsep}{0in}
+    \setlength{\itemsep}{0in}
+    \setlength{\parsep}{0in}
+    \setlength{\leftmargin}{1.5em}
+    \setlength{\rightmargin}{0in}
+    \setlength{\itemindent}{0in}
+  }\item[]
+  \obeyspaces
+  \obeylines \footnotesize\tt}
+
+\outer\def\endlisp{%
+  \end{list}
+  }
+
+{\obeyspaces\gdef {\ }}
+
+% ----------------
+% ILLUSTRATIONS
+% This command should specify a NEWT directory for ps files for illustrations.
+\def\psfileprefix{/usr/nikhil/parle/}
+\def\illustration#1#2{
+\vbox to #2{\vfill\special{psfile=\psfileprefix#1.ps hoffset=-72 voffset=-45}}} 
+
+% \illuswidth is used to set up boxes around illustrations.
+\newlength{\illuswidth}
+\setlength{\illuswidth}{\textwidth}
+\addtolength{\illuswidth}{-7pt}
+
+% ----------------------------------------------------------------
+% HERE BEGINS THE DOCUMENT
+
+\begin{document}
+
+\begin{center}
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY \\
+Department of Electrical Engineering and Computer Science \\
+6.001: Structure and Interpretation of Computer Programs \\
+Fall Semester 1989
+
+\vspace{0.5cm}
+
+{\large\bf Notes on Parallel Computation}
+
+November 28, 1989
+
+\end{center}
+
+% ----------------------------------------------------------------
+
+\section{Introduction}
+
+These notes are a supplement to the textbook: ``Structure and
+Interpretation of Computer Programs'' (Abelson and Sussman, MIT Press,
+1985).  The textbook presents sequential computing models exclusively.
+These notes generalize the Scheme language and its interpretation to
+include parallel models.  The material here is based heavily on the
+textbook--- in particular, the ``explicit-control evaluator'' of
+Section 5.2.
+
+Why is parallelism important?  There are many computational problems
+in diverse fields that are infeasible on the fastest computers
+available today because the machines are simply too slow.  Examples
+include: weather prediction, simulating the aerodynamics of a new
+automobile, seismic prediction, high-speed bank-card transaction
+processing, etc.  In the past, computers have become faster because of
+improved circuit technology (raw speed and miniaturization) and
+architectural and compiler-based innovations (pipelining, vector
+processing, RISC).  However, such advances are unlikely to produce
+improvements in the required orders-of-magnitude range.  The most
+promising solution is parallelism, i.e., instead of speeding up a
+single machine, replicate it, and get the ensemble to {\em
+cooperate\/} in solving a problem by solving pieces of it.
+
+There is very little consensus about the architectures and languages
+needed to achieve this goal--- it is a rich area of research.  Here,
+we will study the topic at a very general and abstract level.  We will
+study some parallel versions of Scheme and some parallel evaluators
+that are based on the ``Explicit-Control Evaluator'' of the textbook
+(Section 5.2).
+
+% ----------------------------------------------------------------
+
+\section{Sources of parallelism}
+
+Parallelism in programs can be viewed at two levels:
+\begin{tightlist}
+
+\item At the {\em algorithmic\/} level, i.e., independent of machines, and
+
+\item At the {\em operational\/} level, i.e., the way an interpreter
+exploits the parallelism inherent in an algorithm.
+
+\end{tightlist}
+
+Typically, we first try to choose an algorithm that has an
+intrinsically high degree of parallelism, and then we try to execute
+it in such a way that none of this parallelism is wasted.
+
+\subsection{Algorithmic sources of parallelism in programs}
+
+Consider the following two algorithms for computing the factorial of a
+number $n$:
+\begin{description}
+
+\item[{\em Algorithm 1:\/}] \mbox{}
+\begin{tightlist}
+\item If $n=1$, the answer is 1.
+\item If $n>1$, the answer is $n \times {\it factorial}(n-1)$.
+\end{tightlist}
+
+\item[{\em Algorithm 2:\/}] \mbox{} \\
+The answer is ${\it product}(1,n)$, where the algorithm to compute ${\it
+product}(l,m)$ is:
+\begin{tightlist}
+\item If $l=m$, the answer is $m$.
+\item If $l+1=m$, the answer is $l \times m$.
+\item If $l+1 < m$, the answer is ${\it product}(l,j) \times {\it
+product}(j+1,m)$, where $j = \left\lfloor (l+m)/2 \right\rfloor$.
+\end{tightlist}
+
+\end{description}
+In Algorithm 1, we set up a linear chain of $n$ multiplications that
+must be done one after the other, so that it must take $O(n)$ time.
+
+In Algorithm 2, we use a divide-and-conquer strategy.  To find the factorial
+of 8, for example, we independently find the product of 1 through 4 and the
+product of 5 through 8, and then multiply them together.  And, recursively,
+to find the product of 1 through 4, we independently find the product of 1
+through 2 and the product of 3 through 4, and then multiply them together.
+Thus, we set up a {\em tree\/} of multiplications instead of a linear chain,
+and it is possible to compute the factorial in $O(\log n)$ time.
+
+The lesson: for the same mathematical function, the choice of algorithm can
+have a dramatic effect on available parallelism.
+
+Of course, the amount of parallelism also depends on the data.  In
+Algorithm 2, for example, the amount of parallelism depends on the
+value of $n$.  However, the choice of data is not always under our
+control.
+
+The holy grail of parallel processing is ``linear speedup'', i.e.,
+double the size of the machine (number of processors and memories),
+to get double the speed.  Unfortunately, this is, in general,
+unachievable.  First, as described above, the structure of the program
+itself will always place a theoretical limit on how much parallelism
+is available to be exploited.  Second, a larger machine must be
+physically larger, and it will always take finite time to transport
+data from one part of a machine to another, and this time spent is an
+overhead that we can try to minimize, but never eliminate.  Finally,
+there are serious difficulties in marshalling and managing many
+parallel activities--- as anyone who has ever tried to manage a large
+and unruly organization will appreciate, it is very difficult to keep
+all processors busy doing useful work all the time!
+
+% ----------------------------------------------------------------
+
+\subsection{Operational sources of parallelism in programs}
+
+Once we have chosen a particular algorithm, there are still many
+sources of parallelism in our choice of execution mechanisms.  The
+particular source that we will examine is the {\em parallel evaluation
+of sub-expressions in a combination} .
+
+Consider Algorithm 2 expressed in Scheme:
+\beginlisp
+(define (factorial n)
+  (define (product l m)
+     (cond
+      ((= l m) m)
+      ((= (+ l 1) m) (* l m))
+      (else (let ((j (middle l m)))
+              (* (product l j)
+                 (product (+ j 1) m))))))
+  (product 1 n))
+\endlisp
+
+When run on a conventional Scheme interpreter, it will still take
+$O(n)$ time because the implementation picks a particular sequential
+order in which to compute the arguments of a combination, so that the
+two recursive products are computed sequentially.  However an
+unconventional, parallel Scheme interpreter may evaluate them in
+parallel, thus finishing in $O(\log n)$ time.  In other words, an {\em
+implementation\/} may or may not exploit the parallelism available in
+a program.  In these notes, we shall study two unconventional,
+parallel Scheme implementations.
+
+% ----------------------------------------------------------------
+
+\section{Parallelism and side effects: a dangerous mix!}
+
+\label{side-effects}
+
+Even in sequential programs, we have seen that side-effects can complicate
+the clarity of a program.  In parallel programs, things get much worse.  For
+example, suppose we wanted to write an ``instrumented'' version of a function
+that, in addition to doing its usual thing, also recorded every argument it
+was called with.  Here is an instrumented ``identity'' function, and some
+uses of it:
+
+\beginlisp
+==> (define L '())
+{\em ()}
+\null
+==> (define id (lambda (x)
+       (set! L (cons x L))
+       x))
+{\em F}
+\null
+==> (+ (id 10) (id 20))
+{\em 30}
+\null
+==> L
+{\em ?}
+\endlisp
+
+What answer should we get on the last line? In sequential Scheme,
+since the order of evaluation of arguments in a combination is not
+specified, we do not know which of the expressions
+\mbox{\cf (id 10)} and \mbox{\cf (id 20)} will be evaluated first.  Thus, we
+could get either of these two answers:
+
+\beginlisp
+{\em (10 20)}        {\rm or}        {\em (20 10)}
+\endlisp
+ This program is said to be {\em indeterminate\/}, because the same program,
+when run on two different sequential Scheme implementations, may produce
+different results.\footnote{
+ Some indeterminacy is in the eye of the
+beholder.  If {\cf L} is regarded as an {\em unordered set\/}, then
+\mbox{\em (10 20)} and {\em (20 10)} are ``the same'', and the program is determinate. }
+
+In parallel Scheme this indeterminacy is possible even on a single
+implementation because different schedules may be followed on
+different runs of the same program.  In fact, it gets worse, because
+it is now possible to get results that were impossible in any
+sequential implementation.  Let us focus on the expression:
+\beginlisp
+       (set! L (cons x L))))
+\endlisp
+ Recall the evaluation rules for {\cf set!}.  The schedule of events is:
+\beginlisp
+    ...
+    {\em Evaluate\/} (cons x L)
+    {\em Update binding for\/} {\cf L}
+    ...
+\endlisp
+Now, since there are two concurrent evaluations of {\cf id}, it is possible that
+their activities get interleaved as follows:
+\begin{center}\footnotesize
+\begin{tabular}{l|l}
+Activity for {\cf (id 10)}          &    Activity for {\cf (id 20)} \\
+\hline
+...                                &    \\
+{\em Evaluate\/} {\cf (cons 10 L)}  &    ... \\
+                                   &    {\em Evaluate\/} {\cf (cons 20 L)} \\
+{\em Update binding for\/} {\cf L} &    ... \\
+...                                &    {\em Update binding for\/} {\cf L}
+\end{tabular}
+\end{center}
+Here, each ``{\em evaluate\/}'' step finds the value of {\cf L} to be
+{\cf '()}.  The {\cf cons}'es thus produce {\cf (10)} and {\cf (20)},
+respectively.  Assuming the {\em update\/} activities go in the order shown,
+the final result is
+\beginlisp
+{\em (20)}
+\endlisp
+Similarly, we could also have got the result: {\cf\em (10)}.  {\em Neither
+result is possible in a sequential implementation!\/}
+
+This situation is called a {\em race\/}, i.e., one activity races to
+perform an update before another activity reads it.  For correct
+execution of the above program, we want the {\em evaluate\/} and {\em
+update binding\/} parts of a {\cf set!} to execute {\em atomically\/},
+i.e., as one, indivisible event.  We merely alert the reader to this
+subtlety at this point; we will return to this issue later in Section
+\ref{side-effects-redux}.  For the moment, we will temporarily banish
+side-effects from our language--- no {\cf set!}, {\cf set-car!} or
+{\cf set-cdr!}.
+
+% ----------------------------------------------------------------
+
+\section{From individual to multiple processes}
+
+\subsection{The state of a process}
+
+We are going to extend the sequential explicit-control evaluator
+described in the textbook.  That evaluator can be regarded as
+implementing a single {\em process\/}.  The state of a process is
+captured by four things:
+
+ \begin{tightlist}
+
+ \item a code sequence, and
+
+ \item a set of seven registers ({\cf exp}, {\cf env}, {\cf val}, {\cf fun},
+{\cf unev}, {\cf argl} and {\cf continue});
+
+ \item a stack;
+
+ \item a memory (also called a {\em heap\/}) containing
+objects such as cons-cells and procedure objects.
+
+ \end{tightlist}
+ The registers may refer to objects in memory.  At
+each step, we execute the first instruction in the code sequence,
+resulting in a new state for the process.\footnote{ In the literature, one can also
+find the terms {\em thread\/}, {\em task\/}, {\em
+instruction-stream\/}, etc. to describe processes.  }
+
+In order to generalize this to multiple processes, we are going to
+replicate the first three components of the state for each process,
+i.e., each process has its own code sequence, registers and stack.
+All processes share a single heap memory.\footnote{ Thus, our model of
+the machine is a so-called ``shared memory'' model.  We emphasize that
+this is only an abstract view.  Do not be misled into thinking that
+this must be implemented as a single physical memory module.  }
+
+In fact, to simplify matters, we are going to represent the code
+sequence and the stack also using registers.  We introduce two new
+registers: {\cf pc} (for ``program-counter'') to contain the code
+sequence, and {\cf stack} to contain the stack.  The stack can be
+regarded merely as a list of items.  So that the stack itself can also
+be stored in the heap memory.
+
+Thus, each {\em process\/} is just a set of nine registers.
+
+\subsection{Processes {\em vs.\/} Processors}
+
+The number of processes for a computation can be arbitrarily large,
+depending on the parallelism available in the computation.  However,
+any real machine will only have a fixed number of {\em processors\/}.
+In practice, therefore, we need some mechanism to multiplex the given
+processors over the given processes.  The details are beyond the scope
+of these notes--- here, we will only look at the process abstraction.
+
+\subsection{Creating a process}
+
+Every program begins exection as a single, ``primordial'' process.  As
+it executes, it may create more processes, each of which, in turn, may
+create still more processes, etc.  We say that one process can
+``fork'' a new process.
+
+\subsubsection{The primordial process}
+
+The primordial process is initialized as follows:
+
+ \begin{tightlist}
+
+ \item {\cf Exp} register: the top-level expression $e$.
+
+ \item {\cf Env} register: the global environment.
+
+ \item {\cf Stack} register: the empty stack.
+
+ \item {\cf Pc} register: the first instruction in the controller code.
+
+ \end{tightlist}
+
+The start of the controller code looks like this:
+\beginlisp
+  (assign continue RECORD-RESULT)
+  (goto EVAL-DISPATCH)
+\null
+RECORD-RESULT
+  (record-value (fetch val))
+  (stop)
+\endlisp
+i.e., it will evaluate the expression, record the result, and stop.
+
+\subsubsection{Forking a process}
+
+A process P may fork a new process Q by executing the following instruction:
+\beginlisp
+(fork {\em label\/} {\em new-stack\/})
+\endlisp
+ A new set of nine registers for Q are created and initialized thus:
+ \begin{tightlist}
+ \item {\cf Pc} register: code sequence beginning at {\cf\em label}.
+
+ \item {\cf Stack} register: {\em new-stack\/}
+ \end{tightlist}
+ We often refer to P as the ``parent'' process and Q as its ``child''.
+
+For example, suppose P wants to fork Q with the following mission: Q
+should evaluate the expression \mbox{\cf (f x)} in the environment
+which is currently in P's {\cf env} register, print the result and
+stop.  P executes the following code:
+
+\beginlisp
+  (assign val (cons (fetch env) '()))
+  (assign val (cons '(f x) (fetch val)))
+  (fork EVAL-PRINT-AND-DIE (fetch val))
+\endlisp
+ P first builds Q's initial stack in its own {\cf val} register,
+containing the expression {\cf (f x)} and the environment.  It then
+forks Q which will begin operation at label {\cf EVAL-PRINT-AND-DIE},
+with that stack.  Then, P can go on to do other things (beyond the
+{\cf fork} instruction).
+
+Meanwhile, Q begins execution as follows:
+\beginlisp
+EVAL-PRINT-AND-DIE
+  (restore exp)
+  (restore env)
+  (assign continue PRINT-AND-DIE)
+  (goto EVAL-DISPATCH)
+\null
+PRINT-AND-DIE
+  (perform (print (fetch val)))
+  (stop)
+\endlisp
+i.e., it sets up the contract for {\cf EVAL-DISPATCH} by setting up
+the {\cf exp}, {\cf env} and {\cf continue} registers and going there.
+Thus, when {\cf EVAL-DISPATCH} has done its thing, Q reaches label
+{\cf PRINT-AND-DIE} with the value in the {\cf val} register.  Here,
+it prints the value and executes the {\cf stop} instruction that kills
+the process.
+
+\subsection{Terminating a process and the {\tt join} instruction}
+
+One way for a process to terminate is simply to execute a {\cf stop}
+instruction.  Another way is to use a new instruction called {\cf
+join}.
+
+Let {\em cell\/} be a cons-cell in memory whose CAR is initialized to
+an integer N.  Now suppose a process executes:
+\beginlisp
+  (join {\em cell\/})
+\endlisp
+ The effect of this instruction is first to decrement the integer in
+the CAR of the cell, i.e., read it out, decrement it, and store it
+back using SET-CAR!.  Then, if the value is now zero, the process
+continues at the next instruction--- otherwise, it dies.
+
+We call the {\em cell} containing N a ``join counter''.
+
+We can use the {\cf join} instruction to bring together N processes
+into a single process.  We create a new cell containing N, and then
+fork off N processes, passing the cell to each one via its stack.
+Each process, after doing its work, executes a {\cf join} instruction
+on this cell.  The first N-1 processes to do so will die.  Only the
+last one will continue beyond the {\cf join} instruction.
+
+\subsection{Steps, critical paths, and parallelism profiles}
+
+When we execute an instruction in a particular process, the process
+may continue (usual case), die ({\cf stop} and {\cf join}
+instructions) or continue and create new processes ({\cf fork}
+instruction).
+
+Our overall view of execution is this.  We initialize the machine with
+the primordial process.  Then, we repeatedly conduct a {\em step\/}.
+At step $j$, let $S_j$ be the set of processes that are alive.  We
+execute {\em one\/} instruction in each of these processes.  For each
+such instruction executed, we will put the resulting zero, one or two
+processes into a new set $S_{j+1}$.
+
+As we repeatedly perform steps, the number of processes can grow and
+shrink--- some terminate, some do ordinary instructions, some fork new
+processes.  At some time $n$, all processes will have terminated
+(unless, of course, the program has an infinite loop).  At this time,
+we say that the entire program has terminated.  We call $n$ the {\em
+critical path\/} of the program, i.e., it is the shortest time
+necessary to execute this program.
+
+We can draw a graph that plots $\left| S_j \right|$ (the number of
+processes alive at time step $j$) versus $j$.  This is called the {\em
+parallelism profile\/} of the program, i.e., it tells us, for each
+time step $j$, how many things could be done in parallel for that
+program.
+
+Note: this is an idealization of a parallel machine because it assumes:
+ \begin{itemize}
+ \item We can execute an instruction in every process at each step
+
+ \item Each instruction takes the same time to execute (one step)
+\end{itemize}
+ Neither assumption is realistic, but this idealization
+is sufficient to start build up our intuitions about parallelism.
+
+% ----------------------------------------------------------------
+
+\section{A Parallel Explicit-Control Evaluator (Strict)}
+
+\label{strict-eval}
+
+We now have enough mechanisms to specify a parallel evaluator for Scheme.  The
+objective in this section is to design the controller code so that it has
+the following behavior.  It will have the usual {\cf EVAL-DISPATCH} code,
+performing the usual evaluation of expressions, {\em except\/} when it
+encounters a combination:
+\beginlisp
+(e1 ... eN)
+\endlisp
+
+ At this point, it will fork N-1 new processes.  The parent process
+and these child processes are each responsible for evaluating one of
+the components of the application.  When done, they all synchronize
+using the {\cf join} instruction.  The single surviving process goes
+on to {\cf APPLY-DISPATCH} to apply the procedure value to the
+argument values.
+
+Thus, the change from the sequential evaluator is in the section of
+controller code beginning at label {\cf EV-APPLICATION} and ending at
+{\cf APPLY-DISPATCH}.
+
+When a process arrives at {\cf EV-APPLICATION}, its state is this:
+ \begin{tightlist}
+ \item {\cf exp}: a combination {\cf (e1 e2 ... eN)}
+
+ \item {\cf env}: an environment
+
+ \item {\cf continue}: a label L to go to after the value has been
+computed and stored in the {\cf val} register.
+
+ \end{tightlist}
+
+The N processes that we set up will all get the following information
+in common (in their stacks):
+ \begin{tightlist}
+ \item The label L
+ \item A new structure {\cf (e1 eN ... e3 e2)} to be used for {\cf fun} and {\cf argl}
+when we get to APPLY-DISPATCH.  We will call this an ``item list''.
+ \item A join counter {\cf (N)}
+ \item The environment from the {\cf env} register.
+ \end{tightlist}
+
+In addition, each process also gets a reference to one of the cells in
+the item list.  The process is responsible for evaluating the
+expression in the CAR of the cell and replacing the CAR by its value.
+Thus, when all N processes {\cf join} together again, the surviving
+process can be assured that the item list now contains
+ \beginlisp
+    (v1 vN ... v3 v2)
+ \endlisp
+
+It can then place {\cf v1} into {\cf fun} and \mbox{\cf (vN ... v2)}
+into {\cf argl}, and it is now ready for {\cf APPLY-DISPATCH}.
+
+Let us look at the code to achieve this.
+
+\beginlisp
+EV-APPLICATION
+  (save continue)
+\null
+;;; Build an item-list: ARGL:(e1 eN ... e2); and VAL:N
+  (assign unev (cdr (fetch exp)))    ; UNEV: (e2 ... eN)
+  (assign fun (car (fetch exp)))     ; FUN: e1
+  (assign val 1)
+  (assign argl '())                  ; ARGL: ()
+\null
+BUILD-ITEM-LIST-LOOP
+  (branch (null? (fetch unev)) ITEM-LIST-LOOP-DONE)
+  (assign val (+ 1 (fetch val)))                 ; VAL: j
+  (assign exp (car (fetch unev)))                ; EXP: ej
+  (assign unev (cdr (fetch unev)))               ; UNEV: (ej+1 ... eN)
+  (assign argl (cons (fetch exp) (fetch argl)))  ; ARGL: (ej ... e2)
+  (goto BUILD-ITEM-LIST-LOOP)
+\endlisp
+
+At this point, {\cf fun} contains {\cf e1}, {\cf argl} contains
+\mbox{\cf (eN ... e2)}, and {\cf val} contains N.  We can now put
+together the common information for all the N processes.
+
+\beginlisp
+ITEM-LIST-LOOP-DONE
+  (assign argl (cons (fetch fun) (fetch argl))) ; ARGL: (e1 eN ... e2)
+  (assign val (cons (fetch val) '()))           ; VAL: (N)
+  (save argl)
+  (save val)
+  (save env)
+\endlisp
+
+Now, the {\cf stack} contains the environment, the join counter {\cf
+(N)}, the itemlist \mbox{\cf (e1 eN ... e2)} and the continuation
+label L.  We are ready to fork N-1 processes to {\cf EVAL-APP-ITEM},
+after which this process itself goes to {\cf EVAL-APP-ITEM} to
+evaluate the last item.
+
+\beginlisp
+FORK-LOOP
+  (save argl)
+  (assign argl  (cdr (fetch argl)))
+; Now: STACK: (x y ...),E,(N),(e1 eN ... e2),L,...
+;      ARGL:    (y ...)
+  (branch (null? (fetch argl)) EVAL-APP-ITEM)
+  (fork EVAL-APP-ITEM (fetch stack))      ; Applic-item evaluation forked
+\null
+  (restore exp)                           ; discard (x y ... )
+  (goto FORK-LOOP)
+\endlisp
+
+Each of the N processes evaluating an application item begins here.
+\beginlisp
+;;; Assume: STACK: (ei ...),Env,(N),(e1 eN ... e2),L
+;;; Effect: VAL:eval(ei, Env); PC: SET-VALUE; STACK: (N),(e1 eN ... e2),L
+\null
+EVAL-APP-ITEM
+  (restore exp)
+  (restore env)
+  (save exp)                       ; STACK: (ei ...),(N),(e1 ... e2),L
+  (assign exp (car (fetch exp)))   ; EXP: ei
+  (assign continue SET-VALUE)
+  (goto EVAL-DISPATCH)
+\endlisp
+ After evaluation, we return to {\cf SET-VALUE}.
+
+\beginlisp
+;;; Assume: VAL: vi  STACK: (ei ...),(N),(e1 eN ... e2),L,...
+;;; Effect: Replace ei by vi in argl-cell at top of stack, pop stack.
+;;;         Decrement arg-count (N) in frame. If not 0, stop.
+;;;         Else go on towards APPLY-DISPATCH
+SET-VALUE
+  (restore exp)                                  ; (ei ... )
+  (perform (set-car! (fetch exp) (fetch val)))
+  (restore exp)                                  ; (N)
+  (join (fetch exp))                             ; die if not last
+\endlisp
+Only one of the N processes survives this last {\cf join}.
+\beginlisp
+;;; Assume: STACK: (v1 vN ... v2), continuation, ...
+\null
+  (restore argl)
+  (assign fun (car (fetch argl)))
+  (assign argl (cdr (fetch argl)))
+  (goto APPLY-DISPATCH)
+\endlisp
+
+\subsection{Conclusion}
+
+In moving to a parallel evaluator, all we needed were two new
+instructions--- {\cf fork} and {\cf join}.  The only part of the code
+that we had to change was the {\cf EV-APPLICATION} section, upto {\cf
+APPLY-DISPATCH}.
+
+% ----------------------------------------------------------------
+
+\section{Strictness and Non-strictness}
+
+\label{non-strictness}
+
+\subsection{Evaluating arguments and procedure bodies in parallel}
+
+Consider the following program:
+\beginlisp
+(define (f x y) (+ (sqrt x) y))
+\null
+(f 23 (sqrt 49))
+\endlisp
+
+ Our current evaluator (in Section \ref{strict-eval}) evaluates {\cf
+f}, {\cf 23} and \mbox{\cf (sqrt 49)} in parallel.  Then, it invokes
+the function (value of {\cf f}), which evaluates {\cf +}, \mbox{\cf
+(sqrt 23)} and {\cf 7} in parallel, and finally does the application
+and returns the sum.  Thus, the total time for the program will be at
+least the sum of the times for the two {\cf sqrt} computations.
+
+Similarly, consider this program:
+\beginlisp
+(define (g x y)
+    (if (> x 0)
+        x
+        y))
+\null
+(g 23 (sqrt 49))
+\endlisp
+
+ Our current evaluator evaluates {\cf g}, {\cf 23} and \mbox{\cf (sqrt
+49)} in parallel.  Then, it invokes the function, which will return
+the value of {\cf x} (i.e., 23), discarding the value of {\cf y}.
+Thus, the total time includes the time for the {\cf sqrt} computation,
+{\em even though it was not needed for the result\/}.
+
+In both cases, if we could evaluate the function body without waiting
+for the argument values to be ready, we could return the answer in
+much less time.  In the first example, the two {\cf sqrt} computations
+would overlap in time.  In the second example, the time for the {\cf
+sqrt} computation is irrelevant--- the answer can be produced much
+sooner.
+
+In our current evaluator, the evaluation of a combination (i.e.,
+application) cannot return a value until {\em all\/} the arguments
+have been evaluated, even if the procedure ignores some or all of
+them.  We call this behavior ``{\em strict\/}''.  We implemented this
+behavior using the {\cf join} instruction.
+
+We will soon study another parallel evaluator in which the evaluation
+of a combination can return a value even if some of the arguments have
+not been evaluated yet.  We call this behavior ``{\em non-strict\/}''.
+
+The non-strict evaluation of {\cf g} also illustrates some other
+points.  First, the notions of
+
+\begin{tightlist}
+ \item ``the machine has returned an answer'', and
+ \item ``the machine has terminated''
+\end{tightlist}
+ are not necessarily synonymous.  This is because, even though we may
+return the value 23 early, the process responsible for \mbox{\cf (sqrt
+49)} may still be active.
+
+This leads us to the second point, which is that we may have a
+``resource-management'' problem, in that we have wasted some
+processes on a useless computation.  Of course, this is no worse
+than in a strict evaluator, where, also, we would have done the {\cf
+sqrt} computation anyway.
+
+The advantages of non-strictness become dramatic when we consider data
+structures.  In particular, to evaluate the expression:
+\beginlisp
+(cons e1 e2)
+\endlisp
+
+ we assume that we can allocate and return a cons cell immediately,
+without knowing the values of {\cf e1} and {\cf e2}.  We would have
+forked off two concurrent processes that are busy evaluating {\cf e1}
+and {\cf e2} and will store their results in the cons cell when they
+are done but, in the meanwhile, we can return the pointer to the cons
+cell immediately.  It is only when we try to read the {\cf car} or the
+{\cf cdr} of the cell that we really need to know the values of {\cf
+e1} or {\cf e2}.  (The astute reader may see a connection here with
+streams, {\cf FORCE}, {\cf DELAY}, etc.  Yes!  The connection is
+deep--- we'll explore this issue in more detail later in this
+Section.)
+
+Let us explore the implication of non-strict conses further.  Consider:
+\beginlisp
+(cons$_1$ 10 (cons$_2$ 20 (cons$_3$ 30 nil)))
+\endlisp
+ where we have subscripted the {\cf cons}'es for reference.  The
+process (say, P1) sees the outermost application first, and we soon have
+three processes (P1, P2 and P3) evaluating {\cf cons$_1$}, {\cf 10} and {\cf
+(cons$_2$ ...)} in parallel. As soon as {\cf cons$_1$} has evaluated to the
+cons procedure, P1 applies it, which allocates and return the first cons cell
+immediately.  Meanwhile, P2 evaluates {\cf 10} and stores it into the car
+field.  And, meanwhile, P3 has forked two more processes P3.1 and P3.2, and
+the three of them are working on {\cf cons$_2$}, {\cf 20} and {\cf (cons$_3$
+...)}, respectively.  Again, P3 can allocate the second cons and store its
+pointer into the cdr field of the first cons immediately; and so on ...
+
+Thus, the conses for the list are allocated ``from the roof down'':
+cell$_1$, then cell$_2$, then cell$_3$.  Contrast this with our a
+strict evaluator, where the conses get ``from the ground up'':
+cell$_3$, then cell$_2$, and finally cell$_1$.
+
+However, this non-strictness introduces a new synchronization
+requirement--- since we can return a pointer to a cons cell whose
+components are still ``empty'', we must be careful that we do not try
+to read those component until they are ``full''.  Consider:
+\beginlisp
+(car (cons (sqrt 49) nil))
+\endlisp
+ The process for {\cf car} (say, P1) may receive a pointer to the cons
+cell before the process for {\cf (sqrt 49)} (say, P2) has stored 7 in
+the car field.  P1 must somehow {\em wait\/} until the car field is no
+longer empty, i.e., until P2 has stored the value.
+
+Now, let us look at a more significant example.
+Given the usual definition of {\cf mapcar}:
+\beginlisp
+(define (mapcar proc lst)
+  (if (null? lst)
+      nil
+      (cons (proc (car lst))
+            (mapcar proc (cdr lst)))))
+\endlisp
+let us assume that the following computation:
+\beginlisp
+==> (mapcar square '(1 2 3 4))
+\null
+{\em (1 4 9 16)}
+\endlisp
+takes a certain time $T$.  Now, consider:
+\beginlisp
+==> (mapcar$_1$ square (mapcar$_2$ square '(1 2 3 4)))
+\null
+{\em (1 16 81 256)}
+\endlisp
+ In our strict evaluator, {\cf mapcar$_1$} cannot proceed until {\cf
+mapcar$_2$} has returned the entire list {\cf (1 4 9 16)}.  It then goes to
+work, and returns the final result.  Thus, the total time taken will be at least
+$2T$. 
+
+In a non-strict evaluator, {\cf mapcar$_2$} can return its first cons
+cell immediately to {\cf mapcar$_1$}, which, in turn, can then return
+its first cons cell--- the first cons cell of the result---
+immediately ({\cf mapcar$_1$} must wait for this in order to know
+whether to return a cons cell or {\cf nil}). Similarly, as soon as
+{\cf mapcar$_2$} has produced its second cons cell, {\cf mapcar$_1$}
+can produce its second cons cell, and so on.  As soon as {\cf square}
+inside {\cf mapcar$_2$} has placed 9 in its target cons cell, the {\cf
+square} in {\cf mapcar$_1$} can read it and place 81 into its target
+cons cell.  Thus, the two {\cf mapcar} computations can overlap in
+time, behaving in a ``pipelined'', or ``producer-consumer'' manner.
+The total computation time, thus, can be much less thatn $2T$;
+ideally, it will be close to $T$.
+
+Non-strict computations thus have the property that they compose well
+for parallelism.  If $f(x)$ and $g(x)$ take times $T_f$ and $T_g$,
+respectively, the computation $f(g(x))$, instead of taking $T_f+T_g$,
+may take as little as $\max (T_f,T_g)$.
+
+\subsection{Non-strict programs}
+
+\label{normal-order-connection}
+
+Non-strict evaluation allows us to express certain computations that we could
+not have expressed otherwise.  Let us start with a simple (if useless,
+perhaps) example:
+\beginlisp
+(let ()
+  (define x (cons 23 (1+ (car x))))
+  x)
+\endlisp
+In a strict evaluator, we first try to evaluate {\cf (cons 23 (1+ (car x)))},
+which soon tries to evaluate {\cf x}.  But {\cf x} is not bound yet, so the
+program is in error.
+
+In a non-strict evaluator, the {\cf cons} can immediately
+return a cons cell to be bound to {\cf x}; 23 is evaluated and stored in the
+car field; so, {\cf (car x)} can then read this and return 23, and, soon, 24
+is stored in the cdr field.  We thus get the answer:
+\beginlisp
+(23 . 24)
+\endlisp
+
+This is a simple example of a data structure defined in terms of itself
+(i.e., recursively).  We could not do this in a strict evaluator; there, we
+could define something recursively only if the recursive reference is
+protected by a {\cf lambda}.  Basically, we rely on the fact that when we
+evaluate a {\cf lambda} form, we do not look inside it, and so we don't try
+to evaluate the recursive reference.  In a non-strict evaluator, we do not
+have this arbitrary restriction--- anything, including data structures, can
+be defined recursively.
+
+Previously, we encountered this ability to define data structures
+recursively when we studied delayed evaluation and streams.  In fact,
+a normal-order evaluator is another way to achieve exactly the same
+abstract idea of non-strictness.
+
+Suppose we have a program where we say {\cf (DELAY $e$)}, producing an
+object $d$ which we later examine by saying {\cf (FORCE $d$)}.  There
+is {\em nothing in the program that indicates exactly when $e$ gets
+evaluated!\/} It could have happened at {\em any\/} time after the
+{\cf DELAY} and before the {\cf FORCE}--- in particular, it could have
+happened in parallel with the rest of the program.  Thus,
+non-strictness is an abstract property of programs (i.e., it is a
+``denotational'' property), whereas normal-order and parallel
+evaluation are properties of implementations (i.e., they are
+``operational'' properties).
+
+The difference between a normal-order evaluator and a parallel
+evaluator can be viewed as representing different choices as to when
+the execution of a particular expression is scheduled.  In the former,
+it is scheduled only when demanded, whereas in the latter, it is
+scheduled to execute in parallel with other activities.
+
+A hallmark of non-strict evaluators is that they will always have some
+place where they ``wait if empty''.  This is exactly the
+synchronization requirement we referred to above, when we said that
+the {\cf car} function must wait until the car of a cons-cell is full.
+In the (memo-ized) implementation of {\cf FORCE}, we test to see if
+the expression has already been evaluated or not.  In a parallel
+non-strict evaluator, we have seen that the {\cf car} function must
+wait until the car field of the cons cell has been filled in by a
+concurrent process, i.e., we need some way of distinguishing ``empty''
+from ``full'', or ``not yet evaluated'' from ``evaluated''.  And, we
+will see in Section \ref{non-strict-eceval}, a parallel non-strict
+evaluator will also have to wait on empty slots in environment frames.
+
+Given these connections between {\cf FORCE}/{\cf DELAY}/streams and
+parallel, non-strict evaluation, it is not surprising that
+side-effects are a major problem in both cases.  In fact, it is the
+same problem!  To understand the behavior of side-effects, it is
+crucial to know the {\em order\/} in which they get done.  In any
+non-strict evaluator, it is very difficult to predict the order in
+which things get done.
+
+% ----------------------------------------------------------------
+
+\section{Waiting until an empty cell becomes full}
+
+How do we implement non-strictness? We begin by addressing the central
+problem: How do we implement the ``wait if empty'' action?
+
+\subsection{I-structure Cells}
+
+We introduce a new kind of object called an ``I-structure cell'', or I-cell,
+for short.  An I-structure cell can viewed as a storage location for a value,
+accompanied by a status flag that is either {\cf FULL} or {\cf EMPTY}.
+
+To create an I-cell, we have a new machine operation:
+\beginlisp
+(make-I-cell)
+\endlisp
+The new I-cell has {\cf EMPTY} status.
+
+To store a value into an I-cell, the machine executes the instruction:
+\beginlisp
+(set-I-cell! <I-cell> <value>)
+\endlisp
+
+To fetch a value from an I-cell into a particular register, the machine
+executes the instruction:
+\beginlisp
+(get-I-cell <register> <I-cell>)
+\endlisp
+
+This looks like an ordinary storage cell, but the difference is this.
+When a process executes the {\cf get-I-cell} instruction on an {\cf
+EMPTY} I-cell, it simply waits until the I-cell becomes {\cf FULL},
+i.e., it does not proceed beyond this instruction until the I-cell
+becomes {\cf FULL}.  When a process executes the {\cf set-I-cell!}
+instruction, it writes a value there, and sets the status to {\cf
+FULL}, thus releasing any other processes that may be waiting there.
+
+\subsection{Implementation of I-structure Cells}
+
+A possible implementation for an I-structure cell is this:
+\beginlisp
+(define (make-I-cell) (cons 'I-cell (cons 'empty '())))
+\null
+(define (is-I-cell? x) (has-type? x 'I-cell))
+\endlisp
+The flag can be tested and set:
+\beginlisp
+(define (I-cell-flag-set? I-cell) (eq? (cadr I-cell) 'full))
+\null
+(define (set-I-cell-flag! I-cell) (set-car! (cdr I-cell) 'full))
+\endlisp
+
+When the cell is FULL, the CDDR contains the value:
+\beginlisp
+(define (I-cell-value I-cell) (cddr I-cell))
+\null
+(define (set-I-cell-value! I-cell v)
+  (set-cdr! (cdr I-cell) v))
+\endlisp
+
+The question now is: how to implement the notion of a process waiting
+on a cell while it is empty?  Let us assume that a reference to the
+I-cell is in the {\cf exp} register, and we want the value from the
+I-cell to be loaded into the {\cf val} register.
+Then, one possibility is to treat the instruction:
+\beginlisp
+(get-I-cell val (fetch exp))
+\endlisp
+as an abbreviation for the following instruction sequence:
+\beginlisp
+WAIT-LOOP
+  (branch (I-cell-flag-set? (fetch exp)) IS-FULL)
+  (goto WAIT-LOOP)
+IS-FULL
+  (assign val (I-cell-value (fetch exp)))
+\endlisp
+
+i.e., we spin in a tight loop as long as the I-cell is empty.  This is
+traditionally known as the ``busy waiting'' solution.  It is not very
+satisfactory, because the process sits in a tight loop, executing
+instructions that are not doing ``useful'' work.
+
+Instead, a better solution is the ``don't call us,
+we'll call you'' solution.  Here, we use the value slot of the empty
+I-cell to hold a ``waiting-list'' of processes that are waiting for
+its value.  When the cell is first created, the value slot is
+initialized to {\cf '()}, i.e., an empty waiting list.  Then, when a
+process executes the {\cf get-I-cell} instruction on an empty I-cell,
+the process puts itself onto the I-cell's waiting list, and takes
+itself out of circulation. It uses the primitive:
+\beginlisp
+(define (add-to-I-cell-waiting-list I-cell process)
+  (set-cdr! (cdr I-cell) (cons process (cddr I-cell))))
+\endlisp
+
+When some other process executes a {\cf
+set-I-cell!} instruction, it extracts the waiting list, stores the
+value in its place, and puts all processes that are on the waiting
+list back in circulation.  It uses the primitive:
+\beginlisp
+(define (I-cell-waiting-list I-cell) (cddr I-cell))
+\endlisp
+to extract the waiting list.
+
+What does it mean to ``take a process out of circulation'' and ``put
+it back in circulation''?  Recall that, in our model, each process is
+simply a set of nine registers.  At each step, we have a set of
+processes that are executing.  This set is also called the ``ready
+list'', i.e., processes that are ready to execute an instruction.
+Now, a process can be taken out of circulation by simply removing it
+from the ready list; it can be put back in circulation by placing it
+back on the ready list.
+
+Note that the program-counter of any waiting process is still pointing
+at the {\cf get-i-cell} instruction that put it on a waiting list.
+When the process becomes active again, it will retry that instruction
+and, this time, it will successfully read a value and proceed to the
+next instruction.
+
+% ----------------------------------------------------------------
+
+\section{A Parallel Explicit Control Evaluator (non-strict)}
+
+\label{non-strict-eceval}
+
+With I-structure cells, we are now adequately armed to implement a
+non-strict, parallel evaluator for Scheme.  Despite the fact that
+non-strictness appears to be a more sophisticated concept, it turns
+out that the evaluator itself is simpler.  Again, starting with the
+sequential explicit-control evaluator of the textbook as a reference
+point, the changes we make are in three places in the controller code:
+
+\begin{itemize}
+
+\item
+ As in the strict parallel evaluator, the major change is in the {\cf
+EV-APPLICATION} segment, where, instead of an {\cf EVAL-ARG-LOOP}, we
+have a {\cf FORK-ARGS-LOOP} to fork off processes to compute the
+arguments in parallel. Each forked argument-evaluation is given an
+I-cell in which to store its result.  The parent process collects
+these I-cells in its argument list ({\cf argl} register), and goes on
+to evaluate the operator and, unlike the strict evaluator, proceeds
+immediately to {\cf APPLY-DISPATCH} to perform the application.  Thus,
+when {\cf APPLY-DISPATCH} builds a new environment frame, it will bind
+the formal parameters to the corresponding elements in the {\cf argl}
+list, i.e., to I-structure cells that will later hold the argument
+values.
+
+\item In {\cf EV-SYMBOL},  we lookup the values of
+variables in the environment.  The lookup procedure returns an I-cell
+for the argument, and so we use {\cf get-i-cell} to wait for it, if
+necessary.  Obviously, if a procedure body ignores some argument, it
+will never be looked up, so it will not matter if the argument is not
+available.  This is exactly how we achieve non-strictness.
+
+\item In the code for applying strict primitive operators (such as in {\cf
+APPLY-PLUS}), we use {\cf get-i-cell} to wait for the arguments in
+{\cf argl}, if necessary.
+
+\end{itemize}
+
+\subsection{Applications ({\tt EV-APPLICATION})}
+
+When a process arrives at {\cf EV-APPLICATION}, the {\cf exp} register holds:
+\beginlisp
+(e1 e2 ... eN)
+\endlisp
+
+First, save the continuation, pick the expression apart, and
+initialize the argument list to {\cf '()}:
+
+\beginlisp
+EV-APPLICATION
+  (save continue)
+  (assign unev (cdr (fetch exp)))    ; (e2 ... eN)
+  (assign exp  (car (fetch exp)))    ; e1
+  (assign argl '())
+\endlisp
+
+We now loop, creating a new I-cell and forking off a process for each
+argument, and building up the list of I-cells in {\cf argl}.  Each new
+process needs the environment, an argument expression and the I-cell
+into which it must store the value of that argument:
+\beginlisp
+FORK-ARGS-LOOP
+  (branch (null? (fetch unev)) EVAL-OP)
+\null
+;;; --- Fork an argument; VAL is used as a temporary
+  (assign val  (make-I-cell))          ; I-cell for this arg
+  (save val)
+  (assign argl (cons (fetch val) (fetch argl)))
+  (save env)
+  (assign val (car (fetch unev)))      ; eJ
+  (assign unev (cdr (fetch unev)))     ; (eJ+1 ... eN)
+  (save val)                           ; stack: eJ, env, I-cell, ...
+  (fork FORKED-EVAL (fetch stack))     ; fork it
+\null
+  (restore val)                        ; discard
+  (restore val)                        ;    eJ, env, I-cell
+  (restore val)                        ; from stack
+  (goto FORK-ARGS-LOOP)
+\endlisp
+
+After all the argument processes are forked, the parent process goes on to evaluate
+the operator (i.e., {\cf e1}):
+\beginlisp
+EVAL-OP
+  (save argl)
+\null
+  (assign continue EVAL-OP-DONE)
+  (goto EVAL-DISPATCH)
+\endlisp
+and then sets up and goes to do the application.
+\beginlisp
+EVAL-OP-DONE
+  (assign fun (fetch val))
+  (restore argl)
+  (goto APPLY-DISPATCH)
+\endlisp
+
+Note that the process {\em does not wait\/} for the arguments to be
+completely evaluated!
+
+Meanwhile, in parallel, each forked argument evaluation begins here.
+\beginlisp
+;;; Assume: stack: eJ, env, I-cell
+;;; Effect: stop after storing eval(eJ, env) into I-cell
+\null
+FORKED-EVAL
+  (restore exp)
+  (restore env)
+  (assign continue SET-VALUE)
+  (goto EVAL-DISPATCH)
+\endlisp
+And, after the argument is evaluated, it stores the value in the waiting I-cell and
+the process dies.
+\beginlisp
+SET-VALUE
+  (restore exp)                           ; the I-cell
+  (set-I-cell! (fetch exp) (fetch val))
+  (stop)
+\endlisp
+ Note:  The {\cf set-I-cell!} instruction will wake up any processes that may
+be waiting for this value.
+
+Minor note: in the strict evaluator, any of the N processes (parent or
+N$-1$ children) could finish last, and that process would go on to
+{\cf APPLY-DISPATCH}.  Here, it is always the parent process that goes
+to {\cf APPLY-DISPATCH} as soon as the procedure value is ready.  Each
+of the child processes always stops after storing a value into its
+I-cell.
+
+\subsection{Looking up variables ({\tt EV-SYMBOL})}
+
+When a process arrives at {\cf EV-SYMBOL}, the {\cf exp} register has
+a symbol in it.  It fetches the relevant I-cell from the environment,
+and uses {\cf get-I-cell} to fetch its value, which will cause it to
+wait, if necessary:
+\beginlisp
+EV-SYMBOL
+  (assign val (lookup (fetch exp) (fetch env)))
+  (get-I-cell val (fetch val))                  ; wait for it
+  (goto (fetch continue))
+\endlisp
+
+\subsection{Non-strict {\tt CONS}, {\tt CAR} and {\tt CDR}}
+
+To execute the {\cf cons} primitive operation, the process simply conses up
+references to the two I-cells in the frame (for the car and cdr), i.e., it
+doesn't wait for either I-cell to receive a value:
+\beginlisp
+APPLY-CONS
+  (assign val (car (fetch argl)))        ;; the I-cell for the cdr
+  (assign exp (cdr (fetch argl)))
+  (assign exp (car (fetch exp)))         ;; the I-cell for the car
+\null
+  (assign val (cons (fetch exp) (fetch val)))
+  (restore continue)
+  (goto (fetch continue))
+\endlisp
+
+To execute the {\cf car} primitive operation, the process waits for its
+argument (a cons cell), extracts the I-cell for the car, and waits for its value:
+\beginlisp
+APPLY-CAR
+  (assign exp (car (fetch argl)))
+  (get-I-cell val (fetch exp))      ; wait for the cons cell
+\null
+  (assign val (car (fetch val)))
+  (get-I-cell val (fetch val))      ; wait for the car
+\null
+  (restore continue)
+  (goto (fetch continue))
+\endlisp
+And, {\cf APPLY-CDR} is similar.
+
+\subsection{Strict primitives (e.g. {\tt APPLY-PLUS})}
+
+Unlike {\cf cons}, a strict primitive like {\cf +} must wait for both its
+arguments before it can return any value:
+\beginlisp
+APPLY-PLUS
+  (assign exp (car (fetch argl)))
+  (get-I-cell val (fetch exp))        ;; wait for arg 2
+  (assign exp (cdr (fetch argl)))
+  (assign exp (car (fetch exp)))
+  (get-I-cell exp (fetch exp))        ;; wait for arg 1
+\null
+  (assign val (+ (fetch exp) (fetch val)))
+  (restore continue)
+  (goto (fetch continue))
+\endlisp
+
+\subsection{Deadlock}
+
+Though non-strict evaluation gives us a more powerful programming language,
+it also introduces a new source of errors--- deadlock.  Consider the following
+(pathological) program:
+\beginlisp
+(let ()
+  (define x (cons (car y) '()))
+  (define y (cons (car x) '()))
+  (car x))
+\endlisp
+
+ The two {\cf cons}'es can allocate cons cells immediately, and bind
+them to {\cf x} and {\cf y}.  The process (say P1) responsible for
+filling in {\cf x}'s car slot gets {\cf y} and attempts to read its
+car slot.  Similarly, the process (say, P2) responsible for filling in
+{\cf y}'s car slot gets {\cf x} and attempts to read its car slot.
+The main process (say, P0), meanwhile, gets {\cf x} and tries to read
+its car slot.  Now, both the car slots are empty, so we will end up
+with {\cf P0} and {\cf P2} on the waiting lists of {\cf x}'s car slot,
+and {\cf P1} on the waiting list of {\cf y}'s car slot, and {\em
+zero\/} processes ready to execute!
+
+This kind of a situation, where we have a cycle of processes waiting
+for each other, is called a ``deadlock'' or a ``deadly embrace'', and
+is one of the major pitfalls to watch out for in parallel evaluators.
+Unlike this pathological example, the cycle may be very long and
+obscure, scattered throughout the program.
+
+% ****************************************************************
+
+\section{Orders of growth, revisited}
+
+When we first learned about orders of growth,  we made certain assertions
+about the complexity of programs. For example, given the following recursive
+procedure to count atoms in a tree:
+\beginlisp
+(define count-atoms-r (lambda (lst)
+    (if (null? lst)
+        0
+        (if (atom? lst)
+            1
+            (+ (count-atoms-r (car lst))
+               (count-atoms-r (cdr lst)))))))
+\endlisp
+ we said that it would take $O(n)$ time and $O(\log n)$ space , where $n$ was
+the number of nodes in the tree.   Now, we must be a little more careful, and
+realize that these statements are {\em relative to the underlying execution
+model\/}, i.e., the time and space complexities were valid for the sequential
+execution model.
+
+In our parallel machine models, on the other hand,  we can see that the same
+program will take $O(n)$ space, and can complete in as little as $O(\log n)$
+time!  This is because all the recursive calls will unfold in parallel so
+that there is one computation in progress at every node,  and the time taken
+is proportional only to the depth of the tree.
+
+Another example--- the sum of the square-roots of the numbers in a list:
+\beginlisp
+(define sum-of-sqrts (lambda (lst)
+    (sum-of-sqrts-loop lst 0)))
+\null
+(define sum-of-sqrts-loop (lambda (lst s)
+    (if (null? lst)
+        s
+        (sum-of-sqrts-loop (cdr lst)
+                           (+ s (sqrt (car lst)))))))
+\endlisp
+ In all three evaluators, this iterative computation should take $O(n)$ time,
+where $n$ is the length of the list.  In both the sequential and the
+parallel, strict evaluators, it should take constant space (i.e., $O(1)$).
+However, in the parallel, non-strict evaluator, it will take $O(n)$ space.
+This is because, in the non-strict evaluator, the recursive call can race
+ahead, traversing the entire list, selecting all the {\cf car}'s, and
+initiating all the {\cf sqrt}'s even before the first {\cf sqrt} computation
+has finished, i.e.,  all the {\cf sqrt} computations can proceed in parallel.
+Thus, an iteration is not necessarily ``finished'' before the next one
+starts, and so, we cannot reclaim or reuse the space that it occupies.
+
+The last point is an illustration of a general axiom about parallelism:
+Except when the computation is inherently sequential, you can usually trade
+parallelism for space.
+
+% ----------------------------------------------------------------
+
+\section{Side-effects, revisited}
+
+\label{side-effects-redux}
+
+\subsection{More insight into the problem}
+
+In Section \ref{side-effects} we pointed out that side-effects may be
+especially tricky under parallel evaluation, because they lead to ``race
+conditions''.  We illustrate the problem here again using an example based on
+the simple bank balance from Section 3.1.1 of the textbook:
+\beginlisp
+(define balance 100)
+\null
+(define withdraw (lambda (amount)
+    (set! balance (- balance amount))
+    (list amount balance)))
+\endlisp
+
+(To simplify the presentation, we are not checking for errors such as
+negative balances, etc.)
+
+Now, suppose we had a parallel evaluator, and two customers were executing
+these forms at the same time:
+\beginlisp
+{\rm Joe:}   ... (withdraw 10) ...
+{\rm Moe:}   ... (withdraw 15) ...
+\endlisp
+A problem arises because the {\cf set!} form actually consists of two
+separate activities--- first, computing \mbox{\cf (- balance amount)} and
+then updating the binding for {\cf balance}.  In a parallel evaluator, the
+following sequence of events is possible:
+\begin{center}
+\begin{tabular}{l|l}
+Joe & Moe \\
+\hline
+... & ... \\
+{\cf (- 100 10)}         & ... \\
+...                      & {\cf (- 100 15)} \\
+{\cf (set! balance 90)}  & ... \\
+...                      & {\cf (set! balance 85)} \\
+... & ...
+\end{tabular}
+\end{center}
+Thus, the final balance is 85, an outcome that the bank is likely to be very
+unhappy about, since it has just handed out \$25 out of the original \$100.
+
+Thus, we need to ensure that the entire {\cf set!} activity is an {\em
+atomic\/} action, i.e., indivisible, so that either Joe's entire transaction
+precedes Moe's, or vice versa, but they never interleave.
+
+Some more terminology: The {\cf set!} part of the program is also
+known as a {\em critical section\/}, and the requirement that no more
+than one process can execute it at a time is known as a {\em mutual
+exclusion\/} requirement.
+
+It is not enough for our evaluator somehow to arrange for {\cf set!} alone to
+be performed atomically.  Critical sections can encompass larger program
+regions.  For example, suppose we had two accounts, a money-transfer
+procedure, and a balance-inquiry procedure:
+\beginlisp
+(define balance2 100)
+(define balance3 200)
+\null
+(define transfer-2-to-3 (lambda (amount)
+  (set! balance2 (- balance2 amount))
+  (set! balance3 (+ balance3 amount))
+  (list amount balance2 balance3)))
+\null
+(define tot-balance (lambda ()
+  (+ balance2 balance3)))
+\endlisp
+Now, suppose we are executing the following in parallel:
+\beginlisp
+{\rm Joe:}   ... (transfer-2-to-3 50) ...
+{\rm Moe:}   ... (tot-balance) ...
+\endlisp
+Again, the following sequence of events can occur:
+\begin{center}
+\begin{tabular}{l|l}
+Joe & Moe \\
+\hline
+... & ... \\
+{\cf (set! balance2 (- 100 50))}   & ... \\
+...                                & {\cf (+ 50 200)} \\
+{\cf (set! balance3 (+ 200 50))}   & ... \\
+... & ...
+\end{tabular}
+\end{center}
+Moe will find that the total balance is \$250 instead of \$300. In this
+example, the two {\cf set!} forms together should be executed atomically, and
+together they constitute a critical section.
+
+Actually this problem arises at another level in both programs.  In the {\cf
+withdraw} program, it is possible for the two processes to execute the {\cf
+set!} before the first process can evaluate \mbox{\cf (list amount
+balance)}, so that the first process gets the wrong balance. A similar
+problem occurs in the second program.
+
+\subsection{Locks}
+
+To address this issue, we introduce a new kind of an object called a {\em
+lock\/}, and a special form:
+\beginlisp
+(HOLDING <lock>
+    <expression>
+    ...
+    <expression>)
+\endlisp
+ When a process P evaluates this form, it first tries to ``acquire'' the
+lock. Only one process at a time can hold a lock.  If some other process
+Q currently holds the lock, P must wait until Q releases it.  When P finally
+acquires the lock, it proceeds to execute the {\cf <expression>}s in
+sequence, returning the value of the last one.  When the last expression has
+returned a value, P releases the lock.
+
+In general, there can be many processes waiting for a lock, but only one
+process may hold it at a time.  When a lock is released and there are
+several waiting processes, only one of them gets it, and the remaining
+processes continue to wait.
+
+We assume a procedure:
+\beginlisp
+(define (make-lock) ...)
+\endlisp
+that creates, and returns a new lock.
+
+We can now solve our first problem as follows.
+\beginlisp
+(define balance 100)
+(define lock (make-lock))
+\null
+(define (withdraw amount)
+    (HOLDING lock
+       (set! balance (- balance amount))
+       (cons amount balance)))
+\endlisp
+ Now, when Joe and Moe try to withdraw money at approximately the same time,
+one of them acquires {\cf lock}, performs the transaction,  and releases
+the lock, at which time the other can acquire it and perform his entire
+transaction.
+
+We can solve the second problem as follows:
+\beginlisp
+(define balance2 100)
+(define balance3 200)
+(define lock2 (make-lock))
+\null
+(define (transfer-2-to-3 amount)
+  (HOLDING lock2
+    (set! balance2 (- balance2 amount))
+    (set! balance3 (+ balance3 amount))
+    (list amount balance2 balance3)))
+\null
+(define (tot-balance)
+  (HOLDING lock2
+    (+ balance2 balance3)))
+\endlisp
+
+\subsection{Implementation of locks}
+
+Locks can be implemented using a mechanism similar to that for I-structure
+cells.  First:
+\beginlisp
+(define (make-lock) (cons 'free '()))
+\endlisp
+i.e., a lock is simply a pair with a flag intialized to {\cf FREE} and an
+empty waiting list of processes.
+
+In the evaluator, we assume two new instructions for dealing with locks.  The
+instruction
+\beginlisp
+(acquire-lock {\em lock\/})
+\endlisp
+when executed in process P, advances the program counter, and tests if the
+lock is in the {\cf FREE} state.  If it is free, P simply continues (at
+the next instruction), after setting the lock flag to {\cf BUSY}.  If the lock is
+already {\cf BUSY},  P is added to the waiting list in the lock, and P is
+taken off the ready list of processes.
+
+The instruction:
+\beginlisp
+(release-lock {\em lock\/})
+\endlisp
+ when executed in process P always succeeds and continues at the next
+instruction.  The lock must be in the {\cf BUSY} state, since P must have
+previously acquired it.  If the waiting list on the lock is empty, then the
+lock flag is set to {\cf FREE}. Otherwise, a process (say, Q) on the
+waiting list is put back on the ready list of processes, and the waiting
+list updated to omit Q.  Note that Q will be at the instruction just
+following the {\cf acquire-lock} instruction that put it on the waiting list.
+
+\subsection{Other issues}
+
+With locks, we have a first step towards dealing with side-effects in a
+parallel evaluator.  However, we have barely scratched the surface of this
+issue here.
+
+First, raw locks are too primitive, too unstructured a mechanism.  It is
+still upto the programmer to introduce locks and use them correctly.  It is
+easy to make mistakes: we could have forgotten to use the lock in the {\cf
+tot-balance} procedure, or we could have used the lock only for the {\cf
+set!}s and forgotten to enclose the third, {\cf (list ...)} expression,
+again leading to a consistency problem.  In general, we would like more
+powerful abstractions than raw locks.
+
+Second, we have introduced another {\em deadlock\/} problem.  Suppose, instead
+of a single lock guarding both accounts, we had two locks, one for each
+account:
+\beginlisp
+(define balance2 100)
+(define lock2 (make-lock))
+(define balance3 200)
+(define lock3 (make-lock))
+\endlisp
+We might redo our transfer and inquiry procedures as follows:
+\beginlisp
+(define transfer-2-to-3 (lambda (amount)
+  (HOLDING lock2
+    (HOLDING lock3
+      (set! balance2 (- balance2 amount))
+      (set! balance3 (+ balance3 amount))
+      (list amount balance2 balance3)))))
+\null
+(define tot-balance (lambda ()
+  (HOLDING lock3
+    (HOLDING lock2
+      (+ balance2 balance3)))))
+\endlisp
+ Note that the two procedures happen to aquire the locks in the opposite
+order.  Now, it is possible that process P1, executing the transfer
+procedure, acquires {\cf lock2} and then tries to acquire {\cf lock3}.
+Meanwhile, process P2, executing the inquiry procedure, may have acquired
+{\cf lock3} and is trying to acquire {\cf lock2}.  Again, we will have a
+situation where both procedures are holding one lock, and neither can make
+progress because they need a lock that the other one holds.
+
+Or, consider the situation where, after acquiring a lock, a process goes
+off into an infinite loop, never releasing it, so that other processes wait
+indefinitely for the lock.
+
+Another problem is that of {\em fairness\/}.  Suppose process P0 has
+acquired a lock, and P1 and P2 are waiting for it.  When P0 releases it, P1
+gets it, and P2 remains waiting.  A little later, P0 again joins the waiting
+list with P2.  When P1 releases it P0 gets it.  In this way, it is possible
+for a process like P2 to wait unreasonably long, or even forever (this is
+called {\em starvation\/}).
+
+It should be clear that dealing with side effects in a parallel
+evaluator is an enterprise not to be taken lightly.
+
+% ----------------------------------------------------------------
+
+\section{Real parallel machines: finite resources}
+
+Our parallel computation model, so far, has been one of repeated {\em
+steps\/} across all ``ready'' processes.  We had the concept of a a
+``ready list'' of all processes that were ready to execute an
+instruction.  At each time step, we executed one instruction from each
+of the ready processes, and constructed a new ready list.
+
+This model is highly idealized, and is only useful in that it gives us some
+intuition about the time-independent, resource-independent aspects of
+parallel programs, mechanisms and processes, such as the critical path,
+parallelism profile, instruction counts, etc.  The characteristics and
+behavior of a real machine are likely to be very different.  It is beyond the
+scope of these notes to explore all these issues in any level of detail; we
+mention some of them here just to give the reader a flavor of what is
+involved.
+
+First, it is unlikely that all instructions take the same time to
+execute, so processes will not advance in lock-step, instruction by
+instruction.
+
+Second, a real machine will not have an infinite supply of processors.
+In a real machine, when we have more processes than physical
+processors, we must somehow arrange to {\em multiplex\/} the available
+physical processors amongst the processes.  Apart from the fact that
+this will lengthen the computation because some things that were done
+in parallel are now done sequentially, it will also lengthen the
+computation because it will introduce some management overhead, i.e.,
+extra instructions to do the book-keeping and and scheduling activity
+of the multiplexing.
+
+Multiplexing $m$ physical processors PP amongst $n$ processes LP,
+where $m<n$ is almost always a challenging task, and introduces new problems
+in its own right.  For example, at each instant in time, how do we choose
+which $m$-subset of the LPs gets to use the PPs?  Typically, some LPs are
+more important, or crucial to the computation, than others--- how do we
+recognize them?  A bad choice, for example, can schedule an LP to execute
+that reads from an empty cell, while the LP that writes into the cell is not
+yet scheduled.  Thus, this kind of multiplexing can introduce deadlock into
+an otherwise deadlock-free program.
+
+Similarly, we need to take decisions like, ``LP45 will run on PP33''.
+How do we avoid the situation where all of the LPs are assigned to run
+on a few PPs while the other PPs are sitting idle?  This issue is
+called the ``load balancing'' problem.
+
+Third, we have assumed that forking a new process is instantaneous,
+i.e., it happens within one instruction, and that access to data is
+uniformly fast.  However, in a real machine, forking a process
+involves, among other things, transporting the process state to the
+physical processor that is to execute it, which may be on the other
+side of the machine.  Similarly, how do we ensure that a process runs
+on a physical processor that is ``near'' the data that it will access?
+
+These kind of ``resource management'' issues are major topics for research.
+In fact, one might say that they are the central issues in parallel
+computation.
+
+% ****************************************************************
+
+\newpage
+
+\tableofcontents
+
+\end{document}
+
+% ----------------------------------------------------------------
+
+\section{Explicit, instead of implicit parallelism}
+
+In both the evaluators that we have seen thus far, the parallelism is
+expressed implicitly.  The programming language did not change in
+moving to a parallel execution model.  The programmer writes programs
+in ordinary Scheme syntax, and it is implicitly understood that for
+every expression that is a combination (i.e., application), all
+components may be evaluated concurrently.
+
+The resulting parallelism is sometimes called ``fine-grained'' parallelism,
+i.e., a parallel process is forked even to evaluate something as small and
+trivial as the number 23.
+
+Suppose we are given the expression:
+\beginlisp
+(+ 23 34)
+\endlisp
+ In the parallel evaluators we have seen, we fork two tasks, one each for
+evaluating {\cf 23} and {\cf 34}; the parent task evaluates {\cf +}, and
+later, the application is performed.   If we count the instructions that are
+executed in the parallel evaluators, we might find that a many of the
+instructions are ``overhead'' instructions for forking tasks and
+synchronization, and there are relatively few instructions that actuallly do
+the meat of the computation.  It is possible that the sequential evaluator,
+not having these overheads, would actually have done the job faster.
+
+Thus, one may draw the conclusion that until a subexpression is ``large
+enough'' to justify the overhead, it is not worth forking off a separate
+process to evaluate it.  One might imagine that before evaluating a
+combination, a process takes a decision, for each argument, whether to
+evaluate it by itself or to fork another process to do it.
+
+Unfortunately, this judgement is not easy to make:
+\begin{itemize}
+
+\item In the case of constants it may be simple but, in general, it is not
+possible to examine an arbitrary expression and judge how ``expensive'' it
+is, because it may involve calls to arbitrary procedures whose complexity is
+unpredictable.
+
+\item The ``overhead'', against which we decide whether to fork or not,
+depends on the machine model, the available instructions, the method of
+forking, how cleverly the evaluator program and/or the compiler was written,
+etc.  It is very difficult to come up with a clean and coherent model of all
+these parameters.
+
+\end{itemize}
+
+A possible solution to this problem is this.  Instead of implicit
+parallelism, where the evaluator decides when to fork off a process, we
+could have explicit parallelism, where we shift the responsibility to the
+programmer.  We revert back to the {\em sequential interpretation of
+Scheme\/} and introduce new constructs in the language by which {\em the
+programmer\/} can specify exactly what is to be done in parallel.
+
+\section{Explicit Parallelism: {\tt FUTURE} and {\tt TOUCH}}
+
+We have already pointed out the connection between non-strictness and {\cf
+FORCE} and {\cf DELAY} (in Part II of these notes).  In particular, we
+remarked that when we see a program in which, at one point, we say {\cf
+(DELAY $e$)}, producing an object $d$ which we later examine by saying {\cf
+(FORCE $d$)}, there is {\em nothing in the program itself that indicates
+exactly when it gets evaluated!\/} It could have happened at {\em any\/} time
+between the evaluation of the two forms--- in particular, it could have
+happened independently, in parallel.
+
+Using this idea as a springboard, we introduce two new constructs in
+Scheme.\footnote{
+ These constructs are borrowed from a language called Multilisp,  developed
+by Dr. Robert Halstead at MIT.
+}
+The expression:
+\beginlisp
+(FUTURE $e$)
+\endlisp
+does the following:
+\begin{tightlist}
+
+\item Creates a ``promise'' for the value of expression $e$;
+
+\item Forks off a process that will compute the expression $e$
+in the current environment and store the result in the ``promise'', and
+
+\item Returns a reference $f$ to the ``promise''.
+
+\end{tightlist}
+We will call $f$ a ``future'', or a ``future reference'', and we will call
+the value of $e$ the ``value of the future''.
+
+Given a future $f$, the expression:
+\beginlisp
+(TOUCH $f$)
+\endlisp
+ returns the value of the future, waiting, if necessary, for its computation
+to be completed.
+
+Thus, {\cf FUTURE} is similar to {\cf DELAY}, and {\cf TOUCH} is similar to a
+memo-ized {\cf FORCE}.  In fact, {\cf FUTURE} and {\cf TOUCH} are
+semantically identical to {\cf DELAY} and {\cf FORCE}, i.e., there is no way
+to distinguish them in the program.\footnote{
+ As usual, there is a difference if there are side-effects, but we defer that
+question until Section \ref{side-effects-redux}.
+}
+ We use different names merely to suggest an operational difference.  {\cf
+FUTURE} actually forks off a process, and the expression evaluates
+concurrently, whereas {\cf DELAY} does no evaluation at all.  {\cf
+TOUCH} does no evaluation, and simply waits for the concurrent process to
+finish, whereas {\cf FORCE} actually evaluates the expression.  In other
+words, the only difference is in when the {\cf DELAY}'d/{\cf FUTURE}'d 
+expression is actually scheduled to be evaluated.
+
+\subsection{Programming with {\tt FUTURE} and {\tt TOUCH}}
+
+\label{programming-with-future-and-touch}
+
+Remember that we are back to a {\em sequential\/} model of Scheme, and the {\em
+only\/} place where concurrent execution is forked is in a {\cf FUTURE}
+expression.  We can ``parallelize'' the recursive procedure to count
+the atoms in a tree, as follows:
+\beginlisp
+(define count-atoms-r (lambda (lst)
+    (if (null? lst)
+        0
+        (if (atom? lst)
+            1
+            (let
+                  ((f1 (FUTURE (count-atoms-r (car lst))))
+                   (f2 (FUTURE (count-atoms-r (cdr lst)))))
+              (+ (TOUCH f1) (TOUCH f2)))))))
+\endlisp
+ i.e., in the recursive step, we fork off two processes to count atoms in
+the left and right subtrees and, when they are done, add them up.  Note that
+each forked process, recursively, may fork off two more, and each of
+those may fork off two more, and so on, so that the parallelism can still
+grow exponentially. 
+
+There is a very subtle point in the transformation.\footnote{
+ I am grateful to Bert Halstead for pointing this out to me.
+}
+ We started with an
+expression of the form:
+\beginlisp
+(+ $e_1$ $e_2$)
+\endlisp
+and transformed it into:
+\beginlisp
+(let
+      ((f1 (future $e_1$))
+       (f2 (future $e_2$)))
+  (+ (touch f1) (touch f2)))
+
+\endlisp
+Why did we not convert it into the following?
+\beginlisp
+(+ (touch (future $e_1$)) (touch (future $e_2$)))
+\endlisp
+The two, superficially, look equivalent.  However, remember that except for
+{\cf FUTUREs}, we have a basically sequential model.  Thus, in the latter
+form, the combination:
+\beginlisp
+(+ <...> <...>)
+\endlisp
+is evaluated {\em sequentially\/}, say, from left to right.  This means that
+we evaluate
+\beginlisp
+(touch (future e1))
+\endlisp
+{\em until we have its value\/} before we even look at
+\beginlisp
+(touch (future e2))
+\endlisp
+This means, of course, that {\cf e1} and {\cf e2} do not get evaluated in
+parallel at all!
+
+The lesson:  parallelizing a sequential program by introducing {\cf FUTURE} and
+{\cf TOUCH} must be done with great thought and care.
+
+\subsection{Implementation of {\tt FUTURE} and {\tt TOUCH}}
+
+It is quite easy to extend our original, sequential explicit-control
+evaluator code to implement {\cf FUTURE} and {\cf TOUCH}, using I-structure
+cells.
+
+First, let us look at {\cf (FUTURE $e$)}.  We begin by adding another clause
+in {\cf EVAL-DISPATCH} that recognizes the {\cf FUTURE} special form:
+\beginlisp
+EVAL-DISPATCH
+  ..
+  (branch (FUTURE? (fetch exp)) EV-FUTURE)
+  ..
+\endlisp
+Note that, like {\cf DELAY}, {\cf FUTURE} must be a special form and not a
+procedure.
+
+Here is the code to implement the {\cf FUTURE}:
+\beginlisp
+EV-FUTURE
+  ;;; Assume EXP: (FUTURE e), ENV:E, CONTINUE: L
+  (assign exp (cdr (fetch exp)))   ;  (e)
+  (assign exp (car (fetch exp)))   ;  e
+  (assign val (make-I-cell))       ;  VAL: I-cell
+\null
+  (assign unev (cons (fetch val) nil))           ; UNEV: (I-cell)
+  (assign unev (cons (fetch env) (fetch unev)))  ; UNEV: (E I-cell)
+  (assign unev (cons (fetch exp) (fetch unev)))  ; UNEV: (e E I-cell)
+  (assign unev (cons DO-FUTURE (fetch unev)))    ; UNEV: (DO-FUTURE e E I-cell)
+  (fork (fetch UNEV))
+\null
+  (goto (fetch continue))          ; VAL: I-cell
+\endlisp
+i.e., we simply return a new I-structure cell, after forking off a new
+process with initial stack containing the label {\cf DO-FUTURE}, the
+expression $e$, the environment and a reference to the I-structure cell.
+Thus, a ``future'' or ``promise'' is nothing more than a reference to an
+I-structure cell. 
+
+The forked process executes the following code:
+\beginlisp
+DO-FUTURE
+  ;;; Assume STACK: (e E I-cell)
+  (restore exp)                         EXP: e
+  (restore env)                         ENV: E
+  (assign continue DO-FUTURE-STORE)
+  (goto EVAL-DISPATCH)
+\null
+DO-FUTURE-STORE
+  ;;; Assume VAL: v, STACK: (I-cell)
+  (restore exp)                                EXP: I-cell
+  (set-I-cell! (fetch exp) (fetch val))
+  (goto STOP)
+\endlisp
+i.e., we evaluate the expression, store it in the I-cell, and stop.
+
+To implement {\cf (TOUCH $f$)}, we assume that {\cf TOUCH} evaluates to a
+primitive procedure, i.e., like {\cf FORCE}, {\cf TOUCH} is a procedure, not a
+special form.  We arrive at the following code, via {\cf APPLY-DISPATCH} and
+{\cf PRIMITVE-APPLY},
+\beginlisp
+APPLY-TOUCH
+  ;;; assume: ARGL: (I-cell)
+  (assign exp (car (fetch argl)))    ; the I-cell
+  (get-I-cell val (fetch exp))
+  (restore continue)
+  (goto (fetch continue))
+\endlisp
+Of course, any process executing this code will simply suspend at the {\cf
+get-I-cell} instruction, if necessary, using the usual mechanism for
+I-structures.
+
+\subsection{Connection with Implicit Parallelism}
+
+So far, we have seen three parallel explicit-control evaluators (ECEs) for Scheme:
+\begin{tightlist}
+
+\item An implicitly parallel, but strict evaluator; call this ECE-I-S.
+
+\item An implicitly parallel, but non-strict evaluator; call this ECE-I-NS.
+
+\item An explicitly parallel evaluator where the programmer specifies what to
+do in parallel using {\cf FUTURE},  and waits for results using {\cf TOUCH};
+call this ECE-F/T
+
+\end{tightlist}
+What is the relationship between the implicit and explict evaluators?
+
+A program that runs under ECE-I-S can be transformed into a program for ECE-F/T
+that will have the same parallel behavior,  as follows.  For every
+combination of the form:
+\beginlisp
+(e1 e2 ... eN)
+\endlisp
+we convert it into:
+\beginlisp
+(let
+      ((f1 (FUTURE e1))
+       (f2 (FUTURE e2))
+       ...
+       (fN (FUTURE eN)))
+  ((touch f1) (touch f2) ... (touch fN)))
+\endlisp
+Notice that this has the effect of evaluating all components of the
+combination in parallel, waiting till all of them are values, and then doing
+the application.
+
+A program that runs under ECE-I-NS can be transformed into a program for ECE-F/T
+that will have the same parallel behavior,  but the transformation is a
+little more involved.  First, for every combination of the form:
+\beginlisp
+(e1 e2 ... eN)
+\endlisp
+we convert it into:
+\beginlisp
+(let
+      ((f2 (FUTURE e2))
+       ...
+       (fN (FUTURE eN)))
+  (e1 f2 ... fN))
+\endlisp
+i.e., we fork off the evaluation of all the operands in parallel, evaluate
+the operator and do the application, even though the operands may still be
+evaluating.  But, notice that the arguments that we are passing in to {\cf
+v1}, the value of {\cf e1}, are no longer the values of the expressions {\cf
+eJ}--- they are futures that will contain those values.  Thus, for every
+strict primitive operation such as the ``plus'' procedure, we will have to
+{\cf TOUCH} the arguments before actually performing the operation.
+
+\section{Explicit Parallelism: {\tt FUTURE} and implicit {\tt TOUCH}}
+
+\subsection{The problem with explicit {\tt TOUCH}es}
+
+When we studied streams and {\cf DELAY} and {\cf FORCE}, we encountered
+some unpleasant consequences having to do with the modularity of programs.
+For example, even though lists and streams are conceptually so similar, we
+had to manipulate them with similar, but distinct functions.  Thus, we had a
+{\cf mapcar} for lists, and a {\cf map-stream} for streams; a {\cf filter}
+for lists and a {\cf filter-stream} for streams, etc.  Section 3.4.5 of the
+textbook also has an example of a program on streams that did not work
+correctly until we inserted an extra {\cf DELAY} for an argument for the
+{\cf integral} function, which required changing the function to expect a
+delayed argument, which, in turn, required changing all other calls to it.
+
+With {\cf FUTURE} and {\cf TOUCH}, we have the same problem.  Consider the
+following attempt at a ``{\cf mapcar}''-like procedure that does things in
+parallel:
+\beginlisp
+(define map-flist (lambda (proc lst)
+    (if (null? lst)
+        nil
+        (cons (FUTURE (proc (car lst)))
+              (FUTURE (map-flist proc (cdr lst)))))))
+\endlisp
+Unfortunately, when we evaluate
+\beginlisp
+(map-flist square '(1 2 3))
+\endlisp
+we do not get the list \mbox{\cf (1 4 9)}--- we get a pair whose car is a
+future for 1, and whose cdr is a future for another pair, whose car is a
+future for 4, and ... and so on.  So, for example, we cannot write:
+\beginlisp
+(map-flist square (map-flist square '(1 2 3)))
+\endlisp
+ This will result in several errors:  the outer {\cf square} function will
+try to multiply two futures together instead of numbers.  In a recursive
+call, we'll try to take the {\cf car} and {\cf cdr} of a future.
+
+We have no option but to define a new kind of sequence--- let us call it them
+{\em flists\/}--- just as we had to introduce streams, and we have to redo all
+the attendant functions---  {\cf cons-flist}, {\cf car-flist}, ...,
+{\cf map-flist}, {\cf filter-flist} etc.
+
+\subsection{Implicit {\tt TOUCHes}}
+
+When we introduced {\cf FUTURE} and {\cf TOUCH},  we did not change any other
+part of the language.  Thus, a primitive operator like {\cf +} expects
+numbers as arguments and, so, if we are given two futures $f_1$ and $f_2$, we
+had to explicitly touch them, like so:
+\beginlisp
+(+ (touch $f_1$) (touch $f_2$))
+\endlisp
+
+An alternative would be to change the semantics of all the strict primitive
+operators, such as {\cf +}, so that their arguments can optionally be passed
+in as futures.\footnote{
+ This is the approach adopted by Halstead in Multilisp.
+}
+ The machine code for each such primitive operator must now be
+changed to test if an argument is a future or not, and touch it if it is.
+
+The code for our previous example is now:
+\beginlisp
+(define count-atoms-r (lambda (lst)
+    (if (null? lst)
+        0
+        (if (atom? lst)
+            1
+            (let
+                  ((f1 (FUTURE (count-atoms-r (car lst))))
+                   (f2 (FUTURE (count-atoms-r (cdr lst)))))
+              (+ f1 f2))))))
+\endlisp
+i.e., we have got rid of the {\cf TOUCH} forms in the last line.
+
+With this change, we find that programs are modular, once more, i.e., we can
+treat objects and ``futured'' objects uniformly.  For example, the form
+\beginlisp
+(let
+      ((f1 (FUTURE e1))
+       (f2 (FUTURE e2)))
+  (+ f1 f2))
+\endlisp
+is again equivalent to:
+\beginlisp
+(+ (FUTURE e1) (FUTURE e2))
+\endlisp
+and {\cf mapcar}, {\cf filter}, ... will work on futured and unfutured
+objects, alike.
+
+\subsection{The cost of implicit {\tt TOUCH}es}
+
+Of course, there is no free lunch.  Using implicit {\cf TOUCH}es, we have
+restored modularity and elegance into the language for the programmer, but we
+have introduced a performance penalty.  Now, for every strict primitive
+operator (such as {\cf +}), every time it refers to an argument, it must
+execute additional instructions that test if the argument is a future or not
+(and do the appropriate synchronization if it is).  This can be a {\em
+major\/} overhead; eliminating or minimizing this overhead is a topic of
+research in compiling and computer architecture.
+
+% ----------------------------------------------------------------

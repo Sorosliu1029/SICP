@@ -1,0 +1,146 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+
+@comment(Rough draft by Julie, arranged as in the lab from Spring '82 PS2,
+ which isn't on line, along the lines of the Huffman lab)
+@comment(To do: Fix up ??? stuff.  add interval printers a la manual.)
+
+
+@make(6001)
+@set(chapter=1)
+@set(page=1)
+
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001")
+
+@PageHeading(odd,
+             Left "Problem Set ?",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+
+Problem Set ???
+@end(center)
+@blankspace(0.25 in)
+
+@begin(format)
+Issued: ???@>Due: ???
+@end(format)
+
+@blankspace(0.25 in)
+
+@begin(format)
+Reading Assignment: ???
+
+Write up and turn in the following exercises from the text:
+
+@begin(itemize)
+???
+@end(itemize)
+@end(format)
+
+@blankspace(0.25 in)
+
+@begin(center)
+@b[LABORATORY ASSIGNMENT: Interval Arithmetic]
+@end(center)
+
+The purpose of this assignment is to give you practice with
+data abstraction.
+The assignment is based on section 2.1.4 of the text. Most of the
+problems are exercises from that section.
+
+@begin(center)
+@b[Pre-Laboratory Exercises]
+@end(center)
+
+Think about and answer the following questions before going to the laboratory.
+@begin(itemize)
+Exercise 2.8
+
+Exercise 2.12
+@end(itemize)
+
+@begin(center)
+@b[In the Laboratory]
+@end(center)
+In this laboratory you will be working with Alyssa's interval
+arithmetic package.
+Install the code for Problem Set ??? using the @a[load-problem-set]
+operation. The file to be loaded contains all the
+procedures described in section 2.1.4 of the text.
+
+???Fix the following writeup re modifications file.
+
+The procedures you will need to modify for exercises 2.9 and 2.10
+are in a "modifications file" that will be installed on your disk.
+You can add new procedures to this file too.
+
+
+@paragraph(Representing intervals)
+Do Exercise 2.6.
+
+@paragraph(Subtracting intervals)
+Do Exercise 2.7.
+
+@paragraph(Improving Alyssa's programs)
+Do Exercises 2.9 and 2.10.
+
+@paragraph(Percentage tolerances)
+Do Exercise 2.11.
+   
+@paragraph(``Equivalent'' programs?)
+Do Exercise 2.13.
+   
+@begin(center)
+@b[Post-Laboratory Exercises]
+@end(center)
+
+Work on the following exercises after you have left the laboratory.
+
+@begin(itemize)
+Exercise 2.14.
+
+Optional: Exercise 2.15.  This problem is very difficult.
+If you have any ideas about this, you are invited to try them
+out, but do not neglect your required work in order to work on this.
+@end(itemize)

@@ -1,0 +1,31 @@
+I. Introduction
+
+This subdirectory of the Scheme problem set database contains Scheme
+problem sets that were not developed for MIT's 6.001 course.
+
+As of now, there is only one entry in this subdirectory, but we hope
+that others will make contributions.  Please submit your problem 
+sets with a brief description of their content and the material 
+they cover to the Scheme problem set librarian:
+
+           Franklyn Turbak
+           lyn@zurich.ai.mit.edu
+
+II. Catalogue
+
+LOGO INTERPRETER
+
+  Content: A LOGO interpreter
+
+  Author: Brian Harvey (Berkeley)
+ 
+  Course Material: Metacircular Interpreter
+
+  Files: 
+        logo/logo.txt
+	logo/logo-1.scm
+        logo/logo-2.scm 
+	logo/logo-logo.scm
+
+
+

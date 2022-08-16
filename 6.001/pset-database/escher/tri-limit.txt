@@ -1,0 +1,601 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+@Comment(Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. )
+
+@comment(**NB** Don't forget to update the lecture date at the start
+  of the square-limit writeup)
+
+@make(6001)
+
+@modify(excounter, numbered [Exercise @1], referenced [@1])
+@PageHeading(even,
+             left "@Value(Page)",
+             right "6.001 -- Spring Semester 1987")
+
+@PageHeading(odd,
+             Left "Problem Set 4",
+             right "@value(page)")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+Spring Semester, 1987
+
+Problem Set 4
+@end(center)
+@blankspace(0.25 in)
+
+@begin(flushleft)
+Issued: 24 February 1987
+
+Due:
+@begin(itemize)
+on Wednesday, 4 March 1987
+for recitations meeting at 9:00, 10:00, and 11:00
+
+on Friday, 6 March 1987
+for recitations meeting at 12:00, 1:00, and 2:00
+@end(itemize)
+
+Reading Assignment: Chapter 2, Section 2.2
+
+@end(flushleft)
+
+
+@begin(figure)
+@blankspace(3 inches)
+@caption{Tiling patterns (made by Andy diSessa and Doug Hill).  This
+assignment asks you to implement a graphics language for drawing
+figures such as these.}
+@tag(tiling-patterns)
+@end(figure)
+
+Write up and turn in the following exercise from the text:
+@begin(itemize)
+Exercise 2.27 -- Balanced binary mobile
+@end(itemize)
+
+@section(Lecture Notes:  The Square-Limit Language)
+
+The laboratory assignment for this week begins on page
+@pageref(laboratory-assignment) of this handout.  For the assignment,
+you are to implement a variation of Peter Henderson's ``Escher
+Square-Limit'' language, discussed in lecture on
+Tuesday, 24 February 1987.  This handout begins with a listing of the
+procedures that implement Henderson's language.  The explanation given
+here is very minimal, since this will be covered in lecture.
+
+@include(<6001.ps>square-limit.txt)
+
+@section(Laboratory Assignment: A Drawing Language Based on Triangles)
+@label(laboratory-assignment)
+
+For this assignment, you are to implement a language similar to
+Henderson's, except based on triangles rather than squares.  We begin
+by describing the implementation, and listing the procedures that have
+been installed on the Chipmunk system for you to work with.
+
+The implementation of the language is very similar to the one
+described above.
+
+@paragraph(Points and segments)
+
+Points (vectors) are represented as pairs of numbers, and segments are
+represented as pairs of points, just as in the square-limit language:
+@begin(programexample)
+(define make-vector cons)
+(define xcor car)
+(define ycor cdr)
+
+(define zero-vector (make-vector 0 0))
+
+(define make-segment cons)
+(define seg-start car)
+(define seg-end cdr)
+@end(programexample)
+
+We will use the operations of vector addition, subtraction, and
+scaling a vector by a number:
+@begin(programexample)
+(define (+vect v1 v2)
+  (make-vector (+ (xcor v1) (xcor v2))
+               (+ (ycor v1) (ycor v2))))
+
+(define (-vect v1 v2)
+  (+vect v1 (scale -1 v2)))
+
+(define (scale x v)
+  (make-vector (* x (xcor v))
+               (* x (ycor v))))
+@end(programexample)
+
+We will also make use of an operation called @a[shift], which takes as
+arguments two vectors @a[o1] and @a[o2] and a vector @a[v] which is
+meant to represent a point relative to an ``origin'' @a[o1].
+@a[Shift] returns a vector that represents the same point as @a[v],
+but with respect to the ``origin'' @a[o2].  See figure @ref(shift).
+@begin(programexample)
+(define (shift v o1 o2)
+  (-vect (+vect v o1) o2))
+@end(programexample)
+@begin(figure)
+@blankspace(3 inches)
+@caption(Shifting a vector from one origin to another.)
+@tag(shift)
+@end(figure)
+
+The following procedure takes 2 points as arguments and draws a line
+between them on the Chipmunk screen.
+
+@begin(programexample)
+(define (drawline start end)
+  (position-pen (xcor start) (ycor start))
+  (draw-line-to (xcor end) (ycor end)))
+@end(programexample)
+
+@paragraph(Triangles)
+
+@begin(programexample)
+(define make-triangle list)
+
+(define origin car)
+(define side1 cadr)
+(define side2 caddr)
+@end(triangle)
+
+
+A triangle is represented as a triple of vectors -- an origin and two
+sides.  See figure @ref(triangle).  The origin will be represented as
+a vector whose coordinates give the coordinates of the origin with
+respect to some external coordinate system, such as the graphics
+screen coordinates.  The two sides are specified as vectors which give
+the @i[offsets] of the other two vertices of the triangle from the
+origin point.  In other words, they specify the coordinates of the
+other two vertices with respect to a coordinate system whose
+``origin'' is at the @a[origin] of the triangle.
+
+As shown in figure @ref(triangle), we can express the points of a
+triangle in terms of so-called @i[triangular coordinates], which are
+pairs @a[x], @a[y] such that @a[x+y]@lessequal()1.  Another way to
+say this is that each point of the triangle can be expressed as a
+vector
+@begin(example)
+x Side@-[1](Tri) + y Side@-[2](Tri)
+@end(example)
+where @a[x+y]@lessequal()1.  Still another way to express this is
+that mapping the point in the plane whose coordinates are @a[x],@a[y]
+to the point given by
+@begin(example)
+Origin(Tri) + x Side@-[1](Tri) + y Side@-[2](Tri)
+@end(example)
+maps one-half of the unit square onto the given triangle.
+@begin(programexample)
+(define (coord-map triangle)
+  (lambda (point)
+    (+vect
+     (+vect (scale (xcor point)
+                   (side1 triangle))
+            (scale (ycor point)
+                   (side2 triangle)))
+     (origin triangle))))
+@end(programexample)
+@begin(figure)
+@blankspace(3 inches)
+@caption(A triangle represented as origin and two sides; triangular
+coordinates.)
+@tag(triangle)
+@end(figure)
+
+Finally, we define a standard @a[screen-triangle], which is an
+isosceles triangle whose base and height are the edges of the Chipmunk
+screen:
+@begin(programexample)
+(define screen-lower-left (make-vector -190 -190))
+(define screen-lower-right (make-vector 190 -190))
+(define screen-upper-left (make-vector  -190 190))
+
+(define screen-lower-edge
+  (-vect screen-lower-right screen-lower-left))
+
+(define screen-left-edge
+  (-vect screen-upper-left screen-lower-left))
+
+(define screen-triangle
+  (make-triangle screen-lower-left
+                 screen-lower-edge
+                 (+vect screen-left-edge
+                        (scale 0.5 screen-lower-edge))))
+@end(programexample)
+
+@paragraph(Pictures)
+
+As in the square-limit language, a picture is a procedure, this time a
+procedure on triangles, which draws inside the given triangle.
+@a[Make-picture] constructs a picture from a list of segments:
+@begin(programexample)
+(define (make-picture seglist)
+  (lambda (triangle)
+    (for-each
+     (lambda (segment)
+       (drawline ((coord-map triangle) (seg-start segment))
+                 ((coord-map triangle) (seg-end segment))))
+     seglist)))
+@end(programexample)
+
+Also, as in the square-limit language, we include the following
+procedure, which clears the screen and causes a designated picture to
+be drawn in the standard @a[screen-triangle]:
+
+@begin(programexample)
+(define (draw pict)
+  (clear-graphics)
+  (pict screen-triangle))
+@end(programexample)
+
+
+We will also define some simple pictures to use as drawing elements:
+the empty picture, a picture that just outlines the triangle, one that
+connects the center of the triangle to the midpoints of the sides, one
+that draws a ``band'' across the triangle, and one that draws a ``V''
+shape.  Figure @ref(sample-pictures) shows how these figures are
+specified in terms of triangular coordinates.
+@begin(programexample)
+(define empty-picture (make-picture '()))
+
+(define outline-picture
+  (let ((v1 (make-vector 0 0))
+        (v2 (make-vector 0 1))
+        (v3 (make-vector 1 0)))
+    (make-picture (list (make-segment v1 v2)
+                        (make-segment v2 v3)
+                        (make-segment v3 v1)))))
+
+(define midpoints
+  (let ((center (make-vector (/ 1 3) (/ 1 3)))
+        (m1 (make-vector (/ 1 2) 0))
+        (m2 (make-vector 0 (/ 1 2)))
+        (m3 (make-vector (/ 1 2) (/ 1 2))))
+    (make-picture (list (make-segment m1 center)
+                        (make-segment m2 center)
+                        (make-segment m3 center)))))
+
+
+(define band
+  (let ((a1 (make-vector .4 0))
+        (a2 (make-vector .6 0))
+        (b1 (make-vector 0 .4))
+        (b2 (make-vector 0 .6)))
+    (make-picture (list (make-segment a1 b1)
+                        (make-segment a2 b2)))))
+
+(define v-shape
+  (let ((m1 (make-vector (/ 2 9) (/ 2 9)))
+        (m2 (make-vector (/ 4 9) (/ 4 9)))
+        (a1 (make-vector (/ 1 3) 0))
+        (a2 (make-vector (/ 2 3) 0))
+        (b1 (make-vector 0 (/ 1 3)))
+        (b2 (make-vector 0 (/ 2 3))))
+    (make-picture (list (make-segment a1 m1)
+                        (make-segment m1 b1)
+                        (make-segment a2 m2)
+                        (make-segment m2 b2)))))
+
+@end(programexample)
+
+@begin(figure)
+@blankspace(3 inches)
+@caption(Sample pictures, specified using triangular coordinates.)
+@tag(sample-pictures)
+@end(figure)
+
+@paragraph(Means of combination)
+
+We define a means of combination, called @a[split], which takes
+as arguments two pictures and a @a[ratio] between 0 and 1.  When given
+a triangle as argument, the @a[split] picture first splits the
+triangle by dividing @a[side1] of the triangle as specified by the
+@a[ratio].  Then it draws one picture in each subtriangle, as shown in
+figure @ref(split).
+
+@begin(figure)
+@blankspace(3 inches)
+@caption(The @a[split] combination of two pictures.)
+@tag(split)
+@end(figure)
+
+The procedure for @a[split] must compute the new origin and sides for
+each of the two component triangles.
+@begin(programexample)
+(define (split pict1 pict2 ratio)
+  (lambda (triangle)
+    (define p (scale ratio (side1 triangle)))
+    (define oa (origin triangle))
+    (define ob (shift p oa zero-vector))
+    (pict1 (make-triangle oa p (side2 triangle)))
+    (pict2 (make-triangle ob
+                          (shift (side1 triangle) oa ob)
+                          (shift (side2 triangle) oa ob)))))
+@end(programexample)
+Observe how @a[split] computes the two subtriangles, so that these can
+be handed to the appropriate @a[pict1] and @a[pict2]: We first compute
+the vector @a[p], which represents be point on the side where the
+triangle is to be split.  (Note that @a[p] will be given as a vector
+with respect to the origin of the triangle to be split.)  The first
+subtriangle has origin @a[oa] the same as the original triangle,
+@a[side1] given by @a[p], and @a[side2] which is the same as the
+@a[side2] of the original triangle.
+
+The second subtriangle has an origin @a[ob] at the point designated by
+@a[p], and the other two vertices at the same points as the original
+triangle.  However, according to our representation of triangles, we
+must express the origin in ``external'' (screen) coordinates, and
+express the other two vertices as offsets from the origin of the
+triangle.  This is where @a[shift] comes in handy: With respect to the
+origin @a[oa] of the original triangle, the origin of our second
+subtriangle is given by the vector @a[p].  So to find the coordinates
+for @a[ob], we @a[shift] @a[p] from the origin @a[oa] to an origin at
+the zero-vector. Similarly, we can find the correct @a[side1] and
+@a[side2] for the second subtriangle by using the fact that these are
+the vectors running from @a[ob] to the endpoints of the sides of the
+original triangle: With respect to the @i[old] origin @a[oa], these
+are just the vectors @a[side1] and @a[side2].  So to find the offsets
+from the @i[new] origin @a[ob], we @a[shift] @a[side1] and @a[side2]
+from @a[oa] to @a[ob].
+
+@a[Split] illustrates a useful general method for specifying new
+triangles: Find the vertices of the triangle with respect to some
+fixed coordinate system (such as the triangle that is being
+decomposed); then use @a[shift] to express points in the external
+coordinate system (this is required when specifying an origin for
+a new triangle), or as offsets from a new origin (this is required when
+specifying the sides of a new triangle).
+
+@section(To do in lab)
+
+Begin by installing the code for problem set 3 on your floppy disk,
+using the @a[load-problem-set] operation documented in the Chipmunk
+manual.  The file to be loaded contains all of the code listed above
+in section @ref(laboratory-assignment).  You will not need to edit or
+modify any of it.  The ``modifications file'' for problem set 3 that
+will be installed on your disk is an empty file, since for this
+problem set you will be writing new procedures, rather than modifying
+procedures that we supply.
+
+@paragraph(Part 1)
+
+Draw some pictures to test the procedures.  Use @a[split]
+to make various combinations of the pre-defined elementary pictures.
+
+@paragraph(Part 2)
+
+Use @a[split] to define an operation called @a[push] which is
+analogous to @a[right-push] of the square-limit language.  Test your
+procedure by trying it out on some of the simple figures provided.
+Turn in a listing of the procedure.
+
+@paragraph(Part 3)
+
+For this part, you are to define a @a[rotate] operator on pictures.  The
+rotation of a picture draws the picture in the specified triangle, but
+``rotated'' so that a different vertex of the triangle is taken as the
+origin.  See figure @ref(super-and-rotate).
+
+Here is one way to go about defining @a[rotate]: The origin of the new
+triangle is at the point specified by @a[side2] of the original
+triangle (assuming we are rotating clockwise).  So we compute this new
+origin by shifting @a[side2] from the old origin to the zero vector.
+(Compare the above explanation of @a[shift].)  The @a[side1] of the
+new triangle ends where the @a[side2] of the original triangle ended.
+So we can compute the new @a[side1] by shifting the vector @a[side2]
+from the old origin to the new origin.  The @a[side2] of the new
+triangle ends at the origin of the old triangle.  With respect to the
+old origin, this is the endpoint of the zero vector.  So we can find
+the new @a[side2] by shifting the zero vector from the old origin to
+the new origin.
+
+Implement the @a[rotate] operation by competing the following
+definition: 
+
+@begin(programexample)
+(define (rotate pict)
+  (lambda (triangle)
+    (let ((new-origin (shift <??> <??> <??>)))
+      (pict (make-triangle <??>
+                           <??>
+                           <??>)))))
+@end(programexample)
+
+Test @a[rotate] on some simple pictures.  Note that
+@a[outline-picture] and @a[midpoints] won't look any different when
+rotated, so you should use @a[v-shape] or @a[band] to test your
+procedure.
+
+Observe that, using @a[rotate], you can also rotate a picture in the
+opposite direction by applying @a[rotate] twice, using @a[repeated].
+(Compare the rotation operators in the square-limit language.)  Turn
+in listings of the @a[rotate] procedure.
+
+@begin(figure)
+@blankspace(3 inches)
+@caption(Rotating and superimposing pictures.)
+@tag(super-and-rotate)
+@end(figure)
+
+@paragraph(Part 4)
+
+Define an operator @a[three-fold] which, given a picture, produces the
+superposition of three pictures -- the original picture, the picture
+rotated once, and the picture rotated twice.  (See figure
+@ref[super-and-rotate].) Test your procedure by defining @a[3v] and
+@a[3band] to be the three-fold superpositions, respectively, of
+@a[v-shape] and @a[band].
+
+@paragraph(Part 5)
+
+Figure @ref(3split) illustrates a means of combination called
+@a[3split], which takes as its arguments three pictures and two
+numbers @a[r] and @a[s], such that @a[r+s <= 1].  It combines the
+pictures as shown in the figure.  (The orientation of the small
+triangles is unspecified -- in implementing @a[3split] you can choose
+whichever orientations you wish.)
+
+For this part, you are to implement @a[3split] and turn in a listing
+of your procedure.
+
+This procedure can be rather tricky, especially if you are not used to
+expressing points in terms of vectors, so think about it carefully
+before you start coding.  A good way to proceed is to take the central
+point indicated in figure @ref(3split) as @a[(r,s)] to be the common
+origin of the three new triangles.  Note that this point can be
+computed by vector-adding together the @a[origin] of the (original)
+triangle, the @a[side1] scaled by @a[r], and the @a[side2] scaled by
+@a[s].  You must now determine the two sides of each
+of the three small triangles relative to this origin.
+
+In writing your procedure, you can make good use of the @a[shift]
+procedure, as in the implementations of @a[split] and @a[rotate]
+discussed above.  Also, a good way to test your procedure is to run it
+with all four pictures as the @a[outline-picture], and to draw the
+result.
+
+@begin(figure)
+@blankspace(3 inches)
+@caption(Using @a[3split] to combine 3 pictures.)
+@tag(3split)
+@end(figure)
+@paragraph(Part 6)
+
+The following @a[equal-split] procedure uses @a[3split] to replicate a
+single picture 3 times, splitting the original triangle at the point
+where the medians intersect (i.e., the point who triangular
+coordinates are (1/3, 1/3).
+
+@begin(programexample)
+(define (equal-split pict)
+  (3split pict pict pict (/ 1 3) (/ 1 3)))
+@end(programexample)
+
+We could imagine a generalization of @a[equal-split], which uses the
+same picture three times, but with each of the small triangles rotated
+by applying @a[rotate] 0, 1, or 2 times, as specified.  One way to do
+this is to define a procedure similar to @a[equal-split], but which
+takes as arguments a picture, and also three numbers -- each of which
+is 0, 1, or 2 -- that specify the number of times to repeat the
+@a[rotate] operation in generating each picture in the small
+triangles.  (You can use @a[repeated] to accomplish the repetitions.)
+
+An alternative method is to use a higher-order procedure, which, given
+the three rotation numbers, will generate a procedure that takes a
+picture as argument.  In other words, if we call this higher-order
+procedure @a[make-splitter], then writing
+@begin(programexample)
+(define equal-split (make-splitter 0 0 0))
+@end(programexample)
+should be an equivalent way to define @a[equal-split], and
+@begin(programexample)
+(define alternate-equal-split (make-splitter 1 0 2))
+@end(programexample)
+should produce a procedure that is like @a[equal-split], but which
+rotates the first and third small picture before drawing them.
+
+For this part, you are to implement and turn in a listing of the
+@a[make-splitter] procedure.  As a hint, notice the @a[make-splitter]
+will have the following form:
+@begin(programexample)
+(define (make-splitter r1 r2 r3)
+  (lambda (pict)
+    ...))
+@end(programexample)
+
+As a test, try drawing
+@begin(programexample)
+(define mesh ((make-splitter 0 1 2) band))
+@end(programexample)
+
+Turn in a listing of @a[make-splitter].
+
+@paragraph(Part 7)
+
+Suppose we use @a[3split] recursively: split a picture which is itself
+a split, and so on.  Here is an extended version of the
+@a[equal-split] procedure given above, which performs this splitting
+to a specified number of levels:
+@begin(programexample)
+(define (rec-equal-split pict levels)
+  (if (= levels 0)
+      pict
+      (let ((p (rec-equal-split pict (-1+ levels))))
+        (3split p p p (/ 1 3) (/ 1 3)))))
+@end(programexample)
+
+Now suppose we want to generalize this procedure as in part 6, that is
+to have a higher-order procedure that will create things like
+@a[rec-equal-split], except where the splitting ratios of the sides
+can be other than one-third.  We want a procedure
+@a[make-rec-splitter], such that @a[rec-equal-split] could be defined as
+@begin(programexample)
+(define rec-equal-split (make-rec-splitter (/ 1 3) (/ 1 3)))
+@end(programexample)
+
+Test your procedure by drawing some figures, and turn in a listing.
+
+@paragraph(Part 8)
+
+The procedures you have implemented give you a wide choice of things
+to experiment with. For example, even if you restrict yourself to a
+single picture element, and perform only @a[3split] to three levels
+using a fixed splitting point (@a[r], @a[s]), there are still a
+tremendous number of variations, since for each @a[3split] you can
+choose to rotate each of the component pictures.  Thus, each level
+gives you 27 choices (three orientations for each of three pictures)
+and all three levels thus produces 9@+[3] possibilities, although many
+of these will be the same, due to symmetry of the component figures.
+
+There is nothing to turn in for this part of the assignment, but we
+hope you will spend some time experimenting.  The patterns in figure
+@ref(tiling-patterns) were produced in just this way, using picture
+elements similar to the ones you have here.  What kinds of patterns
+can you discover?
+
+@paragraph(Part 9)
+
+Suppose we decide to change the representation of vectors so that
+@a[make-vector] is now defined as:
+@begin(programexample)
+(define make-vector list)
+@end(programexample)
+
+What are the corresponding new definitions of @a[xcor] and @a[ycor]?
+What other procedures in the triangle-drawing system must be changed
+as a consequence of making this change in the representation for
+vectors?
+

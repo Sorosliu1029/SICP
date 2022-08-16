@@ -1,0 +1,345 @@
+% for yTeX
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+\def\v#1{\hbox{\bf #1}}
+\def\unit#1{{\v{\^#1}}}
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Fall Semester, 1987}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Fall Semester 1987}
+\rectorightheader={Problem Set 9}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 9}
+
+\vskip 0.25truein
+
+\vpar
+Issued: November 12, 1987.
+
+
+\vpar
+Due: in recitation on November 25, 1987 {\it for all sections}
+
+
+\vpar
+Reading assignment: Sections 4.4 and 4.5 of the text
+
+\vskip 20pt
+
+{\bf Quiz Announcement:}
+Remember that Quiz 2 is on Wednesday, November 18.  The quiz 
+will be held in Walker Memorial Gymnasium (50-340) from 5--7PM or
+7--9PM.  You may take the quiz during either one of these two periods,
+but students taking the quiz during the first period will not be allowed
+to leave the room until the end of the period.  The quiz is {\bf
+partially} open book, meaning that you may bring a copy of the Scheme
+manual, plus {\bf one} sheet of 8.5 by 11 inch paper, on which you may
+place any crib notes you think will be useful.  The quiz will cover
+material through that presented in lecture on November 10, and through
+section 4.2 of the text.
+
+\chapter{1. Homework exercises}
+
+Do the following exercises in the textbook:
+
+\beginbullets
+
+\bpar Exercise 1. - exercise 4.32 in the textbook
+
+\bpar Exercise 2. - exercise 4.33 in the textbook (Note: the mini-database
+      for this exercise is included in the code at the end of this handout.
+      You do not need to type it in in order to try out your answers.)
+
+\chapter{2. Laboratory Assignment: The Query Language}
+
+Except for one exercise in this part, you will not be doing any programming
+in SCHEME for this problem set.  Instead, you will be programming in the
+"query language" described in Chapter 4.4 in the book.  Use the
+``Load Problem Set'' command to load the query language code and a
+simple data base.  As you will notice, this version of the language
+is not very efficient.  To avoid slowing it down, be sure NOT to ``zap''
+the source code of the query language into SCHEME -- a compiled
+version, which is more efficient, is being loaded automatically into SCHEME
+when you issue the ``Load Problem Set'' command.
+
+\vpar
+Don't forget to end everything you type to the query prompt with the
+{\tt execute} key, just as you would at the normal Scheme prompt.
+
+\vpar
+Once you have read the files in, you must do two things before you can
+start the system.  First, you must ``zap'' in the data base definition.
+Second, you must initialize the system by typing in:
+
+\beginlisp
+(initialize-data-base pi-data-base)
+\endlisp
+\vpar
+After you have done that, you can start the system by typing in:
+
+\beginlisp
+(query-driver-loop)
+\endlisp
+
+\section{What Happens Next with Paranoid International Securities Systems?}
+
+Paranoid International's Mobot business was not a great success.  Their
+clients complained that the Mobots are not smart enough to handle campus
+security (campuses are becoming more and more violent places nowadays.)
+PI discovered that the main reason is that they don't have enough computer
+science people in the R-and-D department, and they ended up forcing a lot of
+the EE people to write software to program the MOBOTS (no offense to the
+EE's).  Since it's recruiting season again, PI decided to hire more
+computer science people besides the usual marketing and MIS (management
+information systems) people they hire every year.  To keep track of the
+people they interviewed, chief campus recruiter Mr. Han Shakin maintained
+a data base of his interviewees.  A data base query system is supplied
+by the MIS department of PI, but with minimal documentation on how to
+use the system (as is always the case with the products that MIS departments
+deliver.)  Your task is to help Mr. Han Shakin to use the system.
+
+\section{Part 1}
+
+Give simple queries that retrieve the following information from the
+data base:
+
+\bpar a. Everyone who went to school at MIT
+
+\bpar b. Everyone who is interested in some area in AI
+
+\bpar c. The addresses of everyone who lives in Cambridge
+
+Test out your queries and hand in a photo session of it.
+
+\section{Part 2}
+
+Formulate compound queries that retrieve the following information from
+the data base:
+
+\bpar a. All those who got an MBA degree from ``Harvahd''.
+
+\bpar b. All those whose GPA is between 4.0 and 5.0, or whose communication
+         skill is rated ``good''.  
+
+\bpar c. All those who have a computer science degree which is not an
+         SB degree and didn't get that degree from MIT.  (For this one,
+         you have a chance to use the NOT special form.  Does the query
+         system give you a different response if you put the NOT statement
+         as the first clause in the AND statement?  Why?)
+
+Test out your queries and hand in a photo session of it.
+
+\section{Part 3}
+
+Define four rules described as follows:
+
+\bpar Define a rule which says that a person is a ``byte-head'' if
+         he/she has a PHD in computer science and is interested in any
+         area in AI.
+
+\bpar  Define a rule which says that a person can be hired in the
+        marketing division if he/she doesn't have a PHD degree and
+         has either an MBA degree or his/her communication skill is
+         rated as ``best''.  (Mr. Han Shakin thinks that paying a
+         PHD to do marketing is too expensive.)  Notice that the
+         name of Cy D. Fect gets printed twice.  Why?
+
+\bpar  Define a rule which says that a person can be hired in the
+         software development division if he/she has a degree in computer
+         science, has a GPA greater than 4.5, and does not have a
+         PHD degree (PHD's are reserved for the research division.)
+
+\bpar  Define a rule which says that a person should be paid more
+         in order for PI to attract him/her if the person has a computer
+         science degree from MIT and his/her GPA is greater than 4.8.
+
+Test out your rules and hand in photo sessions of it.
+
+\section{Part 4}
+
+For this part, you must define rules in terms of other rules:
+
+\bpar Define a rule which says that a person can be hired in the
+         AI division if he/she is a ``byte-head'' or has an SM degree
+         in computer science while interested in some area in AI.
+
+\bpar Define a rule which says that a person can be hired in the
+         MIS division if he/she can be hired in the software development
+         division and is also interested in some area in MIS.
+
+\bpar Define a rule which says that a person can be hired in the
+         R-and-D division if he/she can be hired in either the AI division
+         or the software-development division.
+
+\bpar Define a rule which says that a person can be hired under the
+         company's affirmative action policy if the person can be hired
+         in either marketing, MIS or R-and-D, and has a degree from the
+         school Swellesley.  Could you explain why the name of
+         Alyssa P. Hacker gets printed twice?
+
+\bpar Define a rule which says that a person is cheaper to be hired
+         in R-and-D if the person can be hired in R-and-D but doesn't need to
+         to be paid more for PI for attract him/her.
+
+\endbullets
+\vpar
+Test out the rules and hand in photo sessions of it.
+
+\section{Part 5}
+
+Try out the rule {\tt know-each-other} given in the data base.  Notice
+that every pair of people who know each other gets printed twice.
+Why? Devise a way to fix this problem.
+
+\section{Part 6}
+
+Do exercise 4.41 in the text book.  You need not make any changes to the
+query language code in order to implement {\tt unique}.  Merely set up a
+small file of your own with the new code to be added to the query interpreter.
+Note that during the debugging of your program, you will probably be 
+switching back and forth between the editor and SCHEME.  Each time you
+modify the definition of {\tt uniquely-asserted?} and read it back into
+SCHEME, be sure to also read in and execute the {\tt put} command.
+Otherwise, you will change the procedure definition, but {\tt qeval} will
+still dispatch to the old procedure.
+
+Test out your procedure by issuing the following queries:
+
+\beginlisp
+(unique (pay-more-to-attract ?x))
+\pbrk
+(unique (can-hire-marketing ?x))
+\endlisp
+
+The first one should return the only frame where {\tt x} is bound to
+Ben Bitdiddle, and the second one should return nothing.
+
+\section{Part 7}
+
+The rule {\tt can-supervise} given in the data base is not complete.
+It uses the criteria {\tt better-qualification}.  Write a rule that
+says that a person has better-qualification than another if he/she
+is from either MIT, Harvahd or Swellesley, and has a degree in the
+same subject as the other person, but can communicate better than
+the other person.  You might find it useful to define a rule
+{\tt can-communicate-better}.  Notice that since there are only
+four ratings of communication skills: best, better, good and ok, and
+they are lexicographically ordered, one can compare them lexicographically
+to determine which person's communication skill is better.
+
+Test out your rule and make sure it works.  This rule takes a long
+time to run, so be patient with it.
+
+If we switch the order of the two clauses in the {\tt and} statement
+in {\tt can-supervise}, the system goes into an infinite loop.  Explain
+why.
+
+\section{Part 8 - Extra Credit}
+
+(This is a hard one).  Many of logic systems have expert systems
+built on top of them.  The expert systems make use of the power of the
+logic systems to do logical deductions while interacting with the user.
+Specifically, an expert system usually asks the user questions if the
+logic system cannot make deductions due to a lack of information in the
+data base.  The following is an example of an expert system which can
+recommend a very limited set of drugs for a patient:
+
+\vpar
+Suppose our data base consists of the following facts:
+
+\beginlisp
+(suppresses aspirin headache)
+(suppresses lomotil diarrhea)
+(aggravates aspirin ulcer)
+(aggravates lomotil bad-liver)
+\endlisp
+
+\vpar
+A computer with the expert system on it would behave as follows:
+
+\begintable[ll]
+user:& (should-take John ?x)\cr
+computer:& (has-complained-of John ?s)\cr
+&           What is the value of ?s\cr
+user:& headache\cr
+computer:& (has-condition John ulcer)\cr
+user:& no\cr
+computer:& (should-take John aspirin)\cr
+\endtable
+
+\vpar
+We can imagine having a rule that looks like the following:
+
+\beginlisp
+(rule (should-take ?p ?d)
+      (and (is-reported (has-complained-of ?p ?s))
+           (suppresses ?d ?s)
+           (not (unsuitable-for ?d ?p))))
+\endlisp
+
+\vpar
+{\tt is-reported} is a very complex rule that first searches the data base
+to determine whether the patient has previously reported a symptom.  If
+not, it makes the computer ask the patient.
+
+\vpar
+With all this information in mind, how much of the existing query
+language implementation has to be modified in order to have it behave
+like the trivial expert system outlined above?  Give a paragraph or
+two of your thoughts.  Details on the implementation are not important.
+We are interested in the basic changes one must make to the system.
+
+\end

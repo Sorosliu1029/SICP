@@ -1,0 +1,304 @@
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+% for yTeX
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+\def\v#1{\hbox{\bf #1}}
+\def\unit#1{{\v{\^#1}}}
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Spring Semester, 1988}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Spring Semester 1988}
+\rectorightheader={Problem Set 5}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 5}
+
+\vskip 0.25truein
+
+\vpar
+Issued: March 1, 1988.
+
+
+\vpar
+Due: in recitation on March 16 {\it for sections meeting at 9, 10 and
+11} and on March 18 {\it for sections meeting at 12, 1 and 2}.
+
+\vpar
+Note: you have two weeks for this assignment because of the quiz on
+March 9th.  This assignment is the same length as a normal week long
+assignment.  We suggest you do the homework exercises before the quiz
+and the laboratory exercises afterwards.
+
+\vpar
+Reading assignment: Finish Chapter 2.
+
+\vskip 20pt
+
+{\bf Quiz Announcement:}  Quiz 1 is on Wednesday, March 9.  The quiz
+will be held in Walker Memorial Gymnasium (50-340) from 5--7PM or
+7--9PM.  You may take the quiz during either one of these two periods,
+but students taking the quiz during the first period will not be allowed
+to leave the room until the end of the period.  The quiz is {\bf
+partially} open book, meaning that you may bring a copy of the Scheme
+manual, plus {\bf one} sheet of 8.5 by 11 inch paper, on which you may
+place any crib notes you think will be useful.  The quiz will cover
+material from the beginning of the semester through the material
+presented in recitation on March 2, and through section 2.2 
+of the textbook.  
+
+\chapter{1. Homework exercises}
+
+Write up and turn in the following exercises:
+
+1. Exercise 2.27 from text
+
+2. Exercise 2.28 from text
+
+3. Exercise 2.29 from text
+
+
+\chapter{2. Laboratory Assignment: The Airline Mergers}
+
+This assignment asks you to integrate three different file systems
+using dispatch-by-type and data-directed programming techniques.
+You should read section 2.3 of the book before doing this assignment.
+In addition, the structure of one of the file systems is very
+similar to a Huffman-coding-tree, which is described in detail in
+section 2.2.6 of the book.  You should refer to that section if
+you do not understand it from reading the code we give you in the
+appendix.
+
+Use the ``load problem set'' command to load the code in the appendix
+from the system onto your Chipmunk.  You will not need to modify
+any of the code, but you will be adding a substantial amount of
+new code.  Therefore we suggest that you put your new code in a
+separate file.  Since one can only ``zap'' the code into the Scheme
+environment one file at a time, you can first ``zap'' all the code
+in the appendix into Scheme, then set up a new buffer and work
+from there.  The ``zapped'' code stays in Scheme unless you logout
+from your machine.
+
+\section{An adaptation of a True Story of Our Time}
+
+Recent chronic economic depressions have had significant impact upon
+the airline industry.  Many small and medium-sized airlines are being
+forced to merge to form conglomerates (take 14.01 - you'll
+learn about these buzz words) in order to survive the high cost of
+business operation.  Among these unfortunate souls are three airlines
+that have decided to merge to form one single airline.
+They are {\bf People-Delay Airline} (slogan - {\it fly the executive
+style}
+(i.e. always late)), {\bf New Jersey Air} (slogan -  {\it something SPECIAL
+in the air}) and {\bf Epsilon Airline}, a Delta Airline spin-off
+(slogan - {\it we achieve perfection so long as the error lies in
+the neighborhood of epsilon}).  These three airlines are, however, very worried about
+integrating their personnel files.   Their file systems are structured
+differently, and they have so many employees that designing a
+completely
+new file system would require them to hire 10 data entry clerks for
+3 years to enter all the data into the new system.  The CEO at 
+People-Delay Airline, Al Cheapo, thinks that this is too expensive.
+He has appointed you to think up a way of integrating the three
+file systems without having to modify the internals of any one
+system.  You, of course, know a good trick for doing this, if you have
+gone to the recent lectures.
+
+\section{Part 1}
+
+Just when you were ready to begin work, a small fire broke
+out in the computer lab at People-Delay.  The procedures for looking
+up, inserting and deleting employee records for People-Delay's
+personnel file were destroyed from magnetic tapes as well as from
+computer memory.  Your first task is to reconstruct those
+procedures.  You begin by analyzing the
+structure of People-Delay's personnel file, which looks like the diagram
+shown in Figure 1 (verify it in your mind!).
+
+Notice that the names of the employees are alphabetized from
+left to right.  In fact, the personnel file is structured
+exactly the same as New Jersey Air's file structure, except
+for one difference - the employees are alphabetically
+arranged in People-Delay Airline's file, while the employees
+are randomly arranged in New Jersey Air's file structure.
+Reconstruct the {\tt lookup, insert} and {\tt delete} procedures for
+People-Delay's personnel file.  Try to make your procedures
+efficient by using the fact that employee names are alphabetized.
+Name these procedures {\tt lookup-ordered, insert-ordered} and
+{\tt delete-ordered}.  Test each procedure using the miniaturized file
+system provided in the appendix.
+When you test out the {\tt insert-ordered}
+procedure, use the given constructor {\tt make-record-table} to make a
+new record with salary information for Alyssa, who makes 35 thousand
+dollars a year at People-Delay.
+
+Hand in a listing of your procedures and a photo file of
+a sample execution of each procedure.
+
+\section{Part 2}
+
+
+Just out of curiosity,  you want to find out what the structure
+of the personnel file of Epsilon Airline looks like.  The personnel
+file presented in the code is again a minaturized version of the
+real file (remember that the size of the real file has caused
+Al Cheapo to ask you to handle this job in the first place).
+Draw a box and pointer diagram of this sample miniature file.
+In 2 sentences or less, summarize how insertion of an
+employee record is done.  Similarly, summarize how deletion of an
+employee record is done.
+
+\section{Part 3}
+
+Now, you are ready to integrate the three file
+systems. Remember that what you want to achieve is to have a generic
+{\tt lookup}, a generic {\tt insert} and a generic {\tt delete} operator,
+which, when given the right employee name and the right file (and
+the right employee record, in the case of insertion), will
+select the right procedure to perform the operation, depending on the
+requirements of the file system.
+You may realize that between the two
+integration methods - {\bf dispatch-by-type} and
+{\bf data-directed-programming},
+one is more suitable for combining a small number of systems,
+and the other is more suitable for combining a large number
+of systems.  You are to decide, for this part, which
+method to use, and implement that method.
+
+Hand in a listing of your new code and a photo session
+demonstrating that the generic operators work as desired.
+
+\section{Part 4}
+
+Al Cheapo is very pleased with your work.  
+``If integrating these personnel files is such an easy task'', he says,
+``then I am going to persuade more airlines to merge with us!!''
+This means that you now have to use the other method
+to implement the integration.
+
+Hand in a listing of your new code and a photo session
+demonstrating that the generic operators under this
+new system also work.  If you picked the wrong methods
+for part 3 and 4 (i.e., if you reversed the two),
+but got the implementation of each one right, you
+will get half the credit for part 3 and full credit
+for part 4.
+
+\section{Part 5}
+
+You have probably noticed that for each company, the
+structure of each employee record is exactly the same
+as the structure of the file itself.  That is, the
+structure of an employee record for the unordered
+type of file is again a list of pairs, where the
+car of each pair points to an identifier, and the
+cdr of each pair points to the information associated
+with that identifier, and the identifiers are also
+unordered like the names.  Similarly, the employee
+record of the ordered type has the same structure as
+the ordered file itself.  The employee record of
+the tree type file has also a tree structure.
+In other words, we have a recursion of structure
+in the files.
+
+Taking advantage of this observation,  write three
+procedures: {\tt record-lookup, record-insert} and
+{\tt record-delete}, which are also generic operators.
+
+{\tt Record-lookup} takes the name of an employee, 
+the appropriate personnel file and an identifier,
+which could be either the symbol {\tt salary} or
+{\tt address}, and returns the salary or address of
+the employee if the employee is found in the given
+personnel file.
+
+{\tt Record-insert} takes the name
+of an employee, the appropriate personnel file,
+an identifier and the information associated
+with that identifier, and returns the new
+personnel file with the information associated
+with the identifier inserted in the employee's
+record, if the employee is found in the
+given personnel file.
+
+{\tt Record-delete} takes the name of an employee,
+the appropriate personnel file and an identifier,
+and returns the new personnel file with the
+information associated with the identifier
+deleted (together with the identifier itself),
+if the employee is found in the given personnel
+file.
+
+(Hint: Make use of the already existing
+generic {\tt lookup, insert} and {\tt delete} operators.)
+
+\section{Part 6}
+
+After the new system has been in place for a while,  payroll
+department head Ms. I. Luva Payday complains to
+you that she is tired of having to remember which employee is in
+which personnel file.  She asks you to link all the files together
+into a master file, as diagrammed in Figure 2, and have an operator
+{\tt lookup-global}, which, when given the name of the employee and the
+masterfile, would automatically search through each personnel file
+until it finds the employee, and return the employee's record.
+
+
+Hand in a listing of your {\tt lookup-global} procedure, and a
+photo session of its execution.
+
+Thus the three airlines live happily ever after with their new
+company name: No-frill Airline (slogan: ``The generic airline of the
+21st Century'').
+
+
+\end

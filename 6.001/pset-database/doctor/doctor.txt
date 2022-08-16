@@ -1,0 +1,505 @@
+@comment(Hey, EMACS, this is -*- SCRIBE -*- input)
+@Comment(Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. )
+
+@device(dover)
+@make(6001)
+
+@modify(excounter, numbered [Exercise @1], referenced [@1])
+
+@PageHeading(left "6.001 -- Spring Semester 1985",
+             center "@Value(Page)",
+             right "Problem set 3")
+
+@begin(center)
+MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+Department of Electrical Engineering and Computer Science
+6.001 Structure and Interpretation of Computer Programs
+Spring Semester, 1985
+
+Problem Set 3
+@end(center)
+@blankspace(0.25 in)
+
+@begin(flushleft)
+Issued: Tuesday, Feb. 12 (issued early due to vacation next week)
+
+Due:
+@begin(itemize)
+on Wednesday, February 27
+for recitations meeting at 9:00, 10:00, and 11:00
+
+on Friday, March 1
+for recitations meeting at 12:00, 1:00, and 2:00
+@end(itemize)
+
+Reading Assignment: Chapter 2, Sections 2.1 and 2.2
+
+@b[Reminder: Quiz 1 will be held on Thursday, March 7, at night]
+
+@end(flushleft)
+
+
+
+@section(Homework exercises)
+
+Write up and turn in the following exercises from the text:
+@begin(itemize)
+Exercise 1.34: Finding cube roots with Newton's method
+
+Exercise 2.3:  Representing pairs as procedures
+
+Exercise 2.4:  Representing pairs as integers
+
+Exercise 2.17: Defining @a[reverse]
+
+Exercise 2.22: list representations
+
+Exercise 2.23: @a[car-cdr] finger-exercises
+
+Exercise 2.24: comparing @a[cons], @a[list], and @a[append]
+
+Exercise 2.25: @a[deep-reverse]
+
+Exercise 2.26: @a[fringe]
+@end(itemize)
+
+
+@section(Laboratory Assignment: The DOCTOR Program)
+
+This assignment deals with a drastically simplified version of a
+famous program called @a[doctor] that was developed at MIT in the
+early 1960s by Professor Joseph Weizenbaum.  The @a[doctor] program
+engages in a ``conversation'' with the computer user, in which it
+mimics a nondirective style of psychotherapy.  In the following sample
+conversation, the user's responses are preceded by the prompt symbol
+@a[**], and the program's responses are shown in upper case.   In
+order to simplify the program, we omit most punctuation and represent
+the responses of both the user and the machine as Lisp lists.
+
+@begin(programexample)
+==> (visit-doctor 'Bill)
+(HELLO, BILL)
+(WHAT SEEMS TO BE THE TROUBLE?)
+
+**(everyone hates me)
+(WHY DO YOU SAY EVERYONE HATES YOU)
+
+**(whenever i enter a room no one will look me in the eye)
+(MANY PEOPLE HAVE THE SAME SORTS OF FEELINGS)
+
+**(they laugh at me behind my back)
+(YOU SEEM TO THINK THEY LAUGH AT YOU BEHIND YOUR BACK)
+
+**(they get together and talk about how they hate me)
+(MANY OF MY PATIENTS HAVE TOLD ME THE SAME THING)
+
+**(even my mother hates me)
+(YOU FEEL THAT EVEN YOUR MOTHER HATES YOU)
+
+**(even when i was a baby she said i was ugly and stupid)
+(PLEASE CONTINUE)
+
+**(she hit me all the time)
+(WHY DO YOU BELIEVE SHE HIT YOU ALL THE TIME)
+@end(programexample)
+
+Although the @a[doctor] program seems to understand and reply to the
+user's remarks, in fact the program has just two simple methods for
+generating a response.  The first method is to take the user's reply,
+change some first-person words like ``I,'' ``me,'' ``my,'' and ``am''
+to the corresponding second-person words, and append the transformed
+response to a qualifying phrase such as ``why do you say'' or ``you
+seem to think.''  The second method is to ignore what the user types
+and simply respond with some sort of hedge like ``please continue'' or
+``many people have the same sorts of feelings.''  The program chooses
+one of these two methods at random.
+
+Every interactive program, including the Lisp interpreter itself, has
+a distinguished procedure called a @i[driver loop].  A driver loop
+repeatedly accepts input, determines how to process that input, and
+produces the output.  The @a[visit-doctor] procedure first greets
+the user, then asks an initial question and starts the driver loop.
+
+@begin(programexample)
+(define (visit-doctor name)
+  (print (list 'hello, name))
+  (print '(what seems to be the trouble?))
+  (doctor-driver-loop name))
+@end(programexample)
+
+The driver loop prints a prompt and reads in the user's response.  If
+the user says @a[(goodbye)], then the program terminates.  Otherwise,
+it generates a reply according to one of the two methods described
+above and prints it.
+
+@begin(programexample)
+(define (doctor-driver-loop name)
+  (newline)
+  (princ '**)
+  (let ((user-response (read)))
+    (cond ((equal? user-response '(goodbye))
+           (print (list 'goodbye, name))
+           (print '(see you next week)))
+          (else (print (reply user-response))
+                (doctor-driver-loop name)))))
+
+(define (reply user-response)
+  (cond ((fifty-fifty)
+         (append (qualifier)
+                 (change-person user-response)))
+        (else (hedge))))
+@end(programexample)
+
+The predicate @a[fifty-fifty] used in @a[reply] is a procedure
+that returns true or false with equal probability.
+@begin(programexample)
+(define (fifty-fifty)
+  (= (random 2) 0))
+@end(programexample)
+
+Qualifiers and hedging remarks are generated by selecting items at
+random from appropriate lists:
+
+@begin(programexample)
+(define (qualifier)
+  (pick-random '((you seem to think)
+                 (you feel that)
+                 (why do you believe)
+                 (why do you say))))
+
+(define (hedge)
+  (pick-random
+   '((please go on)
+     (many people have the same sorts of feelings)
+     (many of my patients have told me the same thing)
+     (please continue))))
+@end(programexample)
+
+The basis for the procedure that changes selected first person words
+to second person is the following @a[replace] procedure, which
+changes all occurrences of a given @a[pattern] in a list @a[lst]
+to a @a[replacement]:
+
+@begin(programexample)
+(define (replace pattern replacement lst)
+  (cond ((null? lst) '())
+        ((equal? (car lst) pattern)
+         (cons replacement
+               (replace pattern replacement (cdr lst))))
+        (else
+	 (cons (car lst)
+	       (replace pattern replacement (cdr lst))))))
+
+@end(programexample)
+This is used to define a procedure @a[many-replace], which
+takes as inputs a list @a[lst] together with a list of @a[replacement-pairs] of the form
+
+@begin(programexample)
+((<pat@-[1]> <rep@-[1]>) (<pat@-[2]> <rep@-[2]>) ... )
+@end(programexample)
+It replaces in @a[lst] all occurrences of @a[pat]@-[1] by @a[rep]@-[1],
+@a[pat]@-[2] by @a[rep]@-[2], and so on.
+
+@begin(programexample)
+(define (many-replace replacement-pairs lst)
+  (cond ((null? replacement-pairs) lst)
+        (else (let ((pat-rep (car replacement-pairs)))
+		(replace (car pat-rep)
+			 (cadr pat-rep)
+			 (many-replace (cdr replacement-pairs)
+				       lst))))))
+@end(programexample)
+Changing the selected words is accomplished by an appropriate call to
+@a[many-replace]:
+
+@begin(programexample)
+(define (change-person phrase)
+  (many-replace '((i you) (me you) (am are) (my your))
+                phrase))
+@end(programexample)
+
+The procedure @a[pick-random] used by @a[qualifier] and @a[hedge] picks an element at random from a given list:
+
+@begin(programexample)
+(define (pick-random lst)
+  (nth (random (length lst)) lst))
+@end(programexample)
+
+The following figure shows the pattern of procedure calls indicated in the
+text of the @a[doctor] program.
+
+@begin(figure)
+@begin(smallfigurebody)
+                       visit-doctor
+                            |
+                            |
+                    doctor-driver-loop
+                            |
+                            |
+                          reply
+                            |
+    -----------------------------------------------
+    |                  |           |              |
+ fifty-fifty       qualifier      hedge      change-person
+                       |           |              |
+                       |           |              |
+                       -------------         many-replace
+                            |                     |
+                            |                     |
+                        pick-random            replace   
+
+@end(smallfigurebody)
+@caption(Procedure calls in the @a[doctor] program.)
+@end(figure)
+
+@section(To do in lab)
+
+Begin by installing the code for problem set 3 on your floppy disk,
+using the @a[load-problem-set] operation documented in the Chipmunk
+manual.  The file to be loaded contains all of the code listed above.
+
+@begin(exercise)
+Edit the @a[qualifier] and @a[hedge] procedures to
+increase the doctor's repertoire of qualifying and hedging phrases.
+Run through a brief session with the modified program.
+@end(exercise)
+
+@begin(exercise)
+What is the result of evaluating
+@begin(programexample)
+(change-person '(you are not being very helpful to me))
+@end(programexample)
+
+We can improve the @a[doctor] program  by having it not only change first
+person words to second person, but also second person to first.  For
+instance, if the user types
+@begin(programexample)
+(you are not being very helpful to me)
+@end(programexample)
+the program should respond with something like
+@begin(programexample)
+(YOU FEEL THAT I AM NOT BEING VERY HELPFUL TO YOU)
+@end(programexample)
+Thus, ``are'' should be replaced by ``am,'' ``you'' by ``i,''
+``your'' by ``my,'' and so on.  (We will ignore the problem of
+having the program decide whether ``you'' should be replaced by ``i''
+or by ``me.'')
+
+@begin(alphaenumerate)
+One idea for accomplishing this replacement is to
+simply add the pairs
+@a[(are am)], @a[(you i)], and @a[(your my)] to the list
+of pairs in the @a[change-person] procedure.   Edit the procedure to do
+this.  Now try evaluating
+@begin(programexample)
+(change-person '(you are not being very helpful to me))
+@end(programexample)
+What does the modified procedure return?  Does it matter whether you
+add the new pairs to the beginning or the end of the replacement list?
+
+In a few sentences, carefully describe the bug in the method of
+implementing replacement used above.  (You may find it helpful to
+@a[step] or @a[trace] various things in order to discover what is
+going on.)
+
+Design a correct replacement method that will accomplish both kinds
+of replacement (first person by second person as well as second person
+by first person) and write a few sentences describing your strategy.
+
+Write, test, and debug procedures that implement your replacement
+strategy.  Install these in the @a[doctor] program.  Turn in, for this
+part, a listing of the procedures that you wrote, together with some
+sample responses that demonstrate that your method works.
+@end(alphaenumerate)
+@end(exercise)
+
+@begin(exercise)
+Another improvement to the @a[doctor] program is to give it a third
+method of generating responses.  If the doctor remembered everything
+the user said, then it could make remarks such as
+@begin(programexample)
+(EARLIER YOU SAID THAT EVERYONE HATES YOU)
+@end(programexample)
+Add this method to the program as follows.
+
+@begin(alphaenumerate)
+Modify the program so that @a[doctor-driver-loop] maintains a list of
+all user responses.@foot[For people who have looked ahead: Do not use
+@a[set!] in order to implement this.  It isn't necessary.]
+
+Modify the program so that @a[reply] occasionally replies
+by picking a previous user response at random, changing person in that
+response, and prefixing the modified response with ``earlier you said that.''
+If you want more control over how often the program uses each response method,
+you can use the following predicate, which returns true @a[n1] times out
+of every @a[n2]:
+@begin(programexample)
+(define (prob n1 n2)
+  (< (random n2) n1))
+@end(programexample)
+@end(alphaenumerate)
+
+Turn in a listing of the procedures you wrote for this part.
+@end(exercise)
+
+@begin(exercise)
+The doctor currently sees only one patient, whose name is given in the
+call to @a[visit-doctor].  When that patient says @a[(goodbye)],
+@a[visit-doctor] returns to the Scheme interpreter.  Modify the
+program so that the doctor automatically sees a new patient after the
+old one goes away, and provide some way to tell the doctor when to
+stop.  For example, @a[visit-doctor] might terminate after seeing a
+particular number of patients (supplied as an argument) or when it
+sees a patient with some special name (such as @a[suppertime]).  You
+may use the following procedure to find out each patient's name:
+
+@begin(programexample)
+(define (ask-patient-name)
+  (print '(next!))
+  (print '(who are you?))
+  (car (read)))
+@end(programexample)
+Now a session with the doctor might look like
+@begin(programexample)
+==> (visit-doctor)
+(NEXT!)
+(WHO ARE YOU?) (Hal Abelson)
+(HELLO, HAL)
+(WHAT SEEMS TO BE THE TROUBLE?)
+
+**(everyone taking 6.001 hates me)
+(WHY DO YOU SAY EVERYONE TAKING 6.001 HATES YOU)
+...
+
+**(goodbye)
+(GOODBYE, HAL)
+(SEE YOU NEXT WEEK)
+(NEXT!)
+(WHO ARE YOU?) (Eric Grimson)
+(HELLO, ERIC)
+(WHAT SEEMS TO BE THE TROUBLE?)
+...
+**(goodbye)
+(GOODBYE, ERIC)
+(SEE YOU NEXT WEEK)
+(NEXT!)
+(WHO ARE YOU?) (suppertime)
+(TIME TO GO HOME)
+==>
+@end(programexample)
+turn in a listing showing your modification.
+@end(exercise)
+
+@begin(exercise)
+(Open-ended design project) Design and implement another improvement
+that extends the capabilities of the @a[doctor] program in some
+significant way.  For example, you could give the program
+the ability to make a response that relates to what the user said.
+The response to ``I am often depressed'' could be ``When you feel
+depressed, go out for ice cream.''  You can implement this by
+associating canned responses with key words, so that when the user
+mentions one of the key words, the program selects one of the
+responses associated with that word.  The keyword-response list could
+look like
+
+@begin(programexample)
+( ((depressed suicide)
+   ((when you feel depressed, go out for ice cream)
+    (depression is a disease that can be treated)))
+  ((mother father parents)
+   ((tell me more about your family)
+    (why do you feel that way about your parents?)))
+)
+@end(programexample)
+
+The data structure used here is a list of lists, each containing a
+list of keywords and a list of responses.  A variation on this trick
+is to have the ``canned'' responses include slots to be filled in with
+the key word that triggered the response.  For example, with the
+following keyword-response lists the doctor might respond to a
+sentence including ``father'' with ``Tell me more about your father.''
+
+@begin(programexample)
+( ((depressed suicide)
+   ((when you feel depressed, go out for ice cream)
+    (depression is a disease that can be treated)))
+  ((mother father parents)
+   ((tell me more about your *)
+    (why do you feel that way about your * ?)))
+)
+@end(programexample)
+
+Alternatively, you could generalize the structure of the @a[doctor]
+program so that instead of having a collection of keywords to
+check for, the program has a data structure containing a
+collection of arbitrary predicates (procedures) and associated
+``response procedures.''  If the user's typed response is found to
+satisfy one of the predicates, then the program uses one of the associated
+response procedures to generate its reply.  For instance, including
+the predicate
+@begin(programexample)
+(lambda (user-response) (< (length user-response) 3))
+@end(programexample)
+would allow the program to react to very short answers with a
+reply such as ``Could you say more?''
+
+Implement your modification.  (You need not feel constrained to follow
+the suggestions given above.)  Turn in descriptions (in English) of
+the main procedures and data structures used, together with listings
+of the procedures and a sample dialogue showing the program in
+operation.
+
+@b[Contest:]  There will be prizes awarded for the cleverest programs
+and dialogues turned in for this exercise.
+@end(exercise)
+
+@begin(exercise)
+Do you think it is feasible to improve the program to the point where
+its responses are essentially indistinguishable from those of a real
+person?  Some people have advocated using such programs in the
+treatment of psychiatric patients.  Some patients who have
+participated in experiments claim to have been helped!  Others object
+that such use of computers trivializes the human relationships
+that these programs caricature, and reinforces a tendency in modern
+society to debase human values.  Write a paragraph or two saying what
+you think.
+
+If you are interested in the issues raised by the possibility of
+people interacting with computers as if they were ``human,'' two
+excellent books to read (both by MIT faculty) are @i[Computer Power
+and Human Reason] (W.A. Freeman & Co., 1976) by Joseph Weizenbaum, and
+@i[The Second Self] (Simon & Schuster, 1984) by Sherry Turkle.
+@end(exercise)
+@newpage()
+@begin(programexample)
+@include(DOCTOR.SCM)
+@end(programexample)

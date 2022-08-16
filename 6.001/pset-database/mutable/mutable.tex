@@ -1,0 +1,325 @@
+% for yTeX
+% Copyright (c) 1990 Massachusetts Institute of Technology
+% 
+% This material was developed by the Scheme project at the Massachusetts
+% Institute of Technology, Department of Electrical Engineering and
+% Computer Science.  Permission to copy this material, to redistribute
+% it, and to use it for any non-commercial purpose is granted, subject
+% to the following restrictions and understandings.
+% 
+% 1. Any copy made of this material must include this copyright notice
+% in full.
+% 
+% 2. Users of this material agree to make their best efforts (a) to
+% return to the MIT Scheme project any improvements or extensions that
+% they make, so that these may be included in future releases; and (b)
+% to inform MIT of noteworthy uses of this material.
+% 
+% 3. All materials developed as a consequence of the use of this
+% material shall duly acknowledge such use, in accordance with the usual
+% standards of acknowledging credit in academic research.
+% 
+% 4. MIT has made no warrantee or representation that this material
+% (including the operation of software contained therein) will be
+% error-free, and MIT is under no obligation to provide any services, by
+% way of maintenance, update, or otherwise.
+% 
+% 5. In conjunction with products arising from the use of this material,
+% there shall be no use of the name of the Massachusetts Institute of
+% Technology nor of any adaptation thereof in any advertising,
+% promotional, or sales literature without prior written consent from
+% MIT in each case. 
+
+
+\typesize=11pt
+\hsize=34pc
+\vsize=50pc
+\parskip 6pt plus 2pt
+\parindent=0pt
+\def\v#1{\hbox{\bf #1}}
+\def\unit#1{{\v{\^#1}}}
+
+\def\psetheader{
+\centerline{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
+\centerline{Department of Electrical Engineering and Computer Science}
+\centerline{6.001 Structure and Interpretation of Computer Programs}
+\centerline{Spring Semester, 1988}}
+
+\def\code#1{\beginlisp
+#1
+\endlisp
+
+\vskip .1in}
+
+\rectoleftheader={6.001 -- Spring Semester 1988}
+\rectorightheader={Problem Set 7}
+\onheaders
+\onfooters
+
+\null
+\vskip 1truein
+
+\psetheader
+
+\vskip .25truein
+
+\centerline{Problem Set 7}
+
+\vskip 0.25truein
+
+\vpar
+Issued: March 29, 1988
+
+
+\vpar
+Due: in recitation on April8 {\it for sections meeting at 9, 10 and
+11} and on April 6 {\it for sections meeting at 12, 1 and 2}.
+
+
+\vpar
+Reading assignment: Section 3.4
+
+
+\chapter{1. Homework exercises}
+
+
+\vpar
+Exercise 1. Do exercise 3.12 in the book.
+
+\vpar
+Exercise 2. Do exercise 3.13 in the book.
+
+\vpar
+Exercise 3. Do exercise 3.14 in the book.
+
+\vpar
+Exercise 4. Do exercise 3.16 in the book.
+
+\vpar
+Exercise 5. Do exercise 3.17 in the book.
+
+
+\chapter{2. Laboratory Assignment: Mutable Data}
+
+Use the ``load problem set'' command to load the code in the appendix
+from the system onto your Chipmunk.
+
+There is a cost associated with using {\tt CONS}.  Every time it is
+called a piece of storage (a {\it cons cell}) in the computer's finite
+memory must be set aside to store the {\tt CAR} and {\tt CDR} parts. 
+Eventually the memory will be exhausted.  In fact this usually happens
+quite soon when a lisp program is running.  But by the time it does
+happen, it is usually the case that some of the cons cells allocated
+earlier are no longer able to be refered to by the user's program.  For
+instance in the following example
+
+\beginlisp
+(define numbers '(3 2 7 8))
+
+(define product-of-squares-of-odd-elements
+  (accumulate *
+              1
+              (mapcar square
+                      (filter odd? numbers))))
+\endlisp
+
+\noindent the lists resulting from {\tt filter} and {\tt mapcar} are
+no longer needed after their initial use, and in fact there will not
+be any pointers to them in any active environment frames.  The lisp
+system should be free to reclaim and later re-use the cons cells making
+up these temporary lists.  Such action is called {\it garbage
+collection} and will be the covered later in the course in chapter 5. 
+The point for now is that there is some cost involved with {\tt CONS} as
+all machines which implement it also have to periodically run a garbage
+collection program---sometimes garbage collection can be the major time
+user in a large program.\footnote*{On the chipmunks the status of the
+lisp system is indicated in the lower right corner of the screen---when
+it is the symbol $\pi$ normal lisp is running, when it is the symbol G
+it is garbage collecting.}
+
+One way to cut down on the amount of consing that a program does, and
+hence cut down on garbage collection time, is to explicitly re-use cons
+cells through the primitive mutators {\tt set-car!} and {\tt set-cdr!}.
+
+In these lab exercises we are going to compare two styles of
+programming, one which uses new cons cells always, and one which re-uses
+cons cells wherever possible.  We will see certain tradeoffs between the
+two styles, and as with many engineering problems we will see that there
+is often no clear cut decision as to which is the better style for a
+particular application.
+
+\section{Part 1}
+
+In {\tt ps7.scm} you will find definitions of {\tt ins-cons}, {\tt
+ins-set-car!}, and {\tt ins-set-cdr!}, which are instrumented versions
+of standard primitives.  By using these versions exclusively we can
+track how much consing and mutation occurs in a program.  The two
+procedures {\tt reset-counters} and {\tt report-counters} are used to
+monitor these quantities.
+
+Using the modified primitives write {\tt ins-append} and {\tt
+ins-append!}, instrumented versions of {\tt append} and {\tt append!}
+(see the first homework exercise above).
+
+Compare the amount of consing done in:
+
+\beginlisp
+(ins-append '(a b c) '(d e f))
+
+(ins-append! '(a b c) '(d e f))
+\endlisp
+
+\section{Part 2}
+
+One possible definition of {\tt reverse} is
+
+\beginlisp
+(define (reverse x)
+  (if (null? x)
+      nil
+      (append (reverse (cdr x)) (list (car x)))))
+\endlisp
+
+Write an instrumented version of this, called {\tt ins-reverse}.  Take
+care to instrument the consing done by {\tt list} by replacing it with
+appropriate calls to {\tt ins-cons}.  Monitor the amount of consing
+done by {\tt ins-reverse} on a few examples.  What is the order of
+growth of cons cells used by {\tt ins-reverse} as a function of the
+length of the list to be reversed?
+
+Write a linear version of {\tt ins-reverse}.
+Note that you may well have to change he base case handling that was
+used in the original {\tt reverse}.
+
+\noindent {\bf Optional:} Wite {\tt ins-reverse!} that destrucutively
+re-uses the cons cells from its argument and so does {\tt no} consing to
+reverse a list.
+
+\section{Part 3}
+
+The procedures {\tt reset-counters} and {\tt report-counters} as defined
+in the provided code refer to an {\it assq} count.  This is meant to be a
+count of how many items are examined by {\tt assq}.  Here is a possible
+definition of {\tt assq} without any error checking:
+
+\beginlisp
+(define (assq x y)
+  (cond ((null? y) nil)
+        ((eq? (caar y) x) (car y))
+        (else (assq x (cdr y)))))
+\endlisp
+
+\noindent Write an instrumented version of this, named {\tt ins-assq}. 
+Note that it should indicate three items examined for both of the
+following cases:
+
+\beginlisp
+(ins-assq 'c '((a 1) (b 2) (c 3) (d 4) (e 5)))
+
+(ins-assq 'd '((a 1) (b 2) (c 3)))
+\endlisp
+
+\section{Part 4}
+
+In the code handout you will find the standard code for {\tt put} and
+{\tt get} taken from page 216 of the text.  Modify this code to define
+{\tt ins-put} and {\tt ins-get}.  Be careful not to miss the consing
+done in the two places that {\tt list} is currently used, and be sure to
+use the instrumented version of {\tt assq}.
+
+To test out your new version start by typing:
+
+\beginlisp
+(ins-put 'a 'x 3)
+(ins-put 'b 'y 2)
+\endlisp
+
+\noindent Then use the {\tt assq} instrumentation to see how much work
+is done in retrieving these two entries from the table.
+
+Now repeatedly do the following four operations:
+
+\beginlisp
+(ins-put 'a 'b 'c)
+(ins-put 'b 'a 'd)
+(ins-put 'a 'b 'd)
+(ins-put 'b 'a 'd)
+\endlisp
+
+\noindent How does the amount of consing grow over time?  What happens
+to the access time for the original two table entries as the above
+operations are repeated?
+
+\section{Part 5}
+
+Now write instrumented versions of {\tt put} and {\tt get}, call them
+{\tt ins-nomutate-put} and {\tt ins-nomutate-get}, which do not use
+mutators at all.  The idea is to cons new entries on to the front of
+subtables, and to cons new versions of subtables on to the front of the
+table, shadowing old entries from {\tt ins-assq}.
+
+\noindent {\tt HINT:} One way to do this is to modify your version of
+{\tt ins-make-table} by changing the initial binding for {\tt
+local-table} and by simplifying {\tt insert!}.  A minor change is
+necessary in {\tt lookup} to accomodate a headerless representation of
+tables.  Note that you will have to use the {\tt set!} special form, but
+not the cons cell mutators.
+
+Now answer the same questions for this version of {\tt put} and {\tt
+get} as were asked in part 4.
+
+\section{Part 6}
+
+The non mutating versions of {\tt put} and {\tt get} certainly appear to
+be losers.  But they have an advantage over the old version.  {\bf Every
+version of the table which ever existed is still around!}  Thus we can
+easily backup to an earlier version of the database.
+
+Modify {\tt ins-nomutate-make-table} so that the dispatch procedure it
+defines handles two more messages: {\tt table} and {\tt restore-table}
+which let us backup to saved checkpoints of the table as in the
+following example:
+
+\beginlisp
+(define ins-nomutate-operation-table (ins-nomutate-make-table))
+(define ins-nomutate-get (ins-nomutate-operation-table 'lookup-proc))
+(define ins-nomutate-put (ins-nomutate-operation-table 'insert-proc!))
+
+...do some putting and getting...
+
+(define saved-table (ins-nomutate-operation-table 'table))
+
+...do some more putting and getting...
+
+;;; now backup to an earlier version of the table
+
+((ins-nomutate-operation-table 'restore-table) saved-table)
+\endlisp
+
+Try some examples to ensure that your new version does no consing at
+all when saving and restoring a table.
+
+\section{Part 7}
+
+Now modify {\tt ins-make-table} to have the same capabilities.  Note
+that in saving a table you will have to copy it to guard against later
+mutations.  You can make the copying procedure an internal procedure at
+the same depth as {\tt lookup} and {\tt insert!}. 
+
+Now compare the consing behavior of this version of saving tables with
+the version in Part 6.
+
+\section{Part 8}
+
+Given the normal behavior in terms of consing of the two new verions of
+{\tt put} and {\tt get} is it the case that one of the two versions is
+clearly better in a situation where the capablity for saving and backing
+up to an earlier version of the database is required? If it is clear,
+please explain.  If it is not clear, say why not, and describe scenerios
+(e.g., in terms of relative frequencies of changing existing entries,
+adding new entries and backing up the data base) in which each of the
+approaches is superior. 
+
+
+\end
+

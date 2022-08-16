@@ -1,0 +1,27 @@
+Future users of this problem set please note: It needs a lot of work!
+
+We adapted this problem set from a version used in a previous semester, but
+made only small changes.  We didn't realize until after it was distributed how
+much more work will be necessary before this problem set is reasonable.
+
+It's a neat problem set, with a really fun plot, but it's a lot hairier than it
+appears at first glance.
+
+Things which should be changed:
+
+  Split many of the problems into smaller ones which guide the student through
+  the solutions to the problems.  The MONITOR problem in particular could use a
+  little trimming or breaking down into subparts.
+
+  There are a lot of ambiguities in the wording of the problems.
+
+In short:
+
+  Try doing the problem set yourself BEFORE you give this problem set to
+  students (of course, this is in general a good rule, but it applies
+  particularly to this problem set).
+
+We've made some improvements and bug fixes in the problem set solution file
+after we printed it for the students, so you should work from the file rather
+than a printed file copy of this semester's solutions.  (The improvements are
+mostly listed in the file ps7-sol-addendum.text.)

@@ -1,0 +1,78 @@
+FORMATTING DETAILS
+Franklyn Turbak
+5/1/94
+
+Files in the 6.001 problem set repository are formatted in various
+formats: plain text, TeX, and scribe. Many of the TeX files use the
+macros defined in the file 6001mac.tex found in this directory.  Some
+of the TeX files are formatted in yTeX (pronounced "oops tech"), an
+MIT specific formatting package developed by Dan Brotsky when he was
+at the MIT Artificial Intelligence Lab.  This directory contains files
+that allow you to build your own version of yTeX.  Below are the
+instructions for this process.
+
+
+BUILDING YTEX
+
+[Disclaimer: I am not a TeX wizard. But I was able to build yTeX
+on my Unix box (an HP 715/50) using the following steps. Your experience
+may vary!]
+
+1. The yTeX installation process uses 'initex' and 'virtex', two executables
+that are part of a TeX environment. Find out where these live in 
+your environment.
+
+2. With this formatting directory in your path, execute the command
+
+   initex ytex-cm.tex '\dump'
+
+This will leave a file ytex-cm.fmt in your current directory.
+
+3. Add the ytex-cm.fmt file to the set of known TeX formats. There
+are two ways to do this:
+
+  i. Copy ytex-cm.fmt to the TeX format directory on your machine. (On my 
+     machine, it happens to be called "/usr/contrib/tex/libdir/formats/".)
+
+  ii. Set the environment variable TEXFORMATS to include the directory
+      in which ytex-cm.fmt resides, in addition to format directory
+      mentioned in (i).
+
+4. You can now format a yTeX file foo.tex by invoking the command
+
+   virtex \&ytex foo.tex
+
+You can bundle this up into an executable shell file as follows:
+
+   #!/bin/csh
+   exec /usr/contrib/tex/bin/virtex \&ytex $* 
+
+(Don't forget a newline after the '*' !)
+
+
+BUILDING YTEX USING OZTEX ON A MAC
+[Thanks to Edward Hoenkamp for this info]
+
+1.  Create a folder 'ytex' in 'TeX-inputs', and save the ytex files there.
+
+2.  Edit the plain files in the ytex folder (see step 1.) to NOT load the 
+TFM files.  You can do this by commenting out the lines 
+"\font\preloaded=manfnt % METAFONT..." This is line 463 in plain.tex, and 
+140 in plain-cm.tex
+
+3. Edit the 'Default' file in 'Configs': At the end of the line that starts 
+with ' format files' add 'ytex-cm', and at the end that starts 
+with 'TeX input folder(s) ', add ' :TeX-inputs:ytex: '.
+
+4. Start OzTeX. Select 'Tex...' in the TeX menu. This brings up a dialogue. 
+Select the folder 'ytex', and CANCEL. This makes 'ytex' the default folder.
+
+5. Run INITEX. After the '**' write 'ytex-cm\dump'
+
+6. After a while a dialogue appears that has the filename 'ytex-cm.fmt' 
+higlighted. Before you save this file select the folder 'TeX-formats', 
+then save.
+
+>From now on, whenever you start OzTeX, it has 'ytex-cm' added to the 'TeX' 
+menu. Select this to format ytex files.
+

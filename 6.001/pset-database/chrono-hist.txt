@@ -1,0 +1,223 @@
+Chronological history of problem sets used in MIT Course 6.001
+
+-----------------------------------------------------------------
+Fall '81
+
+1. Primality Testing
+2. ???
+3. Doctor
+4. Graphs: Finding your way around Cambridge
+5. ???
+6. Simluation of a Queue
+7. Stream Exercises
+8. Lisp on a Register Machine - Monitored Stack
+9. Query Language - IBM Database
+
+-----------------------------------------------------------------
+Spring '82
+
+1. Primality Testing
+2. Procedural Exercises
+3. Interval Arithmetic
+4. Huffman Encoding Trees
+5. Adventure
+6. Rational Functions
+7. Queue Simulation
+8. Stream Exercises
+9. Metacircular Evaluator - If + Normal Evaluation
+10. Lisp on a Register Machine + Compilation
+11. Query Language - IBM Database
+
+-----------------------------------------------------------------
+Fall '82
+
+1. Primality Testing
+2. Lunar Lander
+3. Huffman Encoding Trees
+4. Rational Functions
+5. Adventure
+6. Hamming + Stream Exercises
+7. Metacircular Evaluator - If + Normal Evaluation
+8. Lisp on a Register Machine
+9. Compilation
+10. Query Language - IBM Database database
+
+-----------------------------------------------------------------
+Spring '83 
+
+1. Primality Testing
+2. Twenty-One
+3. Rational Functions
+4. N-body Simulator
+5. Adventure Game - Traditional Message-Passing Style
+6. Paranoid Programming/Pascheme
+7. Hamming Stream + Stream Exercises
+8. Query Language - IBM Database
+9. Lisp on a Register Machine
+10. Compilation
+
+
+-----------------------------------------------------------------
+Fall '83 records are missing.
+
+-----------------------------------------------------------------
+Spring '84 
+
+1. Lissajous Figures
+2. Lunar Lander
+3. Henderson Language - Triangles
+4. Partial Evaluation
+5. Rational Functions
+6. Stream Exercises
+7. Normal Evaluation
+8. Query-Language - IBM Database
+9. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Exponentiation
+
+-----------------------------------------------------------------
+Fall '84
+
+1. Lissajous Figures
+2. Lunar Lander
+3. Henderson Language - Trianlges
+4. Series-Parallel Resisitive Networks + Resonance Finding
+5. Doctor
+6. Adventure Game - Traditional Message-Passing Version
+7. Stream Exercises
+8. Normal Evaluation
+9. Query Language - IBM Database (no solutions)
+
+-----------------------------------------------------------------
+Spring '85
+
+1. Epicycolids and Hypocycloids/Debugging
+2. Primality Testing
+3. Doctor
+4. Series-Parallel Resistive Networks + Automatic Resonance Finding & Circuit Generation
+5. Rational Functions
+6. Adventure Game - Traditional Message-Passing Version
+7. Streams of Pairs
+8. Paranoid Programming/  Pascheme
+9. Logic Puzzles
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Exponentiation
+
+-----------------------------------------------------------------
+Fall '85
+
+1. Lissajous Figures/Debugging
+2. Primality Testing
+3. Henderson Language - Triangles
+4. Doctor
+5. Series-Parallel Resistive Networks + Automatic Resonance Finding & Circuit Generation
+6. Deques
+7. Adventure - Traditional Message-Passing Version
+8. Streams of Pairs
+9. Normal Order Evaluation + Query Language w/ IBM Database
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Count Atoms
+
+
+-----------------------------------------------------------------
+Spring '86
+
+1. C-Curve/Debugging
+2. Pascal's Triangle/Smoothing
+3. Geometry Data Abstraction
+4. Henderson Language - Triangles
+5. Series-Parallel Resistive Networks + General Networks
+6. State Exercises
+7. Adventure Game - Traditional Message-Passing Version
+8. Simulation of Queueing System
+9. Streams of Pairs
+10. Paranoid Programming/Pascheme
+11. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Exponentiation
+
+-----------------------------------------------------------------
+Fall '86
+
+1. C-Curve/Debugging
+2. Primality Testing
+3. Henderson Language - Triangles (includes Imbed)
+4. Doctor
+5. Series-Parallel Resistive Networks + Automatic Resonance Finding & Circuit Generation
+6. Adventure Game - Traditional Message-Passing Version
+7. Power Series
+8. Normal Order Evaluation 
+9. Logic-Programming - Circuit Recognition
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Int Sum 
+
+-----------------------------------------------------------------
+Spring '87
+
+1. C-Curve/Debugging
+2. Pascal's Triangle/Smoothing
+3. Geometry Data Abstraction
+4. Henderson Language - Triangles
+5. Series-Parallel Resistive Networks w/Message Passing Part
+6. Adventure Game - Traditional Message-Passing Version
+7. Power Series/ Integration
+8. Student Data Base - Tables
+9. Sentence Generator (Query Language) + Metacircular Evaluator Extensions
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Count Atoms
+
+-----------------------------------------------------------------
+Fall '87
+
+1. Cardioid/Debugging
+2. RSA Cryptography
+3. Henderson Language - Circles
+4. Prisoner's Dilemma
+5. Airline Mergers
+6. Mobots
+7. Heartbeat Regularity Monitoring
+8. Normal Order Evaluation
+9. Query Language - Hiring Scenario
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Length
+
+-----------------------------------------------------------------
+Spring '88
+
+1. ???
+2. ???
+3. Data Abstraction Facility
+4. Prisoner's Dilemma
+5. Airline Mergers
+6. ???
+7. Instrumented Cons
+8. ???
+9. ???
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - Sum-list
+
+-----------------------------------------------------------------
+Fall '88
+
+-----------------------------------------------------------------
+Spring '89
+
+1. Snowflake/Debugger/Revised Substitution
+2. Continued Fractions
+3. Navigation
+4. Freshman Advisor
+5. Rational Functions
+6. Adventure Game - Object-Oriented Language Version
+7. Streams of Pairs
+8. Metacircular Evaluator Extensions
+9. Student Database - Query Language
+10. Register Machine Simulator/ Explicit Control Evaluator/ Compiler - List Reversal
+
+
+-----------------------------------------------------------------
+Fall '89
+
+1. Epicycolids and Hypocycloids/Debugging
+2. Pascal's Triangle
+3. Star Gazing
+4. All-Nighter Sweepstakes
+5. Series-Parallel Resistive Networks + Automatic Resonance Finding & Circuit Generation
+6. Adventure Game - Traditional Message-Passing Version
+7. Heart Regularity Monitoring
+8. Paranoid Programming
+9. Register Machine Simulator/ Explicit Control Evaluator - tree sum
+10. Compilation/Parallel Scheme
+
+-----------------------------------------------------------------
+Spring '90
+

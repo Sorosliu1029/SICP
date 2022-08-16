@@ -1,0 +1,122 @@
+;;; Copyright (c) 1990 Massachusetts Institute of Technology
+;;; 
+;;; This material was developed by the Scheme project at the Massachusetts
+;;; Institute of Technology, Department of Electrical Engineering and
+;;; Computer Science.  Permission to copy this material, to redistribute
+;;; it, and to use it for any non-commercial purpose is granted, subject
+;;; to the following restrictions and understandings.
+;;; 
+;;; 1. Any copy made of this material must include this copyright notice
+;;; in full.
+;;; 
+;;; 2. Users of this material agree to make their best efforts (a) to
+;;; return to the MIT Scheme project any improvements or extensions that
+;;; they make, so that these may be included in future releases; and (b)
+;;; to inform MIT of noteworthy uses of this material.
+;;; 
+;;; 3. All materials developed as a consequence of the use of this
+;;; material shall duly acknowledge such use, in accordance with the usual
+;;; standards of acknowledging credit in academic research.
+;;; 
+;;; 4. MIT has made no warrantee or representation that this material
+;;; (including the operation of software contained therein) will be
+;;; error-free, and MIT is under no obligation to provide any services, by
+;;; way of maintenance, update, or otherwise.
+;;; 
+;;; 5. In conjunction with products arising from the use of this material,
+;;; there shall be no use of the name of the Massachusetts Institute of
+;;; Technology nor of any adaptation thereof in any advertising,
+;;; promotional, or sales literature without prior written consent from
+;;; MIT in each case. 
+
+(define pi-data-base
+  '(
+    (address (Reasoner Louis) (MA Cambridge (Vassar Street) 60))
+    (school (Reasoner Louis) WIT)
+    (degree (Reasoner Louis) SB Computer-science)
+    (gpa (Reasoner Louis) 5.0)
+    (interest (Reasoner Louis) (AI expert-system))
+    (communication-skill (Reasoner Louis) ok)
+    
+    (address (Hacker Alyssa P) (MA Cambridge (Main Street) 32))
+    (school (Hacker Alyssa P) Swellesley)
+    (degree (Hacker Alyssa P) SM Computer-science)
+    (gpa (Hacker Alyssa P) 4.6)
+    (interest (Hacker Alyssa P) (MIS local-area-networking))
+    (communication-skill (Hacker Alyssa P) good)
+    
+    (address (Bitdiddle Ben) (MA Allston (Brainy Lane) 100))
+    (school (Bitdiddle Ben) MIT)
+    (degree (Bitdiddle Ben) PHD Computer-science)
+    (gpa (Bitdiddle Ben) 5.0)
+    (interest (Bitdiddle Ben) (AI natural-language-processing))
+    (communication-skill (Bitdiddle Ben) best)
+    
+    (address (Fect Cy D) (NY Buffinglo (Commercial Avenue) 99.99))
+    (school (Fect Cy D) Harvahd)
+    (degree (Fect Cy D) SM MBA)
+    (gpa (Fect Cy D) 4.0)
+    (interest (Fect Cy D) (Business marketing finance))
+    (communication-skill (Fect Cy D) best)
+    
+    (address (Long Live Cobol) (PA Mainframtown (Batch Lane) 50))
+    (school (Long Live Cobol) Data-Institute)
+    (degree (Long Live Cobol) SM Computer-science)
+    (gpa (Long Live Cobol) 3.4)
+    (interest (Long Live Cobol) (MIS data-base-management))
+    (communication-skill (Long Live Cobol) ok)
+    
+    (address (Cosine Thetta) (TX Austin (Instrument Blvd) 300))
+    (school (Cosine Thetta) Uncle-Ben-University)
+    (degree (Cosine Thetta) PHD Computer-science)
+    (gpa (Cosine Thetta) 4.9)
+    (interest (Cosine Thetta) (AI robotics machine-vision))
+    (communication-skill (Cosine Thetta) good)
+    
+    (address (Rebate Rebecca) (NJ Fort-Lee (Coupon Road) 25))
+    (school (Rebate Rebecca) Swellesley)
+    (degree (Rebate Rebecca) SB computer-science)
+    (gpa (Rebate Rebecca) 4.3)
+    (interest (Rebate Rebecca) (Business Marketing))
+    (communication-skill (Rebate Rebecca) best)
+    
+    (address (Floppo Disketto) (NM El-PC (Backupo Blvd) 20))
+    (school (Floppo Disketto) Loan-school-of-Management)
+    (degree (Floppo Disketto) SM MBA)
+    (gpa (Floppo Disketto) 4.8)
+    (interest (Floppo Disketto) (MIS Global-networking))
+    (communication-skill (Floppo Disketto) better)
+    
+    (address (Mehta Serqula) (OH Impossiville (Wonderland Road) 45))
+    (school (Mehta Serqula) MIT)
+    (degree (Mehta Serqula) SM Computer-science)
+    (gpa (Mehta Serqula) 4.8)
+    (interest (Mehta Serqula) (AI descision-support-systems))
+    (communication-skill (Mehta Serqula) ok)
+    
+    (rule (know-each-other ?p1 ?p2)
+	  (and (school ?p1 ?s1)
+	       (school ?p2 ?s1)
+	       (degree ?p1 ?d1 ?a1)
+	       (degree ?p2 ?d2 ?a1)
+	       (not (lisp-value equal? ?p1 ?p2))))
+    
+    (rule (can-supervise ?p1 ?p2)
+	  (or (better-qualification ?p1 ?p2)
+	      (and (better-qualification ?p1 ?p3)
+	           (can-supervise ?p3 ?p2))))
+
+    ))
+	     
+(define ex4-33-data-base
+  '(
+    (son adam cain)
+    (son cain enoch)
+    (son enoch irad)
+    (son irad mehujael)
+    (son mehujael methushael)
+    (son methushael lamech)
+    (wife lamech ada)
+    (son ada jabal)
+    (son ada jubal)))
+

@@ -1,0 +1,72 @@
+@Comment(
+
+Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. 
+
+)
+
+@comment(This file gets @include'd in query-language problem sets)
+@comment(It is parameterized by the DATABASE-VARIABLE string, which
+ must be defined by the the caller.)
+
+In addition to entering queries to be evaluated, you may also need to
+add new assertions and rules to the database.  It is possible to do
+this directly through the query driver loop
+by using the @a[assert!]
+command as shown on page 356 of the text.   However, the system, as we have
+implemented it,  includes no way to  @i[get rid of] rules.
+Thus, if you define a bad rule and then define a good rule with the
+same name, @i[both] rules will stay around to be used by the system.
+
+To get around this problem, we have provided another way of adding things to the
+query system.  The @a[load-problem-set] command also loads a
+@a[query-mods.scm] file into your editor.  This file contains two things:
+the definition of a variable @a[@value(database-variable)], which is a
+list of assertions; and a call to the procedure
+@a[initialize-data-base] with @a[@value(database-variable)] as an
+argument as follows:
+@begin[example]
+(initialize-data-base @value(database-variable))
+@end[example]
+@a[Initialize-data-base] reinitializes the
+query system to include only those assertions and rules contained in
+its argument.   Thus,  you can easily experiment with different rules and
+assertions as follows:
+@begin[itemize]
+Modify the list of assertions and rules
+associated with @a[@value(database-variable)].
+
+Zap the modified file into Scheme (to redefine @a[@value(database-variable)]
+and call @a[initialize-data-base]).
+
+Reenter the query system by calling @a[(query-driver-loop)].
+@end[itemize]
+

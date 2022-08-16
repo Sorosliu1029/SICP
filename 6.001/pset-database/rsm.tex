@@ -1,0 +1,462 @@
+\input formatting/6001mac.tex
+
+\begin{document}
+
+\psetheader{February 8, 1989}{A Revised Substitution Model}
+
+\medskip
+ 
+Section 1.1.5 of the textbook presents the {\bf Substitution Model} 
+of expression evaluation. Although this model can be used to understand the
+evaluation of many expressions, it does not distinguish explicitly 
+between expressions and the results of evaluating the expressions. To make
+the evaluation process clearer, these notes introduce a 
+{\bf Revised Substitution Model (RSM)}. Bear in mind that neither 
+the Substitution Model, nor the Revised Substitution Model, 
+is a full description how the Scheme interpreter actually performs 
+evaluations. Many details of the evaluation process---some of 
+which we will discuss later in the semester---are suppressed in 
+these models.
+
+\paragraph{1. Representations of Values}
+
+The evaluation of every (valid) Scheme expression returns a value,
+which we will often refer to as an object. In the RSM, we use a box
+to represent an object. The characters that are the contents of the
+box specify the particular object. For example, \fbox{5} is used to
+represent the object that is the number $5$. This is not what is
+printed by the computer if you type {\tt 5} at it, but merely an artifice
+for helping us follow the process of evaluation.
+
+\begin{itemize} 
+
+\item {\bf Primitive Data:} The value of a numeral is the number that
+it names. To distinguish between the numeral and its value, we will
+use the notation \fbox{5} for the value returned by evaluating the
+numeral {\tt 5}. 
+
+\item {\bf Primitive Procedures:} The Scheme interpreter provides a
+set of primitive procedures, which form the building blocks for our
+own procedures. These include the addition procedure, the
+multiplication procedure, etc. We will represent a primitive
+procedure object by a box containing some name for the primitive
+procedure. For example, \fbox{addition} would represent the 
+primitive addition procedure.
+
+\item {\bf Compound Procedures:} 
+Evaluating a {\tt lambda} special form\footnote{That is, a compound
+expression that begins with the keyword {\tt lambda} followed by a
+list of the formal parameters of the procedure, and ends with
+the body of the procedure.} creates a procedure object. We will represent
+this object by a box containing the characters {\bf Proc}, a list of
+formal parameters of the procedure, and the body of the procedure.
+For example, the object obtained by evaluating
+
+\beginlisp
+(lambda (x) (* x x))
+\endlisp
+will be  represented as \fbox{Proc (x) ($\ast$ x x)}.
+\end{itemize} 
+
+\paragraph{2. Rules of Evaluation} 
+
+Scheme has only a few kinds of expressions.  A {\bf simple expression}
+is either a constant (such as a numeral) or a symbol.
+
+\begin{itemize} 
+\item{\bf P-1.}  The value of a numeral is the number that it denotes.
+The value of the numeral {\tt 5} is the number $5$, represented by \fbox{5}.
+
+\item{\bf P-2.} The value of a symbol (or name) is the object associated
+with the symbol. This value is obtained by looking up the name in a
+dictionary or table and extracting the object associated with (or
+bound to) that symbol. Note that we can create new bindings in the
+table by evaluating the special form {\tt define}.
+
+\item{\bf P-3.}  The value of an object (represented by characters enclosed
+in a box) is the same object. In other words, once an expression has
+been evaluated, and the value substituted into another expression, no
+further evaluation of that value occurs.
+
+\item{\bf P-4.} The value returned when a primitive procedure 
+is applied to a set of values is the result obtained by performing
+a particular built-in operation on that set of values.
+\end{itemize}
+
+A {\bf compound expression} is a sequence of expressions (simple or
+compound) enclosed in parentheses. Unless it starts with one of a
+very few reserved keywords used to identify special forms, a compound
+expression denotes a {\bf combination} (also called a {\bf procedure
+application}). The leftmost subexpression of a combination is called the
+{\it operator} of the expression; the other subexpressions, the
+{\it operands}. 
+
+The Scheme interpreter evaluates combinations by the recursive
+application of two basic rules. These rules serve to unwind the
+evaluation of combinations until primitive procedures are applied to
+objects. The resulting values are then substituted for the
+corresponding expressions. Specifically, the rules are:
+
+\begin{itemize} 
+
+\item{\bf C-1.} To {\bf evaluate a combination}, first evaluate the
+subexpressions of the combination, then apply the procedure that is
+the value of the leftmost subexpression to the arguments that are the
+values of the other subexpressions.
+
+\item{\bf C-2.}  To {\bf apply a procedure} to a set of arguments,
+evaluate the body of the procedure with each formal parameter of the
+procedure replaced by the value of the corresponding 
+argument.\footnote{If the body consists of a sequence of expressions,
+each expression is evaluated in turn. The value of the final
+expression is the result of the procedure application.}
+\end{itemize} 
+
+Note that Rule~C-1 does not specify an order for evaluating the
+subexpressions of a combination.
+
+\noindent A {\bf Special Form} is a compound expression
+whose leftmost subexpression is a reserved keyword
+such as {\tt define}, {\tt if}, {\tt cond}, and {\tt lambda}.
+
+\begin{itemize} 
+\item {\bf S.} Each special form has its own evaluation rule.
+\end{itemize} 
+
+We have already seen that evaluation of the {\tt lambda} special form
+creates a procedure object that incorporates a specification of the
+formal parameters and body of the procedure. 
+Rules for the {\tt define} and {\tt if} special forms are presented 
+in Sections 4 and 6.
+
+\paragraph{3. A Simple Example}
+
+In describing the evaluation of a procedure application using these
+rules, we will use a special notation to distinguish the evaluation
+stages from the application stages. An expression that is being
+evaluated will be enclosed within curly braces $\left\{, \right\}$.
+Square brackets $\left[, \right]$ are used to enclose the application
+of a procedure object to its arguments.
+
+To demonstrate the Revised Substitution Model, we first consider the
+evaluation of the expression:
+
+\beginlisp
+((lambda (x) (* x x)) 5)
+\endlisp
+which we know should result in the process of squaring the number 5.
+
+The following table denotes the full evaluation.  We will discuss
+the process by which the evaluation evolves below.
+
+\vskip 20pt
+
+\begin{center} 
+\begin{tabular}{lcr|c}
+\{ & ((lambda (x) ($\ast$ x x)) 5)                      & \} & (1) \cr
+   & \{ (lambda (x) ($\ast$ x x)) \} \qquad \{ 5 \}     &    & (2) \cr
+ [ & \fbox{Proc (x) ($\ast$ x x)} \qquad \fbox{5}       & ]  & (3) \cr
+\{ & ($\ast$ \qquad \fbox{5} \qquad \fbox{5} )          & \} & (4) \cr
+   & \{$\ast$\} \qquad \{\fbox{5}\} \qquad \{\fbox{5}\} &    & (5) \cr
+[ &   \fbox{mult}      \qquad \fbox{5}  \qquad \fbox{5} & ]  & (6) \cr
+  &                         \fbox{25}                   &    & (7) 
+\end{tabular} 
+\end{center} 
+
+The parenthesized numbers on the right are 
+not part of the RSM itself, but merely identify the steps in the 
+evaluation process so that we can refer to them. 
+
+We begin with line~(1). Since this is an evaluation of a combination,
+rule~C-1 says we must evaluate the subexpressions as shown on line
+(2). The value obtained by evaluating the {\tt lambda} special form is
+a procedure object, denoted by \fbox{Proc (x) ($\ast$ x x)} and the
+value of the numeral {\tt 5} is the number $5$ represented by
+\fbox{5}. Thus, the RSM reduces the evaluation of the expression in 
+line~(1) to the application of a procedure object to a set of values, 
+shown in line~(3).
+
+Now, rule~C-2 applies: the value of the procedure argument is {\it
+substituted} (hence the name of the model) for the formal parameter x
+in the body of the procedure, as shown in line~(4). Note that we have
+substituted the representations of the numbers directly into the
+expression. The result of this substitution is a compound expression,
+in particular a combination that must now be evaluated.
+
+To evaluate this combination, rule~C-1 applies again: the
+subexpressions of the combination must be evaluated, as shown in line
+(5). We already have values (or objects) for the second and third
+subexpressions, as indicated by the boxes. Thus rule~P-3 holds,
+implying that no further evaluation of these expressions occurs.
+The operator (first subexpression) of the combination is the symbol
+{\tt $\ast$} which is evaluated using rule~P-2. The value of the
+operator is the primitive multiplication procedure, denoted by
+\fbox{mult}, and is found by using rule~P-2.
+
+Hence, the evaluation of the expression on line~(4) reduces to the
+primitive procedure application shown in line~(6). Rule~P-4 now
+holds, and the entire expression reduces to \fbox{25}, as expected.
+
+Notice how the process involves the alternation of evaluation and
+application stages. We will return to this in detail later in the term.
+
+\paragraph{4. The Define Special Form}
+
+When evaluating a compound expression beginning with {\tt define}, such as
+
+\beginlisp
+(define {\it expression-1} {\it expression-2})
+\endlisp
+first evaluate {\it expression-2}, then associate its value with the
+symbol that is {\it expression-1}. This association is then placed 
+in a dictionary. The symbol itself is {\it not} evaluated.
+The result of evaluating a {\tt define} special form is the symbol 
+that is {\it expression-1}.
+
+If the symbol is subsequently evaluated, the dictionary is searched 
+and the object associated with the symbol is 
+returned.\footnote{Additional details of this process will be discussed
+later in the term.} For example, after we evaluate the following expressions:
+
+\beginlisp
+(define a 2)
+\null
+(define square (lambda (x) (* x x)))
+\endlisp
+the dictionary contains a binding of the symbol {\tt a} to the
+number $2$ (represented by \fbox{2}), and a binding of the symbol 
+{\tt square} to the procedure represented by \fbox{Proc (x) ($\ast$ x x)}.
+No new evaluation
+rule~is needed for the ``sugared'' variety of procedure definition:
+
+\beginlisp 
+(define (square x) (* x x))
+\endlisp 
+is evaluated as if it had been written
+\beginlisp 
+(define square (lambda (x) (* x x)))
+\endlisp 
+
+\paragraph{5.  A More Complicated Example}
+
+After evaluating the following two expressions:
+
+\beginlisp
+(define a 2)
+\null
+(define square (lambda (x) (* x x)))
+\endlisp
+
+evaluation of the expression
+
+\beginlisp
+(square (1+ a))
+\endlisp
+
+proceeds as follows:
+
+\newsavebox{\addone}
+\savebox{\addone}{
+\begin{tabular}{lccr}
+  & \{ 1+ \}     & \{ a \}       &   \cr
+[ & \fbox{add-1} & \fbox{2}      & ] \cr
+  & \multicolumn{2}{c}{\fbox{3}} &   
+\end{tabular} }
+
+\vskip 10pt
+
+\begin{center} 
+\begin{tabular}{lccr|c}
+\{ & ( square   &    (1+ a) )                                 & \} & (1) \cr
+   & \{square\} & \{ (1+ a) \}                                &    & (2) \cr
+   & & $ \left\langle \usebox{\addone} \right\rangle $        &    & (3) \cr
+[  & \fbox{Proc (x) ($\ast$ x x )}  &  \fbox{3}               & ]  & (4) \cr
+\{ & \multicolumn{2}{c}{($\ast$ \fbox{3} \fbox{3} )}          & \} & (5) \cr
+   & \multicolumn{2}{c}{\{$\ast$\} \{\fbox{3}\} \{\fbox{3}\}} &    & (6) \cr
+[  & \multicolumn{2}{c}{\fbox{mult} \fbox{3} \fbox{3}}        & ]  & (7) \cr
+   & \multicolumn{2}{c}{\fbox{9}}                             &    & (8) 
+\end{tabular} 
+\end{center} 
+
+Rule~C-1 governs the evaluation of line~(1): each of the two
+subexpressions must be evaluated, as shown on line~(2). 
+The second subexpression is a compound expression. The stages in 
+the evaluation this subexpression are
+grouped inside brackets and designated step~(3). Although we have included 
+all the evaluation steps in this case, such detail can be omitted
+if the steps are apparent.
+
+Note that the symbols {\tt square}, {\tt a} and {\tt 1+} are 
+evaluated using rule~P-2:
+the value of each symbol is determined by looking up the object 
+bound to it in the dictionary. The binding for {\tt 1+} is part of
+the basic Scheme interpreter; bindings for {\tt square} and {\tt a} 
+were created by evaluating the {\tt define} special form. 
+The rest of the evaluation is similar to the example given above.
+
+Also note that each subexpression of a combination is completely
+evaluated (i.e. reduced to an object) before the application stage.
+This is because Scheme uses {\it applicative} order of evaluation. 
+If Scheme used {\it normal} order of evaluation, the evolution
+of the evaluation process would be very different, as discussed on
+p 15 of the text.
+
+\paragraph{6. The If Special Form}
+
+When evaluating a compound expression beginning with {\tt if} such as
+
+\beginlisp
+(if {\it predicate} {\it consequent} {\it alternative})
+\endlisp
+first evaluate the {\it predicate} expression. If the value
+returned is true (i.e. not false), then evaluate the {\it
+consequent} expression; otherwise, evaluate the {\it alternative}
+expression. Never evaluate both the {\it consequent} and 
+{\it alternative} expressions.
+
+For example, consider
+
+\beginlisp
+(define abs
+  (lambda (x)
+    (if ($<$ x 0)
+        (- x)
+        x)))
+\endlisp
+then evaluating the expression
+\beginlisp
+(abs -2)
+\endlisp
+
+proceeds as follows:
+
+\vskip 10pt
+
+\newsavebox{\iftest}
+\savebox{\iftest}{
+\begin{tabular}{lcccr}
+\{ & ( $<$        & \fbox{-2} & 0 )       & \} \cr
+[  &  \fbox{LESS} & \fbox{-2} & \fbox{0}  & ]  \cr
+   &  \multicolumn{3}{c}{\fbox{TRUE}}     &
+\end{tabular} }
+
+\begin{center}
+\begin{tabular}{lccccr|c}
+\{ &     \multicolumn{4}{c}{( abs  -2 )}                     & \} & (1) \cr
+ [ & & \fbox{Proc (x) (if ($<$ x 0) (- x) x)} & \fbox{-2} &  & ]  & (2) \cr 
+\{ & ( if & ($<$ \fbox{-2} 0) & (- \fbox{-2} ) & \fbox{-2} ) & \} & (3) \cr 
+   & & $ \left\langle\usebox{\iftest} \right\rangle $  &  &  &    & (4) \cr
+\{ & &                                 & ( - \fbox{-2} )  &  & \} & (5) \cr
+[  & &                          & \fbox{negate} \fbox{-2} &  & ]  & (6) \cr
+   &  \multicolumn{4}{c}{\fbox{2}}                           &    & (7) 
+\end{tabular} 
+\end{center} 
+
+In describing this evaluation, some of the simpler steps, such as
+evaluating subexpressions of combinations, have been omitted. 
+The {\tt if} special form is evaluated when the body of the
+{\tt abs} procedure is evaluated (step~3). Note that the predicate 
+clause is evaluated first (step~4). Since this particular
+predicate clause has a true\footnote{We have used \fbox{TRUE} to
+denote the Boolean object corresponding to a true logical value;
+\fbox{FALSE} would represent the object corresponding to a false
+logical value.} value, the consequent
+clause is evaluated and the alternative clause is ignored. 
+
+The rule~for evaluating the {\tt cond} special form is 
+similar to that for the {\tt if} special form. As an exercise, you
+should formulate this rule~and use it to evaluate the expression 
+{\tt (abs -2) } assuming that {\tt abs} had been defined as
+
+\beginlisp 
+(define (abs x)
+  (cond ((> x 0) x)
+        ((= x 0) 0)
+        (else (- x))))
+\endlisp 
+
+\eject
+\paragraph{7.  An Example with Higher Order Procedures}
+
+Procedures that manipulate procedures are called higher order procedures.
+After evaluating the following definition:
+
+\beginlisp
+(define do-5 (lambda (f) (f 5)))
+\endlisp
+
+evaluating
+
+\beginlisp
+(do-5 square)
+\endlisp
+
+proceeds as follows:
+
+\vskip 10pt
+
+\begin{center} 
+\begin{tabular}{lcccr|c}
+\{ &  ( do-5                   & square )                   & & \} & (1) \cr
+[  & \fbox{Proc (f) (f 5)}   & \fbox{Proc (x) ($\ast$ x x)} & & ]  & (2) \cr
+\{ & ( \fbox{Proc (x) ($\ast$ x x)} &  5 )                  & & \} & (3) \cr
+[  & \fbox{Proc (x) ($\ast$ x x)} & \fbox{5}                & & ]  & (4) \cr
+\{ & ( $\ast$                     & \fbox{5}  & \fbox{5} )    & \} & (5) \cr
+[  & \fbox{mult}                  & \fbox{5}  & \fbox{5}      & ]  & (6) \cr
+   &    \multicolumn{3}{c}{\fbox{25}}                         &    & (7)
+\end{tabular} 
+\end{center} 
+
+Each subexpression in line~(1) is a symbol that has a 
+procedure object bound to it in the dictionary. The 
+procedure bound to {\tt do-5} is then applied to the procedure
+bound to {\tt square} as shown on line~(2). Since procedures are objects,
+they can be directly substituted into the bodies of other
+procedures. Thus in line~(3) the procedure bound to {\tt square}
+is substituted for the formal parameter {\tt f} in
+the body of the procedure bound to {\tt do-5}. The remaining steps
+are similar to those in the first example.
+
+\paragraph{8. Internal Definitions}
+
+The rules we have stipulated so far cover many
+expressions. However, we have not discussed the consequences of
+using block structure. Consider the following example from page 31 of
+the text:
+
+\beginlisp
+(define factorial
+  (lambda (n)
+     (define (iter p c)
+       (if (> c n)
+           p
+           (iter (* c p) (+ c 1))))
+     (iter 1 1)))
+\endlisp
+
+The body of the procedure bound to the symbol {\tt factorial} 
+consists of a sequence of two compound expressions, the first of
+which is a {\tt define} special form. Each time the {\tt factorial} 
+procedure is applied to an argument, these expressions are evaluated 
+in order. When the internal {\tt define} special form is evaluated, 
+a {\it new} procedure object is created\footnote{This procedure has 
+two formal parameters {\tt p} and {\tt c}. The argument of 
+the {\tt factorial} procedure application replaces the occurrence 
+of parameter {\tt n} in its body.} and bound to the symbol 
+{\tt iter}. To avoid confusion between the different procedure objects that
+result from different applications of {\tt factorial}, 
+each evaluation of the internal {\tt define} form can be regarded 
+as creating its binding for {\tt iter} in a private or
+local dictionary used for the particular application of the {\tt
+factorial} procedure.\footnote{That is, there is not just one dictionary, 
+but rather a hierarchy of dictionaries. When a symbol is evaluated, this
+hierarchy is searched in a specified order and the first binding
+found is used. Details of this process will be discussed in Chapter~3.}
+Thus, when the second expression in the body of the {\tt factorial} 
+procedure is evaluated, the binding used to determine the value of
+{\tt iter} is the one contained in the local dictionary used for the 
+particular application of {\tt factorial}.
+
+\end{document}
+
+

@@ -1,0 +1,371 @@
+% This is a MODIFIED and EXTENDED version of the Plain format described 
+% in the TeXbook.  It's modularized so that Plain is read in first
+% (to allow easy inclusion of new versions) and then appropriate macros
+% are modified here.
+%
+% N.B.: A version number is defined at the very end of this file;
+%       please change that number whenever the file is modified!
+
+% Modified 17 Jul 86 by RAY
+%	   to use CM instead of AM fonts.  The new twelve point fonts
+%	   replace their magnified ten point counterparts.  A version
+%	   of plain without preloaded fonts is not needed for the CM
+%	   format and we no longer update the AM, TR, or HE formats. 
+
+% Modified 26 Aug 85 by DCB
+%	   to first read in Plain and then make modifications.  Actually,
+%	   we have to make a version of Plain that has no preloaded fonts
+%	   or the fonts loaded here won't fit, but this is a lot easier
+%	   than integrating massive changes.
+
+% Modified 14 Dec 84 by BKPH
+%	   to have magnified math extension fonts (for 10, 11, 12, 14, & 18 pt)
+%	   and to allow \big et al to work in sizes other than ten point.
+%	   All changes are in definitions of \font\tenex, \font\elevenex etc.
+%	   and \def\eightpoint, \def\ninepoint, \def\tenpoint etc.
+
+% Created 6 Mar 84 by DCB
+%	   to have point sizes 8,9,10,11,12,14,16,18 (e.g., \ninepoint)
+%	   to define the \pointsize, \user###point (e.g., \userninepoint)
+%		     and \setnormalsp@cing macros
+%	   All the changes except these header lines and the last
+%	     5 lines of the file are in the FONTS and MORE FONTS sections.
+
+\input plain
+
+% We make @ signs act like letters, temporarily, to avoid conflict
+% between user names and internal control sequences of plain format.
+\catcode`@=11
+
+\message{Loading the plain-augmented-CM format: different fonts,}
+
+% roman text
+\font\eighteenrm=cmr10 scaled\magstep3		% 17.28 pt
+\font\fourteenrm=cmr10 scaled\magstep2		% 14.4 pt
+%\font\twelverm=cmr10 scaled\magstep1		% 12 pt
+\font\twelverm=cmr12				% 12 pt
+\font\elevenrm=cmr10 scaled\magstephalf		% 11 pt (almost)
+\font\tenrm=cmr10
+\font\ninerm=cmr9
+\font\eightrm=cmr8
+\font\sevenrm=cmr7
+\font\sixrm=cmr6
+\font\fiverm=cmr5
+
+% math italic
+\font\eighteeni=cmmi10 scaled\magstep3		% 17.28 pt
+\font\fourteeni=cmmi10 scaled\magstep2		% 14.4 pt
+%\font\twelvei=cmmi10 scaled\magstep1		% 12 pt
+\font\twelvei=cmmi12				% 12 pt
+\font\eleveni=cmmi10 scaled\magstephalf		% 11 pt (almost)
+\font\teni=cmmi10
+\font\ninei=cmmi9
+\font\eighti=cmmi8
+\font\seveni=cmmi7
+\font\sixi=cmmi6
+\font\fivei=cmmi5
+
+% math symbols
+\font\eighteensy=cmsy10 scaled\magstep3		% 17.28 pt
+\font\fourteensy=cmsy10 scaled\magstep2		% 14.4 pt
+\font\twelvesy=cmsy10 scaled\magstep1		% 12 pt (no cmsy12)
+\font\elevensy=cmsy10 scaled\magstephalf	% 11 pt (almost)
+\font\tensy=cmsy10
+\font\ninesy=cmsy9
+\font\eightsy=cmsy8
+\font\sevensy=cmsy7
+\font\sixsy=cmsy6
+\font\fivesy=cmsy5
+
+% math extension
+\font\eighteenex=cmex10 scaled\magstep3		% 17.28 pt
+\font\fourteenex=cmex10 scaled\magstep2		% 14.4 pt
+\font\twelveex=cmex10 scaled\magstep1		% 12 pt (no cmex12)
+\font\elevenex=cmex10 scaled\magstephalf	% 11 pt (almost)
+\font\tenex=cmex10
+
+%% NOTE: cmex comes only in ten point size, but magnified 1/2, 1, 2, 3, 4, 5
+
+% boldface extended
+\font\eighteenbf=cmbx10 scaled\magstep3		% 17.28 pt
+\font\fourteenbf=cmbx10 scaled\magstep2		% 14.4 pt
+%\font\twelvebf=cmbx10 scaled\magstep1		% 12 pt
+\font\twelvebf=cmbx12				% 12 pt
+\font\elevenbf=cmbx10 scaled\magstephalf	% 11 pt (almost)
+\font\tenbf=cmbx10
+\font\ninebf=cmbx9
+\font\eightbf=cmbx8
+\font\sevenbf=cmbx7
+\font\sixbf=cmbx6
+\font\fivebf=cmbx5
+
+% typewriter
+\font\eighteentt=cmtt10 scaled\magstep3		% 17.28 pt
+\font\fourteentt=cmtt10 scaled\magstep2		% 14.4 pt
+%\font\twelvett=cmtt10 scaled \magstep1		% 12pt
+\font\twelvett=cmtt12				% 12pt
+\font\eleventt=cmtt10 scaled \magstephalf	% 11pt (almost)
+\font\tentt=cmtt10
+\font\ninett=cmtt9
+\font\eighttt=cmtt8
+
+\font\preloaded=cmsltt10 % slanted typewriter
+
+% slanted roman
+\font\eighteensl=cmsl10 scaled\magstep3		% 17.28 pt
+\font\fourteensl=cmsl10 scaled\magstep2		% 14.4 pt
+%\font\twelvesl=cmsl10 scaled \magstep1		% 12pt
+\font\twelvesl=cmsl12				% 12pt
+\font\elevensl=cmsl10 scaled \magstephalf	% 11pt (almost)
+\font\tensl=cmsl10
+\font\ninesl=cmsl9
+\font\eightsl=cmsl8
+
+% text italic
+\font\eighteenit=cmti10 scaled\magstep3		% 17.28 pt
+\font\fourteenit=cmti10 scaled\magstep2		% 14.4 pt
+%\font\twelveit=cmti10 scaled \magstep1		% 12pt
+\font\twelveit=cmti12				% 12pt
+\font\elevenit=cmti10 scaled \magstephalf	% 11pt (almost)
+\font\tenit=cmti10
+\font\nineit=cmti9
+\font\eightit=cmti8
+
+\message{more different fonts,}
+
+\font\preloaded=cmmib10 % bold math italic
+\font\preloaded=cmbsy10 % bold math symbols
+
+\font\preloaded=manfnt % METAFONT logo and dragon curve and special symbols
+
+% Additional \preloaded fonts can be specified here.
+% (And those that were \preloaded above can be eliminated.)
+
+\let\preloaded=\undefined % preloaded fonts must be declared anew later.
+
+\skewchar\eighteeni='177 \skewchar\fourteeni='177 \skewchar\twelvei='177
+\skewchar\eleveni='177 \skewchar\teni='177 \skewchar\ninei='177
+\skewchar\eighti='177 \skewchar\seveni='177 \skewchar\sixi='177
+\skewchar\fivei='177
+\skewchar\eighteensy='60 \skewchar\fourteensy='60 \skewchar\twelvesy='60
+\skewchar\elevensy='60 \skewchar\tensy='60 \skewchar\ninesy='60
+\skewchar\eightsy='60 \skewchar\sevensy='60 \skewchar\sixsy='60
+\skewchar\fivesy='60
+
+\let\usereighteenpointmacro=\relax
+\def\eighteenpoint{\let\pointsize=\eighteenpoint
+  \textfont0=\eighteenrm \scriptfont0=\twelverm \scriptscriptfont0=\ninerm
+  \def\rm{\fam\z@\eighteenrm}%
+  \textfont1=\eighteeni \scriptfont1=\twelvei \scriptscriptfont1=\ninei
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\eighteeni}%
+  \textfont2=\eighteensy \scriptfont2=\twelvesy \scriptscriptfont2=\ninesy
+  \def\cal{\fam\tw@}%
+  \textfont3=\eighteenex \scriptfont3=\eighteenex \scriptscriptfont3=\eighteenex%NEW
+  \textfont\itfam=\eighteenit
+  \def\it{\fam\itfam\eighteenit}%
+  \textfont\slfam=\eighteensl
+  \def\sl{\fam\slfam\eighteensl}%
+  \textfont\bffam=\eighteenbf \scriptfont\bffam=\twelvebf 
+  \scriptscriptfont\bffam=\ninebf
+  \def\bf{\fam\bffam\eighteenbf}%
+  \textfont\ttfam=\eighteentt
+  \def\tt{\fam\ttfam\eighteentt}%
+  \def\big##1{{\hbox{$\left##1\vbox to15.3\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to20.7\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to26.1\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to31.5\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \usereighteenpointmacro
+  }
+
+\let\usersixteenpointmacro=\relax
+\def\sixteenpoint{%
+  \message{You have asked for 16pt, but you are getting 14pt fonts.
+	   There are no 16pt CM fonts in the local font library.}%
+  \fourteenpoint \let\pointsize=\sixteenpoint
+  \usersixteenpointmacro
+  }
+
+\let\userfourteenpointmacro=\relax
+\def\fourteenpoint{\let\pointsize=\fourteenpoint
+  \textfont0=\fourteenrm \scriptfont0=\tenrm \scriptscriptfont0=\sevenrm
+  \def\rm{\fam\z@\fourteenrm}%
+  \textfont1=\fourteeni \scriptfont1=\teni \scriptscriptfont1=\seveni
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\fourteeni}%
+  \textfont2=\fourteensy \scriptfont2=\tensy \scriptscriptfont2=\sevensy
+  \def\cal{\fam\tw@}%
+  \textfont3=\fourteenex \scriptfont3=\fourteenex \scriptscriptfont3=\fourteenex%NEW
+  \textfont\itfam=\fourteenit
+  \def\it{\fam\itfam\fourteenit}%
+  \textfont\slfam=\fourteensl
+  \def\sl{\fam\slfam\fourteensl}%
+  \textfont\bffam=\fourteenbf \scriptfont\bffam=\tenbf 
+  \scriptscriptfont\bffam=\sixbf
+  \def\bf{\fam\bffam\fourteenbf}%
+  \textfont\ttfam=\fourteentt
+  \def\tt{\fam\ttfam\fourteentt}%
+  \def\big##1{{\hbox{$\left##1\vbox to11.9\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to16.1\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to20.3\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to24.5\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \userfourteenpointmacro
+  }
+
+\let\usertwelvepointmacro=\relax
+\def\twelvepoint{\let\pointsize=\twelvepoint
+  \textfont0=\twelverm \scriptfont0=\ninerm \scriptscriptfont0=\sixrm
+  \def\rm{\fam\z@\twelverm}%
+  \textfont1=\twelvei \scriptfont1=\ninei \scriptscriptfont1=\sixi
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\twelvei}%
+  \textfont2=\twelvesy \scriptfont2=\ninesy \scriptscriptfont2=\sixsy
+  \def\cal{\fam\tw@}%
+  \textfont3=\twelveex \scriptfont3=\twelveex \scriptscriptfont3=\twelveex%NEW
+  \textfont\itfam=\twelveit
+  \def\it{\fam\itfam\twelveit}%
+  \textfont\slfam=\twelvesl
+  \def\sl{\fam\slfam\twelvesl}%
+  \textfont\bffam=\twelvebf \scriptfont\bffam=\ninebf
+  \scriptscriptfont\bffam=\sixbf
+  \def\bf{\fam\bffam\twelvebf}%
+  \textfont\ttfam=\twelvett
+  \def\tt{\fam\ttfam\twelvett}%
+  \def\big##1{{\hbox{$\left##1\vbox to10.2\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to13.8\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to17.4\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to21\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \usertwelvepointmacro
+  }
+
+\let\userelevenpointmacro=\relax
+\def\elevenpoint{\let\pointsize=\elevenpoint
+  \textfont0=\elevenrm \scriptfont0=\eightrm \scriptscriptfont0=\fiverm
+  \def\rm{\fam\z@\elevenrm}%
+  \textfont1=\eleveni \scriptfont1=\eighti \scriptscriptfont1=\fivei
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\eleveni}%
+  \textfont2=\elevensy \scriptfont2=\eightsy \scriptscriptfont2=\fivesy
+  \def\cal{\fam\tw@}%
+  \textfont3=\elevenex \scriptfont3=\elevenex \scriptscriptfont3=\elevenex%NEW
+  \textfont\itfam=\elevenit
+  \def\it{\fam\itfam\elevenit}%
+  \textfont\slfam=\elevensl
+  \def\sl{\fam\slfam\elevensl}%
+  \textfont\bffam=\elevenbf \scriptfont\bffam=\eightbf 
+  \scriptscriptfont\bffam=\fivebf
+  \def\bf{\fam\bffam\elevenbf}%
+  \textfont\ttfam=\eleventt
+  \def\tt{\fam\ttfam\eleventt}%
+  \def\big##1{{\hbox{$\left##1\vbox to9.3\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to12.6\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to16\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to19.2\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \userelevenpointmacro
+  }
+
+\let\usertenpointmacro=\relax
+\def\tenpoint{\let\pointsize=\tenpoint
+  \textfont0=\tenrm \scriptfont0=\sevenrm \scriptscriptfont0=\fiverm
+  \def\rm{\fam\z@\tenrm}%
+  \textfont1=\teni \scriptfont1=\seveni \scriptscriptfont1=\fivei
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\teni}%
+  \textfont2=\tensy \scriptfont2=\sevensy \scriptscriptfont2=\fivesy
+  \def\cal{\fam\tw@}%
+  \textfont3=\tenex \scriptfont3=\tenex \scriptscriptfont3=\tenex
+  \textfont\itfam=\tenit
+  \def\it{\fam\itfam\tenit}%
+  \textfont\slfam=\tensl
+  \def\sl{\fam\slfam\tensl}%
+  \textfont\bffam=\tenbf \scriptfont\bffam=\sevenbf
+  \scriptscriptfont\bffam=\fivebf
+  \def\bf{\fam\bffam\tenbf}%
+  \textfont\ttfam=\tentt
+  \def\tt{\fam\ttfam\tentt}%
+  \def\big##1{{\hbox{$\left##1\vbox to8.5\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to11.5\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to14.5\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to17.5\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \usertenpointmacro
+  }
+
+\let\userninepointmacro=\relax
+\def\ninepoint{\let\pointsize=\ninepoint
+  \textfont0=\ninerm \scriptfont0=\sevenrm \scriptscriptfont0=\fiverm
+  \def\rm{\fam\z@\ninerm}%
+  \textfont1=\ninei \scriptfont1=\seveni \scriptscriptfont1=\fivei
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\ninei}%
+  \textfont2=\ninesy \scriptfont2=\sevensy \scriptscriptfont2=\fivesy
+  \def\cal{\fam\tw@}%
+  \textfont3=\tenex \scriptfont3=\tenex \scriptscriptfont3=\tenex
+  \textfont\itfam=\nineit
+  \def\it{\fam\itfam\nineit}%
+  \textfont\slfam=\ninesl
+  \def\sl{\fam\slfam\ninesl}%
+  \textfont\bffam=\ninebf \scriptfont\bffam=\sevenbf 
+  \scriptscriptfont\bffam=\fivebf
+  \def\bf{\fam\bffam\ninebf}%
+  \textfont\ttfam=\ninett
+  \def\tt{\fam\ttfam\ninett}%
+  \def\big##1{{\hbox{$\left##1\vbox to8.5\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to11.5\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to14.5\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to17.5\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \userninepointmacro
+  }
+
+\let\usereightpointmacro=\relax
+\def\eightpoint{\let\pointsize=\eightpoint
+  \textfont0=\eightrm \scriptfont0=\sixrm \scriptscriptfont0=\fiverm
+  \def\rm{\fam\z@\eightrm}%
+  \textfont1=\eighti \scriptfont1=\sixi \scriptscriptfont1=\fivei
+  \def\mit{\fam\@ne}\def\oldstyle{\fam\@ne\eighti}%
+  \textfont2=\eightsy \scriptfont2=\sixsy \scriptscriptfont2=\fivesy
+  \def\cal{\fam\tw@}%
+  \textfont3=\tenex \scriptfont3=\tenex \scriptscriptfont3=\tenex
+  \textfont\itfam=\eightit
+  \def\it{\fam\itfam\eightit}%
+  \textfont\slfam=\eightsl
+  \def\sl{\fam\slfam\eightsl}%
+  \textfont\bffam=\eightbf \scriptfont\bffam=\sixbf 
+  \scriptscriptfont\bffam=\fivebf
+  \def\bf{\fam\bffam\eightbf}%
+  \textfont\ttfam=\eighttt
+  \def\tt{\fam\ttfam\eighttt}%
+  \def\big##1{{\hbox{$\left##1\vbox to8.5\p@{}\right.\n@space$}}}%NEW
+  \def\Big##1{{\hbox{$\left##1\vbox to11.5\p@{}\right.\n@space$}}}%NEW
+  \def\bigg##1{{\hbox{$\left##1\vbox to14.5\p@{}\right.\n@space$}}}%NEW
+  \def\Bigg##1{{\hbox{$\left##1\vbox to17.5\p@{}\right.\n@space$}}}%NEW
+  \setnormalsp@cing
+  \usereightpointmacro
+  }
+
+%% NOTE: had to stick 10 point definitions of \big in 8, 9, and 10 point.
+
+\newtoks\baselinefactor  \baselinefactor={1.2}
+\def\setnormalbaselines {%
+  \normalbaselineskip=\the\baselinefactor em\relax
+%  \normallineskip=\p@		      % these don't change with point size
+%  \normallineskiplimit=0\p@
+  }
+
+\def\setnormalsp@cing{%  SIDE EFFECT is to go into \rm
+  \rm	% set the em properly
+  \setnormalbaselines
+  \normalbaselines
+  \abovedisplayskip=1.2em plus .3em minus .9em%
+  \abovedisplayshortskip=0em plus .3em%
+  \belowdisplayskip=1.2em plus .3em minus .9em%
+  \belowdisplayshortskip=.7em plus .3em minus .4em%
+  \setbox\strutbox=\hbox{\vrule height .7\baselineskip
+				depth .3\baselineskip width\z@}%
+  }
+
+\message{format id.}
+
+\catcode`@=12 % at signs are no longer letters
+
+\edef\fmtname{\fmtname-augmented}	% include Plain name
+\edef\fmtversion{\fmtversion-CM861707}	% include Plain version

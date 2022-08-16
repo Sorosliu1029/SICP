@@ -1,0 +1,334 @@
+@Comment(Copyright (c) 1990 Massachusetts Institute of Technology
+
+This material was developed by the Scheme project at the Massachusetts
+Institute of Technology, Department of Electrical Engineering and
+Computer Science.  Permission to copy this material, to redistribute
+it, and to use it for any non-commercial purpose is granted, subject
+to the following restrictions and understandings.
+
+1. Any copy made of this material must include this copyright notice
+in full.
+
+2. Users of this material agree to make their best efforts (a) to
+return to the MIT Scheme project any improvements or extensions that
+they make, so that these may be included in future releases; and (b)
+to inform MIT of noteworthy uses of this material.
+
+3. All materials developed as a consequence of the use of this
+material shall duly acknowledge such use, in accordance with the usual
+standards of acknowledging credit in academic research.
+
+4. MIT has made no warrantee or representation that this material
+(including the operation of software contained therein) will be
+error-free, and MIT is under no obligation to provide any services, by
+way of maintenance, update, or otherwise.
+
+5. In conjunction with products arising from the use of this material,
+there shall be no use of the name of the Massachusetts Institute of
+Technology nor of any adaptation thereof in any advertising,
+promotional, or sales literature without prior written consent from
+MIT in each case. )
+@Comment(This file gets @INCLUDEd in problem-set .TXT files --
+ e.g., CYCLOID.TXT)
+@section(Adventures in Debugging)
+
+During the semester, you will often need to debug programs that
+you write.  This section contains an exercise that you
+should work through @i[at the terminal] to acquaint you with some
+of the features of Scheme to aid in debugging.  There is
+nothing you need turn in for this part of the problem set, but we
+strongly suggest that you do this exercise.   Learning to use the
+debugging features will save you much grief on later problem
+sets.
+
+The file @a[debug-lesson.scm] is a short file that has been provided for
+you to load into Scheme.  To do this, use the NMODE extended
+command ``load problem set'' and specify that you want to load
+the code for problem set 1.  This will make a copy of the file on
+your disk.
+
+The file contains three tiny procedures called @a[p1], @a[p2], and
+@a[p3].  You can examine them using NMODE, but there is no need to do
+that now -- you will see them later on, during debugging. Zap the
+procedures into Scheme.  Now evaluate the expression @a[(p1 1 2)].
+This should signal an error, with the message
+@begin(programexample)
+Wrong Number of Arguments 1
+within procedure #[COMPOUND-PROCEDURE P2]
+There is no environment available;
+using the current read-eval-print environment.
+
+2 Error->
+@end(programexample)
+
+Don't panic.  Beginners have a tendency, when they hit an error,
+to quickly type @c[ctrl-G] or press @c[edit]. Then they stare at
+their code in the editor until they see the what the bug is.
+Indeed, the example here is simple enough so that you probably
+can see the bug just by reading the code.  But don't do
+this.  Let's instead see how Scheme can be coaxed into producing
+some helpful information about the error.
+
+First of all, there is the error message itself.  It tells you
+that the error was caused by a procedure being called with 1
+argument, which is the wrong number of arguments for that
+procedure.  The next line tells you that the error occurred
+within the procedure
+@a[P2], so the actual error was that @a[P2] was called with 1
+argument, which is the wrong number of arguments for @a[P2].
+
+The other information about ``current environment,'' and
+``read-eval-print environment'' you can ignore.  We will
+learn about environments later in the semester.  Notice, however,
+that the prompt now reads
+@begin(programexample)
+2 Error->
+@end(programexample)
+which is Scheme's way of indicating that you can now
+evaluate expressions within the context of the error, and that
+this context is ``at level 2,'' namely, one level down from the
+``top level,'' which is the initial Scheme command level.
+
+Unfortunately, the error message alone doesn't say where in
+the code the error occurred.  In order to find out more, you need
+to use the debugger.  To do this execute the expression @a[(debug)].
+
+@paragraph(Using the debugger)
+
+The debugger allows you to grovel around
+examining pieces of the execution in progress, in order to learn
+more about what may have caused the error.
+When you typed @a[(debug)] just above, Scheme should have responded:
+@begin(programexample)
+Subproblem Level: 0  Reduction Number: 0
+Expression:
+(P2 B)
+within the procedure P3
+applied to (1 2)
+Debugger
+
+3 Debug-->
+@end(programexample)
+
+This says that the expression that caused the error was
+@a[(P2 B)], evaluated within the procedure @a[P3], which was
+called with arguments 1 and 2.  That's probably enough
+information to let you fix the error, but let's pretend we need
+more information, just to learn more about how the debugger works.
+
+Ignore the stuff about Subproblem and Reduction numbers.  (You can
+read about them in the Chipmunk manual.)  The prompt says that you are
+in the debugger (at level 3, one down from the error level, which was
+level 2).  At this point, you could type @c[ctrl]-G to exit the whole
+mess and get back to Scheme's ``top level,'' but let's instead explore
+the debugger.
+
+The debugger differs from an ordinary Scheme command level, in
+that you use single-keystroke commands, rather than typing expressions
+and pressing @c[execute].
+
+One thing you can do is move ``backwards'' in the evaluation
+sequence, to see how we got to the point that signaled the error.
+To do this, type the character @a[b].  Scheme should respond:
+@begin(programexample)
+Subproblem level: 1 Reduction number: 0
+Expression:
+(+ (P2 A) (P2 B))
+within the procedure P3
+applied to (1 2)
+
+3 Debug-->
+@end(programexample)
+Remember that the expression evaluated to cause the error was @a[(P2
+B)].  Now that we have moved ``back,'' we learn that this expression
+was being evaluated as a subproblem of evaluating the expression
+@a[(+ (P2 A) (P2 B))], still within procedure @a[P3] applied to 1
+and 2.
+
+Press @a[b] again, and you should see
+@begin(programexample)
+Subproblem Level: 2  Reduction Number: 0
+Expression:
+(+ (P2 X Y) (P3 X Y))
+within the procedure P1
+applied to (1 2)
+@end(programexample)
+which tells us that got to the place we just
+saw above as a result of trying to evaluate an expression in
+@a[P1].
+
+Press @a[b] again and you should see a horrible mess.  What you
+are looking at is some of the guts of the Scheme system -- the part
+shown here is a
+piece of the interpreter's read-eval-print program.  In general,
+backing up from any error will eventually land you in the guts of
+the system.  At this point you should stop backing up unless, of
+course, you want to explore what the system looks like.  (Yes:
+almost all of the system is itself a Scheme program.)
+
+In the debugger, the opposite of @a[b] is @a[f], which moves you
+``forward.'' Go forward until the point of the actual error,
+which is as far as you can go.
+
+Besides @a[b] and @a[f], there about a dozen debugger
+single-character commands that perform operations at various
+levels of obscurity.  You can see a list of them by typing @a[?]
+at the debugger.  For more information, see the Chipmunk manual.
+
+Hopefully, the debugger session has revealed that the bug was in
+@a[P3], where the expression @a[(+ (P2 A) (P2 B))] calls @a[P2]
+with the wrong number of arguments.@foot{Notice that the call
+that produced the error was @a[(P2 B)], and that @a[(P2 A)] would
+have also given an error.  This indicates that in this case
+Scheme was evaluating the arguments to @a[+] in right-to-left
+order, which is something you may not have expected. You should
+never write code that depends for its correct execution on the
+order of evaluation of the arguments in a combination.  The
+``official definition'' of Scheme (whatever that means) does not
+guarantee that that any particular order will be followed, nor
+even that this order will be the same each time a combination is
+evaluated.} You can type @c[ctrl]-G to return to the Scheme top level
+interpreter.
+
+@paragraph(The stepper)
+
+Even with such a simple error, debugging was not so simple.
+What do you expect?  After all, an error occurred and you
+have to grovel through the mess.  An alternative debugging
+strategy is to re-evaluate the expression that produced the error, only
+this time to do the evaluation ``step by step,'' and observe the
+precise point where the error happens.  The Scheme program that
+lets you do this is called the @i[stepper].
+
+Let's try to debug again, this time using the stepper.  Clear the
+screen (by typing @c[ctrl]-L) and evaluate the expression
+@begin(programexample)
+
+(step '(p1 1 2))
+@end(programexample)
+Don't omit the quotation mark after @a[step].   (You'll learn
+about what quotation is for when we get to Chapter 2.)
+
+If you did this correctly, Scheme should type, halfway down the screen,
+@begin(programexample)
+
+(DEFINE (P1 X Y) (+ (P2 X Y) (P3 X Y)))
+Stepping: (P1 1 2) Eval Combination
+@end(programexample)
+
+What you are seeing is the text of the procedure being evaluated,
+namely @a[P1].  The next line tells you that the expression being
+stepped that called this procedure is @a[(P1 1 2)] and that the
+interpreter is at the point ``Eval combination'' which is the
+point where the interpreter sets up to evaluate a
+combination.  (Later in the semester, we will learn about the
+various elements of the evaluation process.)  The cursor is
+flashing at the beginning of the combination to be evaluated.
+
+Type a space.  This proceeds the evaluation ``one step.''  Notice
+that nothing much happens, except that the cursor moves to the
+beginning of the right-hand inner combination, which is the next
+thing the interpreter is going to work on.@foot{There's that right-to-left
+evaluation order again.  See previous footnote.}
+
+Type another space and the interpreter starts working on the
+subexpressions of this combination, starting with the symbol @a[Y].
+Accordingly, the stepper prints
+@begin(programexample)
+
+Eval Irreducible
+Y has the value
+2
+@end(programexample)
+telling you that @a[Y] was irreducible (no subexpressions) and
+that it has the value 2.
+
+Type another space and you will see that @a[X] has the value 1.
+Another space shows the interpreter determining that @a[P3] is the
+name of a procedure.
+@begin(programexample)
+
+P3 has the value
+#[COMPOUND-PROCEDURE P3]
+@end(programexample)
+
+When you type another space, the message changes to show that the
+interpreter is about to apply @a[P3] to the arguments 1 and 2.
+
+You now have a choice: you can ask the stepper to do the
+application in one step, or you can go step-by-step through the
+application.
+
+If you press space, the stepper will do the application in one step and
+show the returned value.  Try this.
+
+Ugh!  That signaled the error.  So we know that the error happens
+while evaluating @a[(P3 1 2)].  We probably should have gone step
+by step through this part of the evaluation.
+
+So go back and try again.  Press @c[ctrl]-G, clear the screen,
+execute
+@begin(programexample)
+
+(step '(p1 1 2))
+@end(programexample)
+and press space until you get back to the point where the
+interpreter is about to apply @a[P3] to 1 and 2.
+
+This time, instead of pressing the space bar, type @a[s].
+The stepper should now show the application of the internal procedure:
+@begin(programexample)
+
+(DEFINE (P3 A B) (+ (P2 A) (P2 B)))
+@end(programexample)
+
+Another space will get to the application @a[(P2 B)], which gives
+the error.
+
+Notice that this is the same information we found with the
+debugger above.  Only this time we are working ``forwards'' until
+the error occurs instead of letting the error happen and then
+working backwards.  Both of these techniques should be part of
+your debugging repertoire.
+
+
+@paragraph(For your amusement)
+
+Edit @a[P3] to eliminate the error by calling @a[P2] with two
+arguments each time.  (It doesn't matter what these
+arguments are, so long as the applications don't produce errors.) 
+Now step through the original call to @a[P1], and get to the point in
+@a[P3] where the addition operator @a[+] is about to be applied
+to 2 arguments.  If you were to type a space at this point, the
+addition would be performed and the result shown.  But, instead
+of typing a space, type an @a[s], and you will see some incredibly
+obscure stuff.
+
+What you are looking at are the internals of the addition
+operation, implemented as a Scheme procedure.  You see, we lied
+to you in lecture: @a[+] is not a primitive in the Scheme system
+you are using.
+
+The lesson to draw from this is not that we are liars, but that
+the meaning of ``primitive'' must always be taken to be relative
+a given level of detail at which one wants to look.  Since we
+have more than enough material to cover this semester without
+worrying about how the 6.001 Scheme system is implemented in
+detail, it is convenient for us to consider @a[+] to be a primitive.
+
+For fun, you can start stepping through the application of @a[+].
+Each time you get to an internal application, type @a[s] to go
+inside of it.  Eventually you will get to a ``real primitive.''
+Of course, all that a ``real primitive'' is is something that the
+stepper won't let you look inside of.  In terms of the assembly
+language ``kernel'' of Scheme, a ``real primitive'' might be a
+complex program made up of lots of instructions in assembly
+language.  And any single assembly language instruction might be
+a complex program written in microcode.
+
+This illustrates a major idea that we will see thoughout 6.001: One
+does @i[not] create complex systems by focusing on how to construct
+them out of ultimate primitive elements.  Rather, one proceeds in
+layers, erecting a series of levels, each of which is the
+``primitives'' upon which the next level is constructed.
+

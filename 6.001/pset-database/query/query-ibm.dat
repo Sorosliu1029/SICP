@@ -1,0 +1,115 @@
+;;;-*-Scheme-*-
+
+;;; Copyright (c) 1990 Massachusetts Institute of Technology
+;;; 
+;;; This material was developed by the Scheme project at the Massachusetts
+;;; Institute of Technology, Department of Electrical Engineering and
+;;; Computer Science.  Permission to copy this material, to redistribute
+;;; it, and to use it for any non-commercial purpose is granted, subject
+;;; to the following restrictions and understandings.
+;;; 
+;;; 1. Any copy made of this material must include this copyright notice
+;;; in full.
+;;; 
+;;; 2. Users of this material agree to make their best efforts (a) to
+;;; return to the MIT Scheme project any improvements or extensions that
+;;; they make, so that these may be included in future releases; and (b)
+;;; to inform MIT of noteworthy uses of this material.
+;;; 
+;;; 3. All materials developed as a consequence of the use of this
+;;; material shall duly acknowledge such use, in accordance with the usual
+;;; standards of acknowledging credit in academic research.
+;;; 
+;;; 4. MIT has made no warrantee or representation that this material
+;;; (including the operation of software contained therein) will be
+;;; error-free, and MIT is under no obligation to provide any services, by
+;;; way of maintenance, update, or otherwise.
+;;; 
+;;; 5. In conjunction with products arising from the use of this material,
+;;; there shall be no use of the name of the Massachusetts Institute of
+;;; Technology nor of any adaptation thereof in any advertising,
+;;; promotional, or sales literature without prior written consent from
+;;; MIT in each case. 
+
+;;;This gives the data base for the Itsey Bitsey Machine Company
+;;;This file should not be loaded into Scheme until after the query
+;;;system has been loaded.
+
+(define ibm-data-base '(
+
+  (address (Bitdiddle Ben) (Slumerville (Ridge Road) 10))
+  (job (Bitdiddle Ben) (computer wizard))
+  (salary (Bitdiddle Ben) 40000)
+
+  (address (Hacker Alyssa P) (Cambridge (Mass Ave) 78))
+  (job (Hacker Alyssa P) (computer programmer))
+  (salary (Hacker Alyssa P) 35000)
+  (supervisor (Hacker Alyssa P) (Bitdiddle Ben))
+
+  (address (Fect Cy D) (Cambridge (Ames Street) 3))
+  (job (Fect Cy D) (computer programmer))
+  (salary (Fect Cy D) 32000)
+  (supervisor (Fect Cy D) (Bitdiddle Ben))
+
+  (address (Tweakit Lem E) (Boston (Bay State Road) 22))
+  (job (Tweakit Lem E) (computer technician))
+  (salary (Tweakit Lem E) 15000)
+  (supervisor (Tweakit Lem E) (Bitdiddle Ben))
+
+  (address (Reasoner Louis) (Slumerville (Pine Tree Road) 80))
+  (job (Reasoner Louis) (computer programmer trainee))
+  (salary (Reasoner Louis) 20000)
+  (supervisor (Reasoner Louis) (Hacker Alyssa P))
+
+  (supervisor (Bitdiddle Ben) (Warbucks Oliver))
+
+  (address (Warbucks Oliver) (Swellesley (Top Heap Road)))
+  (job (Warbucks Oliver) (administration big wheel))
+  (salary (Warbucks Oliver) 100000)
+
+  (address (Scrooge Eben) (Weston (Shady Lane) 10))
+  (job (Scrooge Eben) (accounting chief accountant))
+  (salary (Scrooge Eben) 69000)
+  (supervisor (Scrooge Eben) (Warbucks Oliver))
+
+  (address (Cratchet Robert) (Allston (N Harvard Street) 16))
+  (job (Cratchet Robert) (accounting scrivener))
+  (salary (Cratchet Robert) 12000)
+  (supervisor (Cratchet Robert) (Scrooge Eben))
+
+  (address (Forrest Rosemary) (Slumerville (Onion Square) 5))
+  (job (Forrest Rosemary) (administration secretary))
+  (salary (Forrest Rosemary) 15000)
+  (supervisor (Forrest Rosemary) (Warbucks Oliver))
+
+  (can-do-job (computer wizard) (computer programmer))
+  (can-do-job (computer wizard) (computer technician))
+
+  (can-do-job (computer programmer)
+              (computer programmer trainee))
+
+  (can-do-job (administration secretary)
+              (administration big wheel))
+
+;;rules for the data base
+
+  (rule (same ?x ?x))
+
+  (rule (lives-near ?person-1 ?person-2)
+        (and (address ?person-1 (?town . ?rest-1))
+             (address ?person-2 (?town . ?rest-2))
+             (not (same ?person-1 ?person-2))))
+
+  (rule (wheel ?person)
+        (and (supervisor ?middle-manager ?person)
+             (supervisor ?x ?middle-manager)))
+
+  (rule (outranked-by ?staff-person ?boss)
+        (or (supervisor ?staff-person ?boss)
+            (and (supervisor ?staff-person ?middle-manager)
+                 (outranked-by ?middle-manager ?boss))))
+
+))
+
+(initialize-data-base ibm-data-base)
+
