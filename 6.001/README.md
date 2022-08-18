@@ -70,25 +70,45 @@
 ### Video Lectures
 
 - [ ] [1A: OVERVIEW AND INTRODUCTION TO LISP](https://www.youtube.com/watch?v=-J_xL4IGhJA)
+  - [ ] text 1.1
 - [ ] [1B: PROCEDURES AND PROCESSES; SUBSTITUTION MODEL](https://www.youtube.com/watch?v=V_7mmwpgJHU)
+  - [ ] text 1.2
 - [ ] [2A: HIGHER-ORDER PROCEDURES](https://www.youtube.com/watch?v=eJeMOEiHv8c)
+  - [ ] text 1.3
 - [ ] [2B: COMPOUND DATA](https://www.youtube.com/watch?v=DrFkf-T-6Co)
+  - [ ] text 2.1
 - [ ] [3A: HENDERSON ESCHER EXAMPLE](https://www.youtube.com/watch?v=PEwZL3H2oKg)
+  - [ ] text 2.2
 - [ ] [3B: SYMBOLIC DIFFERENTIATION; QUOTATION](https://www.youtube.com/watch?v=bV87UzKMRtE)
+  - [ ] text 2.3
 - [ ] [4A: PATTERN MATCHING AND RULE-BASED SUBSTITUTION](https://www.youtube.com/watch?v=_fXQ1SwKjDg)
+  - [ ] text 2.4.3
 - [ ] [4B: GENERIC OPERATORS](https://www.youtube.com/watch?v=OscT4N2qq7o)
+  - [ ] text 2.4,2.5
 - [ ] [5A: ASSIGNMENT, STATE, AND SIDE-EFFECTS](https://www.youtube.com/watch?v=dO1aqPBJCPg)
+  - [ ] text 3.1-3.2
 - [ ] [5B: COMPUTATIONAL OBJECTS](https://www.youtube.com/watch?v=yedzRWhi-9E)
+  - [ ] text 3.2-3.4
 - [ ] [6A: STREAMS, PART 1](https://www.youtube.com/watch?v=JkGKLILLy0I)
+  - [ ] text 3.5
 - [ ] [6B: STREAMS, PART 2](https://www.youtube.com/watch?v=qp05AtXbOP0)
+  - [ ] text 3.5
 - [ ] [7A: METACIRCULAR EVALUATOR, PART 1](https://www.youtube.com/watch?v=aAlR3cezPJg)
+  - [ ] text 4.1
 - [ ] [7B: METACIRCULAR EVALUATOR, PART 2](https://www.youtube.com/watch?v=QVEOq5k6Xi0)
+  - [ ] text 4.2
 - [ ] [8A: LOGIC PROGRAMMING, PART 1](https://www.youtube.com/watch?v=rCqMiPk1BJE)
+  - [ ] text 4.4
 - [ ] [8B: LOGIC PROGRAMMING, PART 2](https://www.youtube.com/watch?v=GReBwkGFZcs)
+  - [ ] text 4.4
 - [ ] [9A: REGISTER MACHINES](https://www.youtube.com/watch?v=cIc8ZBMcqAc)
+  - [ ] text 5.1,5.2
 - [ ] [9B: EXPLICIT-CONTROL EVALUATOR](https://www.youtube.com/watch?v=Z8-qWEEwTCk)
+  - [ ] text 5.4
 - [ ] [10A: COMPILATION](https://www.youtube.com/watch?v=TqO6V3qR9Ws)
+  - [ ] text 5.5
 - [ ] [10B: STORAGE ALLOCATION AND GARBAGE COLLECTION](https://www.youtube.com/watch?v=AbK4bZhUk48)
+  - [ ] text 5.3
 
 ### Projects
 
