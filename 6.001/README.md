@@ -73,9 +73,9 @@
   - [ ] text 1.1
 - [x] [1B: procedures and processes; substitution model](https://www.youtube.com/watch?v=V_7mmwpgJHU)
   - [ ] text 1.2
-- [ ] [2A: higher-order procedures](https://www.youtube.com/watch?v=eJeMOEiHv8c)
+- [x] [2A: higher-order procedures](https://www.youtube.com/watch?v=eJeMOEiHv8c)
   - [ ] text 1.3
-- [ ] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
+- [x] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
   - [ ] text 2.1
 - [ ] [3A: henderson escher example](https://www.youtube.com/watch?v=PEwZL3H2oKg)
   - [ ] text 2.2
