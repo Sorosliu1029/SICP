@@ -77,9 +77,9 @@
   - [ ] text 1.3
 - [x] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
   - [ ] text 2.1
-- [ ] [3A: henderson escher example](https://www.youtube.com/watch?v=PEwZL3H2oKg)
+- [x] [3A: henderson escher example](https://www.youtube.com/watch?v=PEwZL3H2oKg)
   - [ ] text 2.2
-- [ ] [3B: symbolic differentiation; quotation](https://www.youtube.com/watch?v=bV87UzKMRtE)
+- [x] [3B: symbolic differentiation; quotation](https://www.youtube.com/watch?v=bV87UzKMRtE)
   - [ ] text 2.3
 - [ ] [4A: pattern matching and rule-based substitution](https://www.youtube.com/watch?v=_fXQ1SwKjDg)
   - [ ] text 2.4.3
