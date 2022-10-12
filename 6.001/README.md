@@ -81,9 +81,9 @@
   - [ ] text 2.2
 - [x] [3B: symbolic differentiation; quotation](https://www.youtube.com/watch?v=bV87UzKMRtE)
   - [ ] text 2.3
-- [ ] [4A: pattern matching and rule-based substitution](https://www.youtube.com/watch?v=_fXQ1SwKjDg)
+- [x] [4A: pattern matching and rule-based substitution](https://www.youtube.com/watch?v=_fXQ1SwKjDg)
   - [ ] text 2.4.3
-- [ ] [4B: generic operators](https://www.youtube.com/watch?v=OscT4N2qq7o)
+- [x] [4B: generic operators](https://www.youtube.com/watch?v=OscT4N2qq7o)
   - [ ] text 2.4,2.5
 - [ ] [5A: assignment, state, and side-effects](https://www.youtube.com/watch?v=dO1aqPBJCPg)
   - [ ] text 3.1-3.2
