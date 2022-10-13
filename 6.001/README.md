@@ -89,9 +89,9 @@
   - [ ] text 3.1-3.2
 - [x] [5B: computational objects](https://www.youtube.com/watch?v=yedzRWhi-9E)
   - [ ] text 3.2-3.4
-- [ ] [6A: streams, part 1](https://www.youtube.com/watch?v=JkGKLILLy0I)
+- [x] [6A: streams, part 1](https://www.youtube.com/watch?v=JkGKLILLy0I)
   - [ ] text 3.5
-- [ ] [6B: streams, part 2](https://www.youtube.com/watch?v=qp05AtXbOP0)
+- [x] [6B: streams, part 2](https://www.youtube.com/watch?v=qp05AtXbOP0)
   - [ ] text 3.5
 - [ ] [7A: metacircular evaluator, part 1](https://www.youtube.com/watch?v=aAlR3cezPJg)
   - [ ] text 4.1
