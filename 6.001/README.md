@@ -85,9 +85,9 @@
   - [ ] text 2.4.3
 - [x] [4B: generic operators](https://www.youtube.com/watch?v=OscT4N2qq7o)
   - [ ] text 2.4,2.5
-- [ ] [5A: assignment, state, and side-effects](https://www.youtube.com/watch?v=dO1aqPBJCPg)
+- [x] [5A: assignment, state, and side-effects](https://www.youtube.com/watch?v=dO1aqPBJCPg)
   - [ ] text 3.1-3.2
-- [ ] [5B: computational objects](https://www.youtube.com/watch?v=yedzRWhi-9E)
+- [x] [5B: computational objects](https://www.youtube.com/watch?v=yedzRWhi-9E)
   - [ ] text 3.2-3.4
 - [ ] [6A: streams, part 1](https://www.youtube.com/watch?v=JkGKLILLy0I)
   - [ ] text 3.5
