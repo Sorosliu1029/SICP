@@ -93,9 +93,9 @@
   - [ ] text 3.5
 - [x] [6B: streams, part 2](https://www.youtube.com/watch?v=qp05AtXbOP0)
   - [ ] text 3.5
-- [ ] [7A: metacircular evaluator, part 1](https://www.youtube.com/watch?v=aAlR3cezPJg)
+- [x] [7A: metacircular evaluator, part 1](https://www.youtube.com/watch?v=aAlR3cezPJg)
   - [ ] text 4.1
-- [ ] [7B: metacircular evaluator, part 2](https://www.youtube.com/watch?v=QVEOq5k6Xi0)
+- [x] [7B: metacircular evaluator, part 2](https://www.youtube.com/watch?v=QVEOq5k6Xi0)
   - [ ] text 4.2
 - [ ] [8A: logic programming, part 1](https://www.youtube.com/watch?v=rCqMiPk1BJE)
   - [ ] text 4.4
