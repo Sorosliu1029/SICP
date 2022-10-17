@@ -101,9 +101,9 @@
   - [ ] text 4.4
 - [x] [8B: logic programming, part 2](https://www.youtube.com/watch?v=GReBwkGFZcs)
   - [ ] text 4.4
-- [ ] [9A: register machines](https://www.youtube.com/watch?v=cIc8ZBMcqAc)
+- [x] [9A: register machines](https://www.youtube.com/watch?v=cIc8ZBMcqAc)
   - [ ] text 5.1,5.2
-- [ ] [9B: explicit-control evaluator](https://www.youtube.com/watch?v=Z8-qWEEwTCk)
+- [x] [9B: explicit-control evaluator](https://www.youtube.com/watch?v=Z8-qWEEwTCk)
   - [ ] text 5.4
 - [ ] [10A: compilation](https://www.youtube.com/watch?v=TqO6V3qR9Ws)
   - [ ] text 5.5
