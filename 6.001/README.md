@@ -97,9 +97,9 @@
   - [ ] text 4.1
 - [x] [7B: metacircular evaluator, part 2](https://www.youtube.com/watch?v=QVEOq5k6Xi0)
   - [ ] text 4.2
-- [ ] [8A: logic programming, part 1](https://www.youtube.com/watch?v=rCqMiPk1BJE)
+- [x] [8A: logic programming, part 1](https://www.youtube.com/watch?v=rCqMiPk1BJE)
   - [ ] text 4.4
-- [ ] [8B: logic programming, part 2](https://www.youtube.com/watch?v=GReBwkGFZcs)
+- [x] [8B: logic programming, part 2](https://www.youtube.com/watch?v=GReBwkGFZcs)
   - [ ] text 4.4
 - [ ] [9A: register machines](https://www.youtube.com/watch?v=cIc8ZBMcqAc)
   - [ ] text 5.1,5.2
