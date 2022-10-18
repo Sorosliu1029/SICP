@@ -105,9 +105,9 @@
   - [ ] text 5.1,5.2
 - [x] [9B: explicit-control evaluator](https://www.youtube.com/watch?v=Z8-qWEEwTCk)
   - [ ] text 5.4
-- [ ] [10A: compilation](https://www.youtube.com/watch?v=TqO6V3qR9Ws)
+- [x] [10A: compilation](https://www.youtube.com/watch?v=TqO6V3qR9Ws)
   - [ ] text 5.5
-- [ ] [10B: storage allocation and garbage collection](https://www.youtube.com/watch?v=AbK4bZhUk48)
+- [x] [10B: storage allocation and garbage collection](https://www.youtube.com/watch?v=AbK4bZhUk48)
   - [ ] text 5.3
 
 ### Projects
