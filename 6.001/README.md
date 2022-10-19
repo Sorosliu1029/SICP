@@ -1,7 +1,7 @@
 ### Progress
 
-- [ ] L1: Introduction to Computation
-  - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture1webhand/)
+- [x] L1: Introduction to Computation
+  - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture1webhand/)
 - [ ] L2: Scheme Basics
   - [ ] reading: [Section 1.1](https://sicp.sorosliu.xyz/book/book-Z-H-10.html#%25_sec_1.1)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2webhand/)
