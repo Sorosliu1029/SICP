@@ -2,10 +2,10 @@
 
 - [x] L1: Introduction to Computation
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture1webhand/)
-- [ ] L2: Scheme Basics
-  - [ ] reading: [Section 1.1](https://sicp.sorosliu.xyz/book/book-Z-H-10.html#%25_sec_1.1)
-  - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2webhand/)
-  - [ ] [A Story about using Lisp in a Startup Company](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2lispstor/)
+- [x] L2: Scheme Basics
+  - [x] reading: [Section 1.1](https://sicp.sorosliu.xyz/book/book-Z-H-10.html#%25_sec_1.1)
+  - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2webhand/)
+  - [x] [A Story about using Lisp in a Startup Company](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2lispstor/)
 - [ ] L3: Procedures, Processes, and Recursion
   - [ ] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture3webhand/)
