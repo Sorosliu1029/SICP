@@ -70,7 +70,7 @@
 ### Video Lectures
 
 - [x] [1A: overview and introduction to lisp](https://www.youtube.com/watch?v=-J_xL4IGhJA)
-  - [ ] text 1.1
+  - [x] text 1.1
 - [x] [1B: procedures and processes; substitution model](https://www.youtube.com/watch?v=V_7mmwpgJHU)
   - [ ] text 1.2
 - [x] [2A: higher-order procedures](https://www.youtube.com/watch?v=eJeMOEiHv8c)
