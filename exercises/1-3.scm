@@ -1,5 +1,6 @@
 ;;; Soros Liu
 ;;; Exercise 1.3
+;;; https://sicp.sorosliu.xyz/book/book-Z-H-10.html#%_thm_1.3
 
 (define (square x)
   (* x x))

@@ -1,5 +1,6 @@
 ;;; Soros Liu
 ;;; Exercise 1.2
+;;; https://sicp.sorosliu.xyz/book/book-Z-H-10.html#%_thm_1.2
 
 (/
  (+ 5
