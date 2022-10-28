@@ -7,7 +7,7 @@
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2webhand/)
   - [x] [A Story about using Lisp in a Startup Company](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture2lispstor/)
 - [ ] L3: Procedures, Processes, and Recursion
-  - [ ] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
+  - [x] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture3webhand/)
 - [ ] L4: Orders of Growth and Kinds of Procedures
   - [ ] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
@@ -72,7 +72,7 @@
 - [x] [1A: overview and introduction to lisp](https://www.youtube.com/watch?v=-J_xL4IGhJA)
   - [x] text 1.1
 - [x] [1B: procedures and processes; substitution model](https://www.youtube.com/watch?v=V_7mmwpgJHU)
-  - [ ] text 1.2
+  - [x] text 1.2
 - [x] [2A: higher-order procedures](https://www.youtube.com/watch?v=eJeMOEiHv8c)
   - [ ] text 1.3
 - [x] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
