@@ -9,9 +9,9 @@
 - [x] L3: Procedures, Processes, and Recursion
   - [x] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture3webhand/)
-- [ ] L4: Orders of Growth and Kinds of Procedures
-  - [ ] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
-  - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture4webhand/)
+- [x] L4: Orders of Growth and Kinds of Procedures
+  - [x] reading: [Section 1.2](https://sicp.sorosliu.xyz/book/book-Z-H-11.html#%25_sec_1.2)
+  - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture4webhand/)
 - [ ] L5: Data Abstraction
   - [ ] reading: [Section 2.1](https://sicp.sorosliu.xyz/book/book-Z-H-14.html#%25_sec_2.1)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture5webhand/)
