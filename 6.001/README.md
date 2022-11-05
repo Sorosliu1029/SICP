@@ -76,7 +76,7 @@
 - [x] [2A: higher-order procedures](https://www.youtube.com/watch?v=eJeMOEiHv8c)
   - [ ] text 1.3
 - [x] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
-  - [ ] text 2.1
+  - [x] text 2.1
 - [x] [3A: henderson escher example](https://www.youtube.com/watch?v=PEwZL3H2oKg)
   - [ ] text 2.2
 - [x] [3B: symbolic differentiation; quotation](https://www.youtube.com/watch?v=bV87UzKMRtE)
