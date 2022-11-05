@@ -118,3 +118,8 @@
 - [ ] [Project 3](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/web/)
 - [ ] [Project 4](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/st05project4/)
 - [ ] [Project 5](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/project5_eval/)
+
+### Resources
+
+- [examples](./examples/) are from [examples.tgz at MIT 6.001 FTP server](https://groups.csail.mit.edu/mac/ftpdir/6.001/)
+- [pset-database](./pset-database/) is from [pset.tgz at MIT 6.001 FTP server](https://groups.csail.mit.edu/mac/ftpdir/6.001/)
