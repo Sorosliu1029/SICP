@@ -16,7 +16,7 @@
   - [x] reading: [Section 2.1](https://sicp.sorosliu.xyz/book/book-Z-H-14.html#%25_sec_2.1)
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture5webhand/)
 - [ ] L6: Higher Order Procedures
-  - [ ] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3)
+  - [x] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture6webhand/)
 - [ ] L7: Good Programming Practices
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture7webhand/)
@@ -74,7 +74,7 @@
 - [x] [1B: procedures and processes; substitution model](https://www.youtube.com/watch?v=V_7mmwpgJHU)
   - [x] text 1.2
 - [x] [2A: higher-order procedures](https://www.youtube.com/watch?v=eJeMOEiHv8c)
-  - [ ] text 1.3
+  - [x] text 1.3
 - [x] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
   - [x] text 2.1
 - [x] [3A: henderson escher example](https://www.youtube.com/watch?v=PEwZL3H2oKg)
