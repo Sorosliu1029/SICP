@@ -18,8 +18,8 @@
 - [x] L6: Higher Order Procedures
   - [x] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3)
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture6webhand/)
-- [ ] L7: Good Programming Practices
-  - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture7webhand/)
+- [x] L7: Good Programming Practices
+  - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture7webhand/)
 - [ ] L8: Using Higher Order Procedures
   - [ ] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3), [Section 2.2.4](https://sicp.sorosliu.xyz/book/book-Z-H-15.html#%25_sec_2.2.4)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture8webhand/)
