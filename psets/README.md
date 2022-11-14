@@ -1,1 +1,4 @@
-- [x] [ps1](./ps1/)
+- [x] [ps1: Introductory assignment](./ps1/)
+- [x] [ps2tw1: The game of twenty-one](./ps2tw1/)
+- [ ] [ps2: Graphing with higher-order procedures](./ps2)
+- [ ] [ps2cnt: Continued fractions](./ps2cnt/)
