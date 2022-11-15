@@ -1,6 +1,6 @@
 ;;;; CURVES.SCM
 
-                                        ;Point = (Sch-Num X Sch-Num)
+;Point = (Sch-Num X Sch-Num)
 
 (define (make-point x y)
   (lambda (bit)
@@ -11,10 +11,10 @@
 
 (define (y-of point)
   (point 1))
-                                        ;Unit-Interval = {x: Sch-Num | 0 <= x <= 1}
-                                        ;Curve = Unit-interval --> Point
+;Unit-Interval = {x: Sch-Num | 0 <= x <= 1}
+;Curve = Unit-interval --> Point
 
-                               ;;SOME CURVES
+;;SOME CURVES
 
 (define (unit-circle t)
   (make-point (sin (* 2pi t))
@@ -27,9 +27,9 @@
   (make-point (sin (* 2pi (square t)))
               (cos (* 2pi (square t)))))
 
-                                        ;Curve-Transform = (Curve --> Curve)
+;Curve-Transform = (Curve --> Curve)
 
-                              ;;SOME CURVE-TRANSFORMS
+;;SOME CURVE-TRANSFORMS
 
 
 (define (rotate-pi/2 curve)
@@ -39,7 +39,7 @@
        (- (y-of ct))
        (x-of ct)))))
 
-                           ;;CONSTRUCTORS OF CURVE-TRANSFORMS
+;;CONSTRUCTORS OF CURVE-TRANSFORMS
 
 ;;; TRANSLATE is of type (Sch-Num, Sch-Num --> Curve-Transform)
 
@@ -49,7 +49,7 @@
       (let ((ct (curve t)))
         (make-point (+ x0 (x-of ct))
                     (+ y0 (y-of ct)))))))
-
+
 ;;; ROTATE-AROUND-ORIGIN is of type (Sch-Num --> Curve-Transform)
 
 (define (rotate-around-origin theta)
@@ -95,7 +95,7 @@
 
 (define (scale s)
   (scale-x-y s s))
-
+
 ;;; SQUEEZE-RECTANGULAR-PORTION translates and scales a curve
 ;;; so the portion of the curve in the rectangle
 ;;; with corners xlo xhi ylo yhi will appear in a display window
@@ -128,7 +128,7 @@
     ((scale (/ 1 end-point-on-x-axis)) curve-ended-at-x-axis)))
 
 
-                                        ;Binary-transform = (Curve,Curve --> Curve)
+;Binary-transform = (Curve,Curve --> Curve)
 
 ;;; CONNECT-RIGIDLY makes a curve consisting of curve1 followed by curve2.
 
@@ -142,8 +142,8 @@
 ;;;  a copy of curve2 starting at the end of curve1
 
 ;;;(define (connect-ends curve1 curve2) ...)
-
-                          ;;FRACTAL CURVES
+
+;;FRACTAL CURVES
 
 ;;; GOSPERIZE is a Curve-Transform
 
@@ -160,7 +160,7 @@
   ((repeated gosperize level) unit-line))
 
 
-                      ;;DRAWING GOSPER CURVES
+;;DRAWING GOSPER CURVES
 
 (define (show-connected-gosper level)
   ((draw-connected g1 200)
@@ -168,7 +168,7 @@
     (gosper-curve level))))
 
 
-                      ;;PARAMETERIZED GOSPER
+;;PARAMETERIZED GOSPER
 
 ;;; PARAM-GOSPER is of type ((Sch-Num,(Int --> Sch-Num)) --> Curve)
 
@@ -185,24 +185,3 @@
         (connect-rigidly ((rotate-around-origin theta) scaled-curve)
                          ((translate .5 (* (sin theta) scale-factor))
                           ((rotate-around-origin (- theta)) scaled-curve)))))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

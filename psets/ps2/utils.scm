@@ -1,6 +1,5 @@
 ;;;; UTILS.SCM 
 
-
 ;;; USEFUL, SIMPLE, GENERAL PROCEDURES
 
 (define (compose f g)
@@ -17,18 +16,13 @@
       identity
       (compose f (repeated f (- n 1)))))
 
-;;;  USEFUL NUMERICAL PROCEDURE
+;;; USEFUL NUMERICAL PROCEDURE
 
 (define (square x) (* x x))
 
-
-                       ;;;USEFUL ANGLES
+;;; USEFUL ANGLES
 
 (define pi/4 (atan 1 1))
 (define pi (* 4 pi/4))
 (define -pi (- pi))
 (define 2pi (* 2 pi))
-
-
-
-
