@@ -22,4 +22,4 @@ if [ $? -ne 1 ]; then
 fi
 
 echo "Git commit"
-git commit -m "finish exercise $CHAPTER.$EXERCISE" && echo "✅ Done"
+git commit -m "finish exercise $CHAPTER.$EXERCISE" && echo "✅  Done"
