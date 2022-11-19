@@ -21,7 +21,7 @@
 - [x] L7: Good Programming Practices
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture7webhand/)
 - [ ] L8: Using Higher Order Procedures
-  - [ ] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3), [Section 2.2.4](https://sicp.sorosliu.xyz/book/book-Z-H-15.html#%25_sec_2.2.4)
+  - [x] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3), [Section 2.2.4](https://sicp.sorosliu.xyz/book/book-Z-H-15.html#%25_sec_2.2.4)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture8webhand/)
 - [ ] L9: Symbols and Quotation
   - [ ] reading: [Section 2.3](https://sicp.sorosliu.xyz/book/book-Z-H-16.html#%25_sec_2.3)
@@ -78,7 +78,7 @@
 - [x] [2B: compound data](https://www.youtube.com/watch?v=DrFkf-T-6Co)
   - [x] text 2.1
 - [x] [3A: henderson escher example](https://www.youtube.com/watch?v=PEwZL3H2oKg)
-  - [ ] text 2.2
+  - [x] text 2.2
 - [x] [3B: symbolic differentiation; quotation](https://www.youtube.com/watch?v=bV87UzKMRtE)
   - [ ] text 2.3
 - [x] [4A: pattern matching and rule-based substitution](https://www.youtube.com/watch?v=_fXQ1SwKjDg)
