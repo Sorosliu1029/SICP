@@ -21,4 +21,5 @@
 
 ;;; with beside and rotation
 (define (below painter1 painter2)
-  (compose rotate90 (beside painter1 painter2)))
+  (compose rotate90 (beside (rotate270 painter1)
+                            (rotate270 painter2))))
