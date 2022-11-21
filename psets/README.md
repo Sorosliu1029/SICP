@@ -2,3 +2,6 @@
 - [x] [ps2tw1: The game of twenty-one](./ps2tw1/)
 - [ ] [ps2: Graphing with higher-order procedures](./ps2)
 - [x] [ps2cnt: Continued fractions](./ps2cnt/)
+- [x] [ps3: RSA encryption](./ps3/)
+- [ ] [ps4prs: Prisoner's dilemma](./ps4prs/)
+- [ ] [ps4hnd: Picture language](./ps4hnd/)
