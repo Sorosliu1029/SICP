@@ -8,8 +8,6 @@
                      (make-vect 0.0 0.0)
                      (make-vect 1.0 1.0)))
 
-(define (rotate180 painter)
-  (repeated rotate90 2))
+(define rotate180 (repeated rotate90 2))
 
-(define (rotate270 painter)
-  (repeated rotate90 3))
+(define rotate270 (repeated rotate90 3))
