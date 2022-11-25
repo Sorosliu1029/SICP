@@ -23,9 +23,9 @@
 - [x] L8: Using Higher Order Procedures
   - [x] reading: [Section 1.3](https://sicp.sorosliu.xyz/book/book-Z-H-12.html#%25_sec_1.3), [Section 2.2.4](https://sicp.sorosliu.xyz/book/book-Z-H-15.html#%25_sec_2.2.4)
   - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture8webhand/)
-- [ ] L9: Symbols and Quotation
+- [x] L9: Symbols and Quotation
   - [x] reading: [Section 2.3](https://sicp.sorosliu.xyz/book/book-Z-H-16.html#%25_sec_2.3)
-  - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture9webhand/)
+  - [x] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture9webhand/)
 - [ ] L10: Tagged Data
   - [ ] reading: [Section 2.4](https://sicp.sorosliu.xyz/book/book-Z-H-17.html#%25_sec_2.4)
   - [ ] [note](https://ocw.mit.edu/courses/6-001-structure-and-interpretation-of-computer-programs-spring-2005/resources/lecture10webhan/)
